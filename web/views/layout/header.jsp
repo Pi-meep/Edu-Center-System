@@ -218,7 +218,7 @@
                                 <li><a class="dropdown-item" href="thoi-gian-bieu-phu-huynh">Thời gian biểu</a></li>
                             <% } %>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="dang-nhap">Đăng xuất</a></li>
+                            <li><a class="dropdown-item" href="dang-xuat">Đăng xuất</a></li>
                         </ul>
                     </div>
                 <% } else { %>
