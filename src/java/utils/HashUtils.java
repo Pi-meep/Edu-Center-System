@@ -19,7 +19,7 @@ public class HashUtils {
     }
 
     public static void main(String[] args) {
-        String rawPw = "fptedu";
+        String rawPw = "123456";
         String hashed = HashUtils.hashPassword(rawPw);
         System.out.println("Hashed password: " + hashed);
 
