@@ -9,12 +9,14 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+
 /**
  *
  * @author minhtb
  */
 public class JWTUtils {
 //    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+
     private static final String SECRET = "this-is-a-very-strong-super-secret-key-123456";
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 1 ngày
@@ -35,6 +37,7 @@ public class JWTUtils {
                 .build()
                 .parseClaimsJws(token);
     }
+
     //Kiểm tra xem token có hợp lệ 
     public static boolean verifyToken(String token) {
         try {
@@ -45,12 +48,22 @@ public class JWTUtils {
         }
     }
 
-    // Token lấy username
-    public static String getUsername(String token) {
+    // Token lấy identifier
+    public static String getIdentifier(String token) {
         try {
             return parseToken(token).getBody().getSubject();
         } catch (JwtException | IllegalArgumentException e) {
             return null;
         }
     }
+    // Token lấy role
+
+    public static String getRole(String token) {
+        try {
+            return parseToken(token).getBody().get("role", String.class);
+        } catch (JwtException | IllegalArgumentException e) {
+            return null;
+        }
+    }
+
 }

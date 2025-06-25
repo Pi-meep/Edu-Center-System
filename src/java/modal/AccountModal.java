@@ -14,6 +14,7 @@ public class AccountModal {
     private Integer id;
 
     private String name;
+    private String username;
     private String phone;
     private String password;
     private LocalDateTime dob;
@@ -38,9 +39,10 @@ public class AccountModal {
     public AccountModal() {
     }
 
-    public AccountModal(Integer id, String name, String phone, String password, LocalDateTime dob, String address, String avatarURL, Status status, Role role, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public AccountModal(Integer id, String name, String username, String phone, String password, LocalDateTime dob, String address, String avatarURL, Status status, Role role, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
+        this.username = username;
         this.phone = phone;
         this.password = password;
         this.dob = dob;
@@ -51,6 +53,16 @@ public class AccountModal {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+
 
     public Integer getId() {
         return id;
