@@ -33,9 +33,10 @@
 
     /* ===================== KHUNG 2 BÊN ===================== */
     .left-panel {
-        width: 45%;
-        background: linear-gradient(rgba(90, 0, 130, 0.85), rgba(90, 0, 130, 0.85)),
-            url('your-background-image.jpg') center/cover no-repeat;
+        width: 40%;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+/*        background: linear-gradient(rgba(90, 0, 130, 0.85), rgba(90, 0, 130, 0.85)),
+            url('your-background-image.jpg') center/cover no-repeat;*/
         color: white;
         display: flex;
         flex-direction: column;
@@ -56,7 +57,7 @@
 
     /* ===================== PANEL PHẢI (CHỨA FORM) ===================== */
     .right-panel {
-        width: 55%;
+        width: 60%;
         background: white;
         padding: 60px 80px;
         display: flex;
@@ -120,7 +121,7 @@
     form input[type="submit"] {
         margin-top: 20px;
         background: #f7b900;
-        color: #000;
+        color: white;
         border: none;
         padding: 10px;
         font-size: 16px;
@@ -162,15 +163,15 @@
 
         <div class="main-container">
             <div class="left-panel">
-                <h1>EduCenterSystem</h1>
-                <p>Education and courses</p>
+                <h1>EduCenter</h1>
+                <p>Trung tâm dạy thêm và khóa học</p>
             </div>
 
             <div class="right-panel">
                 <h2>Đăng nhập</h2>
                 <a href="dang-ky">Chưa có tài khoản ? Gửi yêu cầu tạo tài khoản phụ huynh / giáo viên tại đây</a>
                 <form action="${pageContext.request.contextPath}/dang-nhap" method="post">
-                    <label>Số điện thoại:</label>
+                    <label>Tên đăng nhập:</label>
                     <input type="text" name="identifier" value="${enteredIdentifier}" />
 
                     <label>Mật khẩu:</label>
@@ -188,3 +189,4 @@
         </div>
     </body>
 </html>
+<jsp:include page="layout/footer.jsp" /> 

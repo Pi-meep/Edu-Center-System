@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
  *
  * @author ASUS
  */
-
 public class AccountDAO {
 
     // Ánh xạ ResultSet thành AccountModal
@@ -23,6 +22,7 @@ public class AccountDAO {
 
         acc.setId(rs.getInt("id"));
         acc.setName(rs.getString("name"));
+        acc.setUsername(rs.getString("username"));
         acc.setPhone(rs.getString("phone"));
         acc.setPassword(rs.getString("password"));
         acc.setAddress(rs.getString("address"));
@@ -57,7 +57,7 @@ public class AccountDAO {
     }
 
     public AccountModal checkLogin(String identifier, String plainPassword) {
-        String sql = "SELECT * FROM account WHERE phone = ?";
+        String sql = "SELECT * FROM account WHERE username = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, identifier);
@@ -104,6 +104,20 @@ public class AccountDAO {
         return null;
     }
 
+    public AccountModal getAccountByUsername(String username) throws Exception {
+        String sql = "SELECT * FROM account WHERE username = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapResultSetToAccount(rs);
+            }
+        }
+        return null;
+    }
+
     public boolean isPhoneExist(String phone) throws Exception {
         String sql = "SELECT COUNT(*) FROM account WHERE phone = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -118,25 +132,39 @@ public class AccountDAO {
         return false;
     }
 
-    public boolean updatePassword(String phone, String newHashedPassword) throws Exception {
-        String sql = "UPDATE account SET password = ?, updated_at = ? WHERE phone = ?";
+    public boolean isUsernameExist(String username) throws Exception {
+        String sql = "SELECT COUNT(*) FROM account WHERE username = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        }
+        return false;
+    }
+
+    public boolean updatePassword(String username, String newHashedPassword) throws Exception {
+        String sql = "UPDATE account SET password = ?, updated_at = ? WHERE username = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, newHashedPassword);
             ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            ps.setString(3, phone);
+            ps.setString(3, username);
 
             return ps.executeUpdate() > 0;
         }
     }
 
-    public boolean updateAvatar(String phone, String avatarUrl) {
-        String sql = "UPDATE account SET avatarUrl = ?, updated_at = ? WHERE phone = ?";
+    public boolean updateAvatar(String username, String avatarUrl) {
+        String sql = "UPDATE account SET avatarUrl = ?, updated_at = ? WHERE username = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, avatarUrl);
             ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-            ps.setString(3, phone);
+            ps.setString(3, username);
 
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -146,14 +174,14 @@ public class AccountDAO {
     }
 
     public boolean updateProfile(AccountModal account) {
-        String sql = "UPDATE account SET name = ?, dob = ?, address = ?, updated_at = ? WHERE phone = ?";
+        String sql = "UPDATE account SET name = ?, dob = ?, address = ?, updated_at = ? WHERE username = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, account.getName());
             ps.setTimestamp(2, account.getDob() != null ? Timestamp.valueOf(account.getDob()) : null);
             ps.setString(3, account.getAddress());
             ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
-            ps.setString(5, account.getPhone());
+            ps.setString(5, account.getUsername());
 
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -163,21 +191,22 @@ public class AccountDAO {
     }
 
     public void insert(AccountModal acc) throws Exception {
-        String sql = "INSERT INTO account (name, phone, password, dob, address, avatarUrl, status, role, created_at, updated_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO account (name, username, phone, password, dob, address, avatarUrl, status, role, created_at, updated_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, acc.getName());
-            ps.setString(2, acc.getPhone());
-            ps.setString(3, acc.getPassword());
-            ps.setTimestamp(4, acc.getDob() != null ? Timestamp.valueOf(acc.getDob()) : null);
-            ps.setString(5, acc.getAddress());
-            ps.setString(6, acc.getAvatarURL());
-            ps.setString(7, acc.getStatus().name());
-            ps.setString(8, acc.getRole().name());
-            ps.setTimestamp(9, Timestamp.valueOf(acc.getCreatedAt()));
-            ps.setTimestamp(10, Timestamp.valueOf(acc.getUpdatedAt()));
+            ps.setString(2, acc.getUsername());
+            ps.setString(3, acc.getPhone());
+            ps.setString(4, acc.getPassword());
+            ps.setTimestamp(5, acc.getDob() != null ? Timestamp.valueOf(acc.getDob()) : null);
+            ps.setString(6, acc.getAddress());
+            ps.setString(7, acc.getAvatarURL());
+            ps.setString(8, acc.getStatus().name());
+            ps.setString(9, acc.getRole().name());
+            ps.setTimestamp(10, Timestamp.valueOf(acc.getCreatedAt()));
+            ps.setTimestamp(11, Timestamp.valueOf(acc.getUpdatedAt()));
 
             ps.executeUpdate();
         }

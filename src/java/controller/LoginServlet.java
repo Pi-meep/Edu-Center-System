@@ -29,10 +29,10 @@ public class LoginServlet extends HttpServlet {
         boolean redirected = false;
 
         try {
-            String identifier = request.getParameter("identifier"); // chỉ sử dụng phone
+            String identifier = request.getParameter("identifier");
             String password = request.getParameter("password");
 
-            request.setAttribute("enteredIdentifier", identifier); // để hiển thị lại nếu lỗi
+            request.setAttribute("enteredIdentifier", identifier);
 
             AccountDAO dao = new AccountDAO();
             AccountModal acc = dao.checkLogin(identifier, password);
@@ -59,7 +59,7 @@ public class LoginServlet extends HttpServlet {
                         break;
                 }
             } else {
-                request.setAttribute("error", "Sai số điện thoại hoặc mật khẩu.");
+                request.setAttribute("error", "Sai tên đăng nhập hoặc mật khẩu.");
             }
 
         } catch (Exception e) {
