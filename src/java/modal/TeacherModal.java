@@ -16,15 +16,40 @@ public class TeacherModal {
     private Integer schoolId;
     private Integer schoolClassId;
     private String experience;
-    private String subject;
+    private Subject subject;
     private String bio;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+        public enum Subject {
+        Mathematics("Toán học"),
+        Literature("Văn học"),
+        English("Tiếng Anh"),
+        Physics("Vật lý"),
+        Chemistry("Hóa học"),
+        Biology("Sinh học"),
+        History("Lịch sử"),
+        Geography("Địa lý"),
+        Civic_Education("Giáo dục công dân"),
+        Informatics("Tin học");
+
+        private final String displayName;
+
+        Subject(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+    }
+
+    
     public TeacherModal() {
     }
 
-    public TeacherModal(Integer id, Integer accountId, Integer schoolId, Integer schoolClassId, String experience, String subject, String bio, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public TeacherModal(Integer id, Integer accountId, Integer schoolId, Integer schoolClassId, String experience, Subject subject, String bio, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.accountId = accountId;
         this.schoolId = schoolId;
@@ -36,6 +61,14 @@ public class TeacherModal {
         this.updatedAt = updatedAt;
     }
 
+    public String getExperienceNumber() {
+        if (experience == null) {
+            return "";
+        }
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\d+").matcher(experience);
+        return matcher.find() ? matcher.group() : "";
+    }
+    
     public Integer getId() {
         return id;
     }
@@ -76,11 +109,11 @@ public class TeacherModal {
         this.experience = experience;
     }
 
-    public String getSubject() {
+    public Subject getSubject() {
         return subject;
     }
 
-    public void setSubject(String subject) {
+    public void setSubject(Subject subject) {
         this.subject = subject;
     }
 
@@ -107,6 +140,6 @@ public class TeacherModal {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
+   
 }

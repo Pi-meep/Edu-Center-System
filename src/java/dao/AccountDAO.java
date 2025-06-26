@@ -9,6 +9,9 @@ import modal.AccountModal;
 import utils.DBUtil;
 import utils.HashUtils;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  *
@@ -55,6 +58,25 @@ public class AccountDAO {
 
         return acc;
     }
+    
+        private AccountModal mapResultSet(ResultSet rs) throws SQLException {
+        AccountModal account = new AccountModal();
+        account.setId(rs.getInt("id"));
+        account.setName(rs.getString("name"));
+        account.setUsername(rs.getString("username"));
+        account.setPhone(rs.getString("phone"));
+        account.setDob(rs.getObject("dob", LocalDateTime.class));
+        account.setRole(AccountModal.Role.valueOf(rs.getString("role")));
+        account.setAddress(rs.getString("address"));
+        account.setPassword(rs.getString("password"));
+        account.setAvatarURL(rs.getString("avatarURL"));
+        account.setStatus(AccountModal.Status.valueOf(rs.getString("status")));
+        account.setCreatedAt(rs.getObject("created_at", LocalDateTime.class));
+        account.setUpdatedAt(rs.getObject("updated_at", LocalDateTime.class));
+
+        return account;
+    }
+
 
     public AccountModal checkLogin(String identifier, String plainPassword) {
         String sql = "SELECT * FROM account WHERE username = ?";
@@ -116,6 +138,33 @@ public class AccountDAO {
             }
         }
         return null;
+    }
+    
+        /**
+     * Lấy danh sách tất cả tài khoản theo vai trò chỉ định, chỉ lấy các tài
+     * khoản đang hoạt động.
+     *
+     * @param role Vai trò của tài khoản cần lọc (ví dụ: "teacher", "student",
+     * "admin", ...)
+     * @return Danh sách các đối tượng AccountModal có vai trò tương ứng và
+     * trạng thái "activated"
+     */
+    public List<AccountModal> getAllAccountByRole(String role) {
+        List<AccountModal> accountList = new ArrayList<>();
+        String sql = "SELECT * FROM account WHERE role = ? AND status = 'active'";
+
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) {
+
+            pre.setString(1, role);
+            try (ResultSet rs = pre.executeQuery()) {
+                while (rs.next()) {
+                    accountList.add(mapResultSet(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return accountList;
     }
 
     public boolean isPhoneExist(String phone) throws Exception {

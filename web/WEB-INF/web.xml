@@ -28,6 +28,66 @@
         <servlet-name>ChangePasswordServlet</servlet-name>
         <servlet-class>controller.ChangePasswordServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ConsultationServlet</servlet-name>
+        <servlet-class>controller.ConsultationServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ConsultationSuccessServlet</servlet-name>
+        <servlet-class>controller.ConsultationSuccessServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CourseDetailsServlet</servlet-name>
+        <servlet-class>controller.CourseDetailsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CourseListServlet</servlet-name>
+        <servlet-class>controller.CourseListServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeacherListServlet</servlet-name>
+        <servlet-class>controller.TeacherListServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeacherDetailsServlet</servlet-name>
+        <servlet-class>controller.TeacherDetailsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ManagerCourseController</servlet-name>
+        <servlet-class>controller.ManagerCourseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StudentSchedule</servlet-name>
+        <servlet-class>controller.StudentSchedule</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ParentSchedule</servlet-name>
+        <servlet-class>controller.ParentSchedule</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeacherSchedule</servlet-name>
+        <servlet-class>controller.TeacherSchedule</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StudentRequest</servlet-name>
+        <servlet-class>controller.StudentRequest</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TeacherRequest</servlet-name>
+        <servlet-class>controller.TeacherRequest</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ParentRequest</servlet-name>
+        <servlet-class>controller.ParentRequest</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AttendanceMarkServlet</servlet-name>
+        <servlet-class>controller.AttendanceMarkServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AttendanceReportServlet</servlet-name>
+        <servlet-class>controller.AttendanceReportServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>HomePageServlet</servlet-name>
         <url-pattern>/trang-chu</url-pattern>
@@ -47,5 +107,65 @@
     <servlet-mapping>
         <servlet-name>ChangePasswordServlet</servlet-name>
         <url-pattern>/doi-mat-khau</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ConsultationServlet</servlet-name>
+        <url-pattern>/tu-van</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ConsultationSuccessServlet</servlet-name>
+        <url-pattern>/dang-ky-tu-van-thanh-cong</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CourseDetailsServlet</servlet-name>
+        <url-pattern>/thong-tin-lop-hoc</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CourseListServlet</servlet-name>
+        <url-pattern>/danh-sach-lop</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeacherListServlet</servlet-name>
+        <url-pattern>/danh-sach-giao-vien</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeacherDetailsServlet</servlet-name>
+        <url-pattern>/thong-tin-giao-vien</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ManagerCourseController</servlet-name>
+        <url-pattern>/quan-ly-khoa-hoc</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StudentSchedule</servlet-name>
+        <url-pattern>/thoi-gian-bieu-hoc-sinh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ParentSchedule</servlet-name>
+        <url-pattern>/thoi-gian-bieu-phu-huynh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeacherSchedule</servlet-name>
+        <url-pattern>/thoi-gian-bieu-giao-vien</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StudentRequest</servlet-name>
+        <url-pattern>/yeu-cau-hoc-sinh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TeacherRequest</servlet-name>
+        <url-pattern>/yeu-cau-giao-vien</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ParentRequest</servlet-name>
+        <url-pattern>/yeu-cau-phu-huynh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AttendanceMarkServlet</servlet-name>
+        <url-pattern>/chuyen-can</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AttendanceReportServlet</servlet-name>
+        <url-pattern>/bao-cao-diem-danh</url-pattern>
     </servlet-mapping>
 </web-app>

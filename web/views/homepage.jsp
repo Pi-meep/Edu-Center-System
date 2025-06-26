@@ -350,7 +350,7 @@
                 <span class="homepage-feature-icon">👨‍🏫</span>
                 <h3>Giáo Viên Chất Lượng</h3>
                 <p>Đội ngũ giáo viên có trình độ chuyên môn cao, kinh nghiệm giảng dạy phong phú và tâm huyết với nghề</p>
-                <a href="danh-sach-lop" class="homepage-btn homepage-btn-primary">Xem Chi Tiết</a>
+                <a href="danh-sach-giao-vien" class="homepage-btn homepage-btn-primary">Xem Chi Tiết</a>
             </div>
             <div class="homepage-feature-card">
                 <span class="homepage-feature-icon">📚</span>

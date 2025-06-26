@@ -5,6 +5,7 @@
 package modal;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -126,5 +127,34 @@ public class SectionModal {
         this.updatedAt = updatedAt;
     }
     
-    
+    public String getFormattedStartTime() {
+        if (startTime != null) {
+            return startTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+        }
+        return "";
+    }
+
+    public String getFormattedEndTime() {
+        if (endTime != null) {
+            return endTime.format(DateTimeFormatter.ofPattern("HH:mm"));
+        }
+        return "";
+    }
+
+    public String getFormattedTimeRange() {
+        if (startTime != null && endTime != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+            return startTime.format(formatter) + " - " + endTime.format(formatter);
+        }
+        return "";
+    }
+
+    public String getFormattedDate() {
+        if (dateTime != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            return dateTime.format(formatter);
+        }
+        return "Chưa xác định";
+    }
+
 }

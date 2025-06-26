@@ -12,8 +12,9 @@ import java.time.LocalDateTime;
  * @author Astersa
  */
 public class CourseModal {
-    private Integer id;
 
+    private Integer id;
+    private String course_img;
     private Integer teacherId;
     private String name;
     private String description;
@@ -26,9 +27,9 @@ public class CourseModal {
     private Integer weekAmount;
     private Integer studentEnrollment;
     private Integer maxStudents;
-    private String level;
+    private Level level;
     private Boolean isHot;
-    private String subject;
+    private Subject subject;
     private String grade;
     private BigDecimal discountPercentage;
 
@@ -39,15 +40,69 @@ public class CourseModal {
         activated, pending, upcoming, rejected, inactivated
     }
 
-    public enum CourseType {
-        combo, daily
+     public enum CourseType {
+        combo("Khóa Combo"),
+        daily("Khóa Học Hàng Ngày");
+
+        private final String displayName;
+
+        CourseType(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
+
+    public enum Level {
+        Foundation("Nền tảng"),
+        Basic("Cơ bản"),
+        Advanced("Nâng cao"),
+        Excellent("Học sinh giỏi"),
+        Topics_Exam("Chuyên đề/Luyện thi");
+
+        private final String displayName;
+
+        Level(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+
+    public enum Subject {
+        Mathematics("Toán học"),
+        Literature("Văn học"),
+        English("Tiếng Anh"),
+        Physics("Vật lý"),
+        Chemistry("Hóa học"),
+        Biology("Sinh học"),
+        History("Lịch sử"),
+        Geography("Địa lý"),
+        Civic_Education("Giáo dục công dân"),
+        Informatics("Tin học");
+
+        private final String displayName;
+
+        Subject(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+
 
     public CourseModal() {
     }
 
-    public CourseModal(Integer id, Integer teacherId, String name, String description, Status status, CourseType courseType, BigDecimal feeCombo, BigDecimal feeDaily, LocalDateTime startDate, LocalDateTime endDate, Integer weekAmount, Integer studentEnrollment, Integer maxStudents, String level, Boolean isHot, String subject, String grade, BigDecimal discountPercentage, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public CourseModal(Integer id, String course_img, Integer teacherId, String name, String description, Status status, CourseType courseType, BigDecimal feeCombo, BigDecimal feeDaily, LocalDateTime startDate, LocalDateTime endDate, Integer weekAmount, Integer studentEnrollment, Integer maxStudents, Level level, Boolean isHot, Subject subject, String grade, BigDecimal discountPercentage, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
+        this.course_img = course_img;
         this.teacherId = teacherId;
         this.name = name;
         this.description = description;
@@ -75,6 +130,14 @@ public class CourseModal {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getCourse_img() {
+        return course_img;
+    }
+
+    public void setCourse_img(String course_img) {
+        this.course_img = course_img;
     }
 
     public Integer getTeacherId() {
@@ -173,11 +236,11 @@ public class CourseModal {
         this.maxStudents = maxStudents;
     }
 
-    public String getLevel() {
+    public Level getLevel() {
         return level;
     }
 
-    public void setLevel(String level) {
+    public void setLevel(Level level) {
         this.level = level;
     }
 
@@ -189,11 +252,11 @@ public class CourseModal {
         this.isHot = isHot;
     }
 
-    public String getSubject() {
+    public Subject getSubject() {
         return subject;
     }
 
-    public void setSubject(String subject) {
+    public void setSubject(Subject subject) {
         this.subject = subject;
     }
 
@@ -228,6 +291,6 @@ public class CourseModal {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
-    
+
+
 }
