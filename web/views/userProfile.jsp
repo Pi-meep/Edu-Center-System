@@ -162,40 +162,13 @@
                                     <div class="form-group row">
                                         <div class="col-sm-9 offset-sm-3 d-flex justify-content-between">
                                             <button type="button" class="btn btn-primary" id="updateProfileBtn">Cập nhật thông tin</button>
-                                            <button type="button" class="btn btn-secondary" id="togglePasswordFormBtn">Đổi mật khẩu</button>
+                                            <a href="doi-mat-khau"><button type="button" class="btn btn-secondary" id="">Đổi mật khẩu</button></a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </form>
-                        <div id="changePasswordModal" class="custom-modal">
-                            <div class="custom-modal-content">
-                                <span class="custom-close">&times;</span>
-                                <h5 class="mb-3">Đổi mật khẩu</h5>
-                                <form method="post" action="admin-ca-nhan" id="changePasswordForm">
-                                    <input type="hidden" name="action" value="changePassword">
-                                    <div class="form-group">
-                                        <label>Tài khoản</label>
-                                        <input type="text" name="username" class="form-control" value="${admin.username}" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Mật khẩu hiện tại</label>
-                                        <input type="password" name="currentPassword" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Mật khẩu mới</label>
-                                        <input type="password" name="newPassword" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Xác nhận mật khẩu</label>
-                                        <input type="password" name="confirmPassword" class="form-control" required>
-                                    </div>
-                                    <div class="text-end">
-                                        <button type="submit" class="btn btn-success">Đổi mật khẩu</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+               
 
 
                     </div>

@@ -67,6 +67,7 @@ public class SectionDAO extends DBUtil {
         }
         return sectionList;
     }
+
     public List<SectionDTO> getAllSectionsByCourse() {
         List<SectionDTO> sectionList = new ArrayList<>();
 
@@ -123,25 +124,23 @@ public class SectionDAO extends DBUtil {
         return sectionList;
     }
 
-
     /**
      * Lấy danh sách lớp học của khóa học đó
      *
      * @param courseId
      * @return
      */
-     public List<SectionModal> getSectionsByCourseIdAndDateRange(int courseId, LocalDate startDate, LocalDate endDate) {
+    public List<SectionModal> getSectionsByCourseIdAndDateRange(int courseId, LocalDate startDate, LocalDate endDate) {
         List<SectionModal> sectionList = new ArrayList<>();
         String sql = "SELECT * FROM section WHERE courseId = ? AND dateTime BETWEEN ? AND ? ORDER BY dateTime";
 
         try (Connection connection = DBUtil.getConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
-           Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());         // 00:00:00
+            Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());         // 00:00:00
             Timestamp endTimestamp = Timestamp.valueOf(endDate.atTime(LocalTime.MAX));      // 23:59:59
 
             stmt.setInt(1, courseId);
             stmt.setTimestamp(2, startTimestamp);
             stmt.setTimestamp(3, endTimestamp);
-
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -154,10 +153,10 @@ public class SectionDAO extends DBUtil {
 
         return sectionList;
     }
-    
+
     public List<Map<String, Object>> getTeacherSections(Integer teacherId) throws Exception {
         List<Map<String, Object>> sections = new ArrayList<>();
-        
+
         String sql = """
             SELECT 
                 sec.id,
@@ -175,9 +174,8 @@ public class SectionDAO extends DBUtil {
             AND c.status = 'activated'
             ORDER BY sec.dateTime ASC
         """;
-        
-        try (Connection con = DBUtil.getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, teacherId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -185,7 +183,7 @@ public class SectionDAO extends DBUtil {
                     section.put("id", rs.getInt("id"));
                     section.put("courseId", rs.getInt("courseId"));
                     section.put("courseName", rs.getString("courseName"));
-                    
+
                     // Format dateTime
                     Timestamp dateTime = rs.getTimestamp("dateTime");
                     if (dateTime != null) {
@@ -193,7 +191,7 @@ public class SectionDAO extends DBUtil {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
                         section.put("dateTime", localDateTime.format(formatter));
                     }
-                    
+
                     section.put("classroom", rs.getString("classroom"));
                     section.put("dayOfWeek", rs.getString("dayOfWeek"));
                     section.put("startTime", rs.getTime("startTime"));
@@ -204,9 +202,49 @@ public class SectionDAO extends DBUtil {
         }
         return sections;
     }
-    
+
+//    public void updateSection(SectionModal section) {
+//        String getCourseIdSQL = "SELECT id FROM course WHERE name = ?";
+//        String updateSQL = """
+//        UPDATE section 
+//        SET courseId = ?, 
+//            dayOfWeek = ?, 
+//            startTime = ?, 
+//            endTime = ?, 
+//            classroom = ?, 
+//            dateTime = ?, 
+//            status = ?
+//        WHERE id = ?
+//    """;
+//
+//        try (Connection conn = DBUtil.getConnection(); PreparedStatement getCourseIdStmt = conn.prepareStatement(getCourseIdSQL); PreparedStatement updateStmt = conn.prepareStatement(updateSQL)) {
+//
+//            // Lấy courseId từ courseName
+//            getCourseIdStmt.setString(1, section.getCourseName());
+//            ResultSet rs = getCourseIdStmt.executeQuery();
+//            if (rs.next()) {
+//                int courseId = rs.getInt("id");
+//
+//                updateStmt.setInt(1, courseId);
+//                updateStmt.setString(2, section.getDayOfWeek().toString());
+//                updateStmt.setTime(3, Time.valueOf(section.getStartTime().toLocalTime()));
+//                updateStmt.setTime(4, Time.valueOf(section.getEndTime().toLocalTime()));
+//                updateStmt.setString(5, section.getClassroom());
+//                updateStmt.setTimestamp(6, Timestamp.valueOf(section.getDateTime()));
+//                updateStmt.setString(7, section.getStatus().toString());
+//                updateStmt.setInt(8, section.getId());
+//
+//                updateStmt.executeUpdate();
+//                System.out.println("✅ Đã cập nhật lớp học thành công.");
+//            } else {
+//                System.out.println("❌ Không tìm thấy courseName: " + section.getCourseName());
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
     public void updateSection(SectionModal section) {
-        String getCourseIdSQL = "SELECT id FROM course WHERE name = ?";
         String updateSQL = """
         UPDATE section 
         SET courseId = ?, 
@@ -219,28 +257,19 @@ public class SectionDAO extends DBUtil {
         WHERE id = ?
     """;
 
-        try (Connection conn = DBUtil.getConnection(); PreparedStatement getCourseIdStmt = conn.prepareStatement(getCourseIdSQL); PreparedStatement updateStmt = conn.prepareStatement(updateSQL)) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement updateStmt = conn.prepareStatement(updateSQL)) {
 
-            // Lấy courseId từ courseName
-            getCourseIdStmt.setString(1, section.getCourseName());
-            ResultSet rs = getCourseIdStmt.executeQuery();
-            if (rs.next()) {
-                int courseId = rs.getInt("id");
+            updateStmt.setInt(1, section.getCourseId());
+            updateStmt.setString(2, section.getDayOfWeek().toString());
+            updateStmt.setTime(3, Time.valueOf(section.getStartTime().toLocalTime()));
+            updateStmt.setTime(4, Time.valueOf(section.getEndTime().toLocalTime()));
+            updateStmt.setString(5, section.getClassroom());
+            updateStmt.setTimestamp(6, Timestamp.valueOf(section.getDateTime()));
+            updateStmt.setString(7, section.getStatus().toString());
+            updateStmt.setInt(8, section.getId());
 
-                updateStmt.setInt(1, courseId);
-                updateStmt.setString(2, section.getDayOfWeek().toString());
-                updateStmt.setTime(3, Time.valueOf(section.getStartTime().toLocalTime()));
-                updateStmt.setTime(4, Time.valueOf(section.getEndTime().toLocalTime()));
-                updateStmt.setString(5, section.getClassroom());
-                updateStmt.setTimestamp(6, Timestamp.valueOf(section.getDateTime()));
-                updateStmt.setString(7, section.getStatus().toString());
-                updateStmt.setInt(8, section.getId());
-
-                updateStmt.executeUpdate();
-                System.out.println("✅ Đã cập nhật lớp học thành công.");
-            } else {
-                System.out.println("❌ Không tìm thấy courseName: " + section.getCourseName());
-            }
+            updateStmt.executeUpdate();
+            System.out.println("✅ Đã cập nhật lớp học thành công.");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -355,13 +384,13 @@ public class SectionDAO extends DBUtil {
      * trùng với ngày trong tuần đã chọn.
      *
      * @param courseId ID của khóa học
-     * @param dayOfWeek Thứ trong tuần cần tạo lớp 
+     * @param dayOfWeek Thứ trong tuần cần tạo lớp
      * @param startTime Giờ bắt đầu lớp học
      * @param endTime Giờ kết thúc lớp học
      * @param classroom Phòng học
      * @param startDate Ngày bắt đầu khóa học
      * @param endDate Ngày kết thúc khóa học
-     * @param status Trạng thái của lớp học 
+     * @param status Trạng thái của lớp học
      */
     public void addSections(int courseId, String dayOfWeek, LocalTime startTime, LocalTime endTime,
             String classroom, LocalDate startDate, LocalDate endDate, String status) {

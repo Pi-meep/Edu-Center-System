@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.AccountDAO;
 import dao.StudentDAO;
 import dao.TeacherDAO;
 import dto.StudentBasicInfo;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import modal.AccountModal;
 import modal.StudentMarkFeedbackModal;
 import modal.StudentMarkFeedbackModal;
 import modal.TeacherModal;
@@ -118,7 +120,15 @@ public class CreateScoreServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         try {
-            String userName = (String) request.getAttribute("loggedInUserName");
+            String usname = (String) request.getAttribute("loggedInUserName");
+            AccountDAO acdao = new AccountDAO();
+            AccountModal ac = null;
+            try {
+                ac = acdao.getAccountByUsername(usname);
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(ViewScoreServlet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            }
+            String userName = ac.getPhone();
             String grade = request.getParameter("grade");
             String nameCourse = request.getParameter("nameCourse");
             String level = request.getParameter("level");

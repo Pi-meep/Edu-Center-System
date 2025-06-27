@@ -47,9 +47,19 @@ public class LoginServlet extends HttpServlet {
                         cookie.setMaxAge(24 * 60 * 60); // 1 ngày
                         response.addCookie(cookie);
 
-                        // Điều hướng tới trang chủ
-                        response.sendRedirect(request.getContextPath() + "/trang-chu");
-                        redirected = true;
+                        String role = acc.getRole().toString().toLowerCase();
+                        switch (role) {
+                            case "manager":
+                            case "admin":
+                                response.sendRedirect(request.getContextPath() + "/bang-dieu-khien");
+                                break;
+                            case "staff":
+                                response.sendRedirect(request.getContextPath() + "/quan-ly-tu-van");
+                                break;
+                            default:
+                                response.sendRedirect(request.getContextPath() + "/trang-chu");
+                                break;
+                        }
                         break;
                     case inactive:
                         request.setAttribute("error", "Tài khoản của bạn đã bị vô hiệu hoá.");

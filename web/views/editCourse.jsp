@@ -94,11 +94,12 @@
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Trình độ</label>
                     <select class="form-select" name="level" required>
-                        <option value="basic" ${course.level == 'Basic' ? 'selected' : ''}>Cơ bản</option>
-                        <option value="average" ${course.level == 'Average' ? 'selected' : ''}>Trung bình</option>
-                        <option value="good" ${course.level == 'Good' ? 'selected' : ''}>Khá</option>
-                        <option value="excellent" ${course.level == 'Excellent' ? 'selected' : ''}>Giỏi</option>
-                        <option value="advanced" ${course.level == 'Advanced' ? 'selected' : ''}>Nâng cao</option>
+ <option value="Basic" ${course.level == 'Basic' ? 'selected' : ''}>Cơ bản</option>
+<option value="Advanced" ${course.level == 'Advanced' ? 'selected' : ''}>Nâng cao</option>
+<option value="Excellent" ${course.level == 'Excellent' ? 'selected' : ''}>Học sinh giỏi</option>
+<option value="Foundation" ${course.level == 'Foundation' ? 'selected' : ''}>Nền tảng</option>
+<option value="Topics_Exam" ${course.level == 'Topics_Exam' ? 'selected' : ''}>Chuyên đề/Luyện thi</option>
+
                     </select>
                 </div>
 
@@ -109,7 +110,6 @@
                         <option value="activated" ${statusString == 'activated' ? 'selected' : ''}>Đang hoạt động</option>
                         <option value="pending" ${statusString == 'pending' ? 'selected' : ''}>Chờ duyệt</option>
                         <option value="upcoming" ${statusString == 'upcoming' ? 'selected' : ''}>Sắp diễn ra</option>
-                        <option value="completed" ${statusString == 'completed' ? 'selected' : ''}>Đã hoàn thành</option>
                         <option value="inactivated" ${statusString == 'inactivated' ? 'selected' : ''}>Tạm ngưng</option>
                         <option value="rejected" ${statusString == 'rejected' ? 'selected' : ''}>Từ chối</option>
                     </select>
@@ -124,7 +124,9 @@
                         <i class="fas fa-save me-2"></i>Lưu thay đổi
                     </button>
                 </div>
+                <p style="color:red">FORM END</p>
             </form>
+                    <p style="color:red">FORM END</p>
         </div>
     </div>
 </div>
@@ -244,4 +246,3 @@
     });
 </script>
 
-<jsp:include page="layout/footer.jsp" />

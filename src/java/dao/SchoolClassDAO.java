@@ -29,7 +29,7 @@ public class SchoolClassDAO {
 
                 sc.setId(rs.getInt("id"));
                 sc.setSchoolId(rs.getInt("schoolId"));
-                sc.setClassName(rs.getString("class_name"));
+                sc.setClassName(rs.getString("className"));
                 sc.setGrade(rs.getString("grade"));
                 sc.setAcademicYear(rs.getString("academic_year"));
 
@@ -62,7 +62,7 @@ public class SchoolClassDAO {
             SchoolClass sc = new SchoolClass();
             sc.setId(rs.getInt("id"));
             sc.setSchoolId(rs.getInt("schoolId"));
-            sc.setClassName(rs.getString("class_name"));
+            sc.setClassName(rs.getString("className"));
             sc.setGrade(rs.getString("grade"));
             sc.setAcademicYear(rs.getString("academic_year"));
             sc.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());

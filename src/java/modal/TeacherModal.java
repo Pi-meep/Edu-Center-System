@@ -42,7 +42,6 @@ public class TeacherModal {
         public String getDisplayName() {
             return displayName;
         }
-
     }
 
     

@@ -213,12 +213,17 @@
                                 <% if (request.getAttribute("loggedInUserRole").equals("student")) {%>
                             <li><a class="dropdown-item" href="yeu-cau-hoc-sinh">Yêu cầu</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="viewScore">Xem điểm</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="diem-chuyen-can">Điểm danh</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="thoi-gian-bieu-hoc-sinh">Thời gian biểu</a></li>
                                 <% } else if (request.getAttribute("loggedInUserRole").equals("teacher")) {%>
                             <li><a class="dropdown-item" href="yeu-cau-giao-vien">Yêu cầu</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="classBeingTaught">Khoá học đang dạy </a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="bao-cao-diem-danh"> Báo cáo điểm danh</a></li>
                             <li><a class="dropdown-item" href="thoi-gian-bieu-giao-vien">Thời gian biểu</a></li>
                                 <% } else if (request.getAttribute("loggedInUserRole").equals("parent")) {%>
                             <li><a class="dropdown-item" href="yeu-cau-phu-huynh">Yêu cầu</a></li>

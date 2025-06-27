@@ -169,7 +169,7 @@
 
             <div class="right-panel">
                 <h2>Đăng nhập</h2>
-                <a href="dang-ky">Chưa có tài khoản ? Gửi yêu cầu tạo tài khoản phụ huynh / giáo viên tại đây</a>
+                <a href="tu-van">Chưa có tài khoản ? Gửi yêu cầu tạo tài khoản phụ huynh / giáo viên tại đây</a>
                 <form action="${pageContext.request.contextPath}/dang-nhap" method="post">
                     <label>Tên đăng nhập:</label>
                     <input type="text" name="identifier" value="${enteredIdentifier}" />

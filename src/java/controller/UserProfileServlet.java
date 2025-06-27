@@ -71,8 +71,17 @@ public class UserProfileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String userName = (String) request.getAttribute("loggedInUserName");
+
         String role = (String) request.getAttribute("loggedInUserRole");
+        String usname = (String) request.getAttribute("loggedInUserName");
+        AccountDAO acdao = new AccountDAO();
+        AccountModal ac = null;
+        try {
+            ac = acdao.getAccountByUsername(usname);
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(ViewScoreServlet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        String userName = ac.getPhone();
         if (userName == null || role == null) {
             response.sendRedirect("dang-nhap");
             return;

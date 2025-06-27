@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import modal.CourseModal;
 import utils.DBUtil;
+import java.sql.*;
 
 /**
  *
@@ -69,7 +70,7 @@ public class CourseDAO extends DBUtil {
 
         return courseList;
     }
-    
+
     public List<CourseDTO> getAllCourses() {
         List<CourseDTO> courseList = new ArrayList<>();
         String sql = """
@@ -113,7 +114,6 @@ public class CourseDAO extends DBUtil {
         }
         return courseList;
     }
-
 
     /**
      * Lấy thông tin chi tiết khóa học theo id.
@@ -299,7 +299,7 @@ public class CourseDAO extends DBUtil {
 
         return courseList;
     }
-    
+
     public void updateCourse(CourseModal c) {
         String sql = """
             UPDATE course SET
@@ -315,7 +315,7 @@ public class CourseDAO extends DBUtil {
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, c.getName());
-            ps.setString(2, c.getSubject());
+            ps.setString(2, c.getSubject().name());
             ps.setString(3, c.getGrade());
             ps.setBigDecimal(4, c.getFeeCombo());
             ps.setBigDecimal(5, c.getFeeDaily());
@@ -324,7 +324,7 @@ public class CourseDAO extends DBUtil {
             ps.setInt(8, c.getStudentEnrollment());
             ps.setInt(9, c.getMaxStudents());
             ps.setInt(10, c.getWeekAmount());
-            ps.setString(11, c.getLevel());
+            ps.setString(11, c.getLevel().name());
             ps.setString(12, c.getStatus().toString());
             ps.setInt(13, c.getTeacherId());
             ps.setInt(14, c.getId());
@@ -334,6 +334,7 @@ public class CourseDAO extends DBUtil {
             e.printStackTrace();
         }
     }
+
     public void deleteCourseById(int id) {
         String sql = "DELETE FROM course WHERE id = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -455,7 +456,7 @@ public class CourseDAO extends DBUtil {
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, c.getName());
-            ps.setString(2, c.getSubject());
+            ps.setString(2, c.getSubject().name());
             ps.setString(3, c.getGrade());
             ps.setString(4, c.getDescription());
             ps.setString(5, c.getCourseType().toString());
@@ -487,7 +488,7 @@ public class CourseDAO extends DBUtil {
             ps.setInt(10, c.getWeekAmount());
             ps.setInt(11, c.getStudentEnrollment());
             ps.setInt(12, c.getMaxStudents());
-            ps.setString(13, c.getLevel());
+            ps.setString(13, c.getLevel().name());
 
             if (c.getIsHot() == null) {
                 ps.setNull(14, Types.BOOLEAN);
@@ -505,7 +506,7 @@ public class CourseDAO extends DBUtil {
             ps.setInt(17, c.getTeacherId());
 
             ps.executeUpdate();
-             // Lấy ID tự động sinh ra từ CSDL
+            // Lấy ID tự động sinh ra từ CSDL
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     return generatedKeys.getInt(1);// Trả về ID vừa tạo
@@ -514,11 +515,10 @@ public class CourseDAO extends DBUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-         // Nếu có lỗi xảy ra hoặc không lấy được ID, trả về -1 
+        // Nếu có lỗi xảy ra hoặc không lấy được ID, trả về -1 
         return -1;
     }
 
-    
     public List<CourseModal> getRelatedCourses(int excludeCourseId, String subject, String grade) {
         List<CourseModal> courseList = new ArrayList<>();
 
@@ -541,7 +541,7 @@ public class CourseDAO extends DBUtil {
         }
         return courseList;
     }
-    
+
     public List<CourseModal> getCoursesByStudentId(int studentId) {
         List<CourseModal> courseList = new ArrayList<>();
         String sql = "SELECT DISTINCT c.* "
@@ -565,6 +565,5 @@ public class CourseDAO extends DBUtil {
 
         return courseList;
     }
-
 
 }

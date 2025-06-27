@@ -474,8 +474,25 @@
 
                         <!-- Giáo viên thêm -->
                         <div class="teacher-only" style="display:none;">
-                            <label>Môn dạy:</label>
-                            <input type="text" name="subject">
+                            <label for="subject">Môn dạy:</label>
+                            <input type="text" name="subject" id="subject" list="subjectList" />
+
+                            <datalist id="subjectList">
+                                <option value="Toán">
+                                <option value="Văn">
+                                <option value="Tiếng Anh">
+                                <option value="Lý">
+                                <option value="Hóa">
+                                <option value="Sinh">
+                                <option value="Sử">
+                                <option value="Địa">
+                                <option value="Tin học">
+                                <option value="GDCD">
+                                <option value="Công nghệ">
+                                <option value="Âm nhạc">
+                                <option value="Mỹ thuật">
+                                <option value="Thể dục">
+                            </datalist>
 
                             <label>Kinh nghiệm:</label>
                             <textarea name="experience"></textarea>

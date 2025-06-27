@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.AccountDAO;
 import dao.StudentDAO;
 import dto.StudentBasicInfo;
 import dto.StudentScoreView;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import modal.AccountModal;
 
 /**
  *
@@ -63,8 +65,16 @@ public class ViewScoreServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String userName = (String) request.getAttribute("loggedInUserName");
         StudentDAO dao = new StudentDAO();
+        String usname = (String) request.getAttribute("loggedInUserName");
+        AccountDAO acdao = new AccountDAO();
+        AccountModal ac = null;
+        try {
+            ac = acdao.getAccountByUsername(usname);
+        } catch (Exception ex) {
+            Logger.getLogger(ViewScoreServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        String userName = ac.getPhone();
         Map<String, List<StudentScoreView>> scoreMap;
         try {
             scoreMap = dao.getStudentScoresGroupedByCourse(userName);

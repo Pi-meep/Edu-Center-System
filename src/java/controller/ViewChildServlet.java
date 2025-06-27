@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.AccountDAO;
 import dao.StudentDAO;
 import dto.StudentBasicInfo;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.List;
+import modal.AccountModal;
 
 /**
  *
@@ -60,8 +62,16 @@ public class ViewChildServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String userName = (String) request.getAttribute("loggedInUserName");
         StudentDAO dao = new StudentDAO();
+        String usname = (String) request.getAttribute("loggedInUserName");
+        AccountDAO acdao = new AccountDAO();
+        AccountModal ac = null;
+        try {
+            ac = acdao.getAccountByUsername(usname);
+        } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(ViewScoreServlet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        String userName = ac.getPhone();
         try {
             List<StudentBasicInfo> children = dao.getChildrenByParentPhone(userName);
             request.setAttribute("children", children);

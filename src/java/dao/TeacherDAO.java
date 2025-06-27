@@ -39,7 +39,7 @@ public class TeacherDAO extends DBUtil {
 
         return teacher;
     }
-    
+
     private TeacherCertificateModal mapResultSetToCertificate(ResultSet rs) throws SQLException {
         TeacherCertificateModal certificate = new TeacherCertificateModal();
         certificate.setId(rs.getInt("id"));
@@ -51,7 +51,7 @@ public class TeacherDAO extends DBUtil {
 
         return certificate;
     }
-    
+
     public List<TeacherCertificateModal> getCertOfTeacher(int teacherId) {
         List<TeacherCertificateModal> certificateList = new ArrayList<>();
 
@@ -76,8 +76,6 @@ public class TeacherDAO extends DBUtil {
 
         return certificateList;
     }
-
-
 
     /**
      * Lấy danh sách tất cả giáo viên trong hệ thống.
@@ -300,7 +298,13 @@ public class TeacherDAO extends DBUtil {
                     teacher.setSchoolId(rs.getInt("schoolId"));
                     teacher.setSchoolClassId(rs.getInt("schoolClassId"));
                     teacher.setExperience(rs.getString("experience"));
-                    teacher.setSubject(rs.getString("subject"));
+
+                    String subjectStr = rs.getString("subject");
+                    try {
+                        teacher.setSubject(TeacherModal.Subject.valueOf(subjectStr));
+                    } catch (IllegalArgumentException | NullPointerException e) {
+                        teacher.setSubject(null);
+                    }
                     teacher.setBio(rs.getString("bio"));
 
                     Timestamp createdAt = rs.getTimestamp("created_at");
@@ -384,7 +388,13 @@ public class TeacherDAO extends DBUtil {
                     teacher.setId(rs.getInt("id"));
                     teacher.setAccountId(rs.getInt("accountId"));
                     teacher.setSchoolId(rs.getInt("schoolId"));
-                    teacher.setSubject(rs.getString("subject"));
+
+                    String subjectStr = rs.getString("subject");
+                    try {
+                        teacher.setSubject(TeacherModal.Subject.valueOf(subjectStr));
+                    } catch (IllegalArgumentException | NullPointerException e) {
+                        teacher.setSubject(null);
+                    }
                     teacher.setExperience(rs.getString("experience"));
                     teacher.setBio(rs.getString("bio"));
 

@@ -150,8 +150,8 @@ public class ManagerCourseServlet extends HttpServlet {
                 CourseModal course = new CourseModal();
 
                 course.setName(request.getParameter("name"));
-                course.setTeacherId(Integer.parseInt(request.getParameter("teacherId")));
-                course.setSubject(request.getParameter("subject"));
+                course.setTeacherId(Integer.valueOf(request.getParameter("teacherId")));
+                course.setSubject(CourseModal.Subject.valueOf(request.getParameter("subject")));
                 course.setGrade(request.getParameter("grade"));
                 course.setDescription(request.getParameter("description"));
                 course.setCourseType(CourseModal.CourseType.valueOf(request.getParameter("courseType")));
@@ -161,7 +161,7 @@ public class ManagerCourseServlet extends HttpServlet {
                 course.setWeekAmount(Integer.parseInt(request.getParameter("weekAmount")));
                 course.setStudentEnrollment(Integer.parseInt(request.getParameter("studentEnrollment")));
                 course.setMaxStudents(Integer.parseInt(request.getParameter("maxStudents")));
-                course.setLevel(request.getParameter("level"));
+                course.setLevel(CourseModal.Level.valueOf(request.getParameter("level")));
                 course.setIsHot("true".equalsIgnoreCase(request.getParameter("isHot")));
 
                 String discountStr = request.getParameter("discountPercentage");
@@ -203,7 +203,7 @@ public class ManagerCourseServlet extends HttpServlet {
                 course.setId(Integer.parseInt(request.getParameter("id")));
                 course.setName(request.getParameter("name"));
                 course.setTeacherId(Integer.parseInt(request.getParameter("teacherId")));
-                course.setSubject(request.getParameter("subject"));
+                course.setSubject(CourseModal.Subject.valueOf(request.getParameter("subject")));
                 course.setGrade(request.getParameter("grade"));
                 course.setFeeCombo(parseBigDecimal(request.getParameter("feeCombo")));
                 course.setFeeDaily(parseBigDecimal(request.getParameter("feeDaily")));
@@ -212,7 +212,7 @@ public class ManagerCourseServlet extends HttpServlet {
                 course.setStudentEnrollment(Integer.parseInt(request.getParameter("studentEnrollment")));
                 course.setMaxStudents(Integer.parseInt(request.getParameter("maxStudents")));
                 course.setWeekAmount(Integer.parseInt(request.getParameter("weekAmount")));
-                course.setLevel(request.getParameter("level"));
+                course.setLevel(CourseModal.Level.valueOf(request.getParameter("level")));
                 course.setStatus(Status.valueOf(request.getParameter("status")));
 
                 dao.updateCourse(course);

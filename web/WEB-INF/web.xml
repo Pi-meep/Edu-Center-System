@@ -102,11 +102,11 @@
     </servlet>
     <servlet>
         <servlet-name>ClassBeingTaughtServlet</servlet-name>
-        <servlet-class>modal.ClassBeingTaughtServlet</servlet-class>
+        <servlet-class>controller.ClassBeingTaughtServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>CreateScoreServlet</servlet-name>
-        <servlet-class>modal.CreateScoreServlet</servlet-class>
+        <servlet-class>controller.CreateScoreServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>UserProfileServlet</servlet-name>

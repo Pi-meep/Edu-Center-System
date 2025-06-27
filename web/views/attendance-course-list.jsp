@@ -32,6 +32,7 @@
             }
         </style>
     </head>
+            <jsp:include page="layout/header.jsp" />
     <body class="bg-light">
         <div class="container-fluid py-4">
             <!-- Header -->
