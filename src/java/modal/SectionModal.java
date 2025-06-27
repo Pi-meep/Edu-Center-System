@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
  * @author Astersa
  */
 public class SectionModal {
+
     private Integer id;
     private Integer courseId;
     private DayOfWeekEnum dayOfWeek;
@@ -24,7 +25,19 @@ public class SectionModal {
     private LocalDateTime updatedAt;
 
     public enum Status {
-        inactive, active, completed
+        inactive("Ngưng hoạt động"),
+        active("Đang diễn ra"),
+        completed("Đã hoàn thành");
+
+        private final String displayName;
+
+        Status(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
     public enum DayOfWeekEnum {
@@ -126,7 +139,7 @@ public class SectionModal {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-    
+
     public String getFormattedStartTime() {
         if (startTime != null) {
             return startTime.format(DateTimeFormatter.ofPattern("HH:mm"));

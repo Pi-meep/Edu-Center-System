@@ -7,14 +7,30 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
+<%
+    // Tính toán tuần hiện tại
+    java.time.LocalDate targetWeek = (java.time.LocalDate) request.getAttribute("targetWeek");
+    if (targetWeek == null) {
+        targetWeek = java.time.LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+    }
+    
+    java.util.List<String> weekDays = new java.util.ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+        java.time.LocalDate day = targetWeek.plusDays(i);
+        weekDays.add(day.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    }
+    request.setAttribute("currentWeekDays", weekDays);
+    request.setAttribute("currentMonday", targetWeek);
+%>
+
 <!DOCTYPE html>
 <% request.setAttribute("title", "Thời khóa biểu phụ huynh");%>
 
 <jsp:include page="layout/header.jsp" />
 
 <style>
-
-    
 .ps-parent-header {
     background: white;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -213,49 +229,95 @@
     border: 1px solid #e1e8ed;
     border-radius: 8px;
 }
-.ps-lesson-slot {
+
+/* Fixed CSS for schedule cells and lessons */
+.ps-schedule-cell {
+    position: relative;
     height: 80px;
-    padding: 0.5rem;
+    border: 1px solid #e1e8ed;
     border-radius: 8px;
-    border: 2px solid;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    background: #f8f9ff;
+}
+
+.ps-lesson {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    height: calc(100% - 6px);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    margin: 0;
 }
-.ps-lesson-slot:hover {
+
+.ps-lesson:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
+
 .ps-lesson-subject {
-    font-size: 0.8rem;
+    color: #424242;
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    margin-bottom: 3px;
+    font-size: 0.8rem;
     line-height: 1.2;
 }
-.ps-lesson-detail {
-    font-size: 0.7rem;
+
+.ps-lesson-teacher {
     color: #666;
+    font-size: 0.75rem;
+    margin-bottom: 2px;
     line-height: 1.2;
 }
-.ps-lesson-room {
-    font-size: 0.7rem;
-    color: #888;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-.ps-lesson-type {
-    background: #e3f2fd;
-    border-color: #2196f3;
+
+.ps-lesson-time {
     color: #1976d2;
+    font-weight: 500;
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+    line-height: 1.2;
 }
-.ps-break-type {
-    background: #f5f5f5;
-    border-color: #9e9e9e;
-    color: #616161;
+
+.ps-lesson-room {
+    color: #666;
+    font-size: 0.75rem;
+    line-height: 1.2;
 }
+
+/* Status Colors */
+.ps-lesson-paid {
+    background: #e8f5e8;
+    border-color: #c8e6c9;
+}
+.ps-lesson-paid .ps-lesson-time {
+    color: #2e7d32;
+}
+
+.ps-lesson-pending {
+    background: #fff3e0;
+    border-color: #ffcc80;
+}
+.ps-lesson-pending .ps-lesson-time {
+    color: #f57c00;
+}
+
+.ps-lesson-overdue {
+    background: #ffebee;
+    border-color: #ffcdd2;
+}
+.ps-lesson-overdue .ps-lesson-time {
+    color: #c62828;
+}
+
 .ps-schedule-legend {
     padding: 1.5rem 2rem 2rem;
     background: #f8f9ff;
@@ -287,6 +349,30 @@
     font-size: 0.8rem;
     color: #666;
 }
+
+/* No Selection Message */
+.ps-no-selection {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 4rem 2rem;
+    text-align: center;
+    border: 1px solid #e1e8ed;
+    margin-top: 2rem;
+}
+.ps-no-selection-content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+}
+.ps-no-selection-content p {
+    color: #666;
+    font-size: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
 @media (max-width: 768px) {
     .ps-parent-header-container {
         flex-direction: column;
@@ -302,20 +388,32 @@
         grid-template-columns: 100px repeat(5, 1fr);
         gap: 0.25rem;
     }
-    .ps-time-slot, .ps-lesson-slot {
+    .ps-time-slot {
         height: 60px;
+        font-size: 0.7rem;
+    }
+    .ps-schedule-cell {
+        height: 60px;
+    }
+    .ps-lesson {
+        padding: 6px;
         font-size: 0.7rem;
     }
     .ps-lesson-subject {
         font-size: 0.7rem;
+        margin-bottom: 2px;
     }
-    .ps-lesson-detail, .ps-lesson-room {
-        font-size: 0.6rem;
+    .ps-lesson-teacher,
+    .ps-lesson-time,
+    .ps-lesson-room {
+        font-size: 0.65rem;
+        margin-bottom: 1px;
     }
     .ps-children-grid {
         grid-template-columns: 1fr;
     }
 }
+
 @keyframes ps-fadeInUp {
     from {
         opacity: 0;
@@ -349,241 +447,237 @@
     <div class="ps-child-selector">
         <h2>Chọn con để xem thời khóa biểu</h2>
         <div class="ps-children-grid">
-            <div class="ps-child-card" onclick="selectChild(1)">
-                <div class="ps-child-info">
-                    <div class="ps-child-avatar">👦</div>
-                    <div class="ps-child-details">
-                        <h3>Nguyễn Văn An</h3>
-                        <p>Lớp 10A1</p>
+            <c:forEach var="student" items="${students}">
+                <div class="ps-child-card ${student.id eq selectedStudentId ? 'selected' : ''}" 
+                     onclick="selectChild(${student.id})">
+                    <div class="ps-child-info">
+                        <div class="ps-child-avatar">${student.name.charAt(0)}</div>
+                        <div class="ps-child-details">
+                            <h3>${student.name}</h3>
+                            <p>Lớp ${student.grade}
+                                <c:if test="${not empty student.className}">
+                                    - ${student.className}
+                                </c:if>
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="ps-child-card" onclick="selectChild(2)">
-                <div class="ps-child-info">
-                    <div class="ps-child-avatar">👧</div>
-                    <div class="ps-child-details">
-                        <h3>Nguyễn Thị Bình</h3>
-                        <p>Lớp 8B2</p>
-                    </div>
-                </div>
-            </div>
+            </c:forEach>
         </div>
     </div>
 
     <!-- Schedule Display -->
-    <div id="schedule-display" class="ps-schedule-container">
-        <div class="ps-schedule-header-info">
-            <div class="ps-user-info">
-                <div class="ps-user-avatar" id="user-avatar">N</div>
-                <div class="ps-user-details">
-                    <h2 id="user-name">Nguyễn Văn An</h2>
-                    <p id="user-info">Lớp 10A1</p>
+    <c:choose>
+        <c:when test="${not empty selectedStudentId and not empty scheduleData}">
+        <div id="schedule-display" class="ps-schedule-container" style="display: block;">
+            <div class="ps-schedule-header-info">
+                <div class="ps-user-info">
+                    <div class="ps-user-avatar" id="user-avatar">
+                        <c:if test="${not empty scheduleData.studentInfo}">${scheduleData.studentInfo.name.charAt(0)}</c:if>
+                    </div>
+                    <div class="ps-user-details">
+                        <h2 id="user-name">
+                            <c:if test="${not empty scheduleData.studentInfo}">${scheduleData.studentInfo.name}</c:if>
+                        </h2>
+                        <p id="user-info">
+                            <c:if test="${not empty scheduleData.studentInfo}">
+                                Lớp ${scheduleData.studentInfo.grade}
+                                <c:if test="${not empty scheduleData.studentInfo.className}">
+                                    - ${scheduleData.studentInfo.className}
+                                </c:if>
+                            </c:if>
+                        </p>
+                    </div>
+                </div>
+                <div class="ps-week-navigator">
+                    <button class="ps-nav-btn" onclick="previousWeek()">←</button>
+                    <span class="ps-week-info">
+                        <c:if test="${not empty currentWeekDays and not empty currentWeekDays[0]}">
+                            Tuần từ ${currentWeekDays[0]}
+                        </c:if>
+                    </span>
+                    <button class="ps-nav-btn" onclick="nextWeek()">→</button>
                 </div>
             </div>
-            <div class="ps-week-navigator">
-                <button class="ps-nav-btn" onclick="previousWeek()">←</button>
-                <span class="ps-week-info">Tuần 25 - 2024</span>
-                <button class="ps-nav-btn" onclick="nextWeek()">→</button>
+            
+            <div class="ps-schedule-grid">
+                <div class="ps-schedule-table" id="schedule-table">
+                    <!-- Header row -->
+                    <div class="ps-time-header">Tiết học</div>
+                    <div class="ps-day-header">Thứ 2</div>
+                    <div class="ps-day-header">Thứ 3</div>
+                    <div class="ps-day-header">Thứ 4</div>
+                    <div class="ps-day-header">Thứ 5</div>
+                    <div class="ps-day-header">Thứ 6</div>
+                    
+                    <!-- Time slots and lessons -->
+                    <c:forEach var="hour" begin="7" end="21" step="2">
+                        <c:set var="startHour" value="${hour}" />
+                        <c:set var="endHour" value="${hour + 2}" />
+                        <c:set var="timeSlot" value="${startHour < 10 ? '0' : ''}${startHour}:00:00 - ${endHour < 10 ? '0' : ''}${endHour}:00:00" />
+                        
+                        <!-- Time slot header -->
+                        <div class="ps-time-slot">${timeSlot}</div>
+                        
+                        <!-- Days -->
+                        <c:forEach var="day" items="${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}">
+                            <c:set var="found" value="false" />
+                            <c:forEach var="section" items="${scheduleData.schedule[day]}">
+                                <c:set var="sectionDate" value="${section.dateTime}" />
+                                <c:if test="${not empty sectionDate}">
+                                    <fmt:parseDate value="${sectionDate}" pattern="yyyy-MM-dd HH:mm:ss" var="parsedDate" />
+                                    <fmt:formatDate value="${parsedDate}" pattern="yyyy-MM-dd" var="formattedDate" />
+                                    <fmt:formatDate value="${parsedDate}" pattern="EEEE" var="actualDayOfWeek" />
+                                    
+                                    <c:set var="isCurrentWeek" value="false" />
+                                    <c:forEach var="weekDay" items="${currentWeekDays}">
+                                        <c:if test="${weekDay eq formattedDate}">
+                                            <c:set var="isCurrentWeek" value="true" />
+                                        </c:if>
+                                    </c:forEach>
+                                    
+                                    <c:set var="sectionStartTime" value="${section.startTime}" />
+                                    <c:set var="sectionEndTime" value="${section.endTime}" />
+                                    <c:set var="belongsToTimeSlot" value="false" />
+                                    
+                                    <c:if test="${not empty sectionStartTime and not empty sectionEndTime}">
+                                        <c:set var="timeSlotStart" value="${fn:substring(timeSlot, 0, 2)}" />
+                                        <c:set var="timeSlotEnd" value="${fn:substring(timeSlot, 11, 13)}" />
+                                        <c:set var="sectionStartHour" value="${fn:substring(sectionStartTime, 0, 2)}" />
+                                        <c:set var="sectionEndHour" value="${fn:substring(sectionEndTime, 0, 2)}" />
+                                        <c:if test="${sectionStartHour >= timeSlotStart and sectionStartHour < timeSlotEnd}">
+                                            <c:set var="belongsToTimeSlot" value="true" />
+                                        </c:if>
+                                    </c:if>
+                                    
+                                    <c:if test="${isCurrentWeek and actualDayOfWeek eq day and belongsToTimeSlot and not found}">
+                                        <c:set var="found" value="true" />
+                                        <div class="ps-schedule-cell">
+                                            <c:set var="subjectVi" value="" />
+                                            <c:choose>
+                                                <c:when test="${section.subject eq 'Mathematics'}"><c:set var="subjectVi" value="Toán học" /></c:when>
+                                                <c:when test="${section.subject eq 'Physics'}"><c:set var="subjectVi" value="Vật lý" /></c:when>
+                                                <c:when test="${section.subject eq 'Chemistry'}"><c:set var="subjectVi" value="Hóa học" /></c:when>
+                                                <c:when test="${section.subject eq 'Biology'}"><c:set var="subjectVi" value="Sinh học" /></c:when>
+                                                <c:when test="${section.subject eq 'Literature'}"><c:set var="subjectVi" value="Ngữ văn" /></c:when>
+                                                <c:when test="${section.subject eq 'History'}"><c:set var="subjectVi" value="Lịch sử" /></c:when>
+                                                <c:when test="${section.subject eq 'Geography'}"><c:set var="subjectVi" value="Địa lý" /></c:when>
+                                                <c:when test="${section.subject eq 'English'}"><c:set var="subjectVi" value="Tiếng Anh" /></c:when>
+                                                <c:when test="${section.subject eq 'Computer Science'}"><c:set var="subjectVi" value="Tin học" /></c:when>
+                                                <c:when test="${section.subject eq 'Physical Education'}"><c:set var="subjectVi" value="Thể dục" /></c:when>
+                                                <c:when test="${section.subject eq 'Art'}"><c:set var="subjectVi" value="Mỹ thuật" /></c:when>
+                                                <c:when test="${section.subject eq 'Music'}"><c:set var="subjectVi" value="Âm nhạc" /></c:when>
+                                                <c:otherwise><c:set var="subjectVi" value="${section.subject}" /></c:otherwise>
+                                            </c:choose>
+                                            
+                                            <div class="ps-lesson ${section.statusClass}">
+                                                <div class="ps-lesson-subject">${subjectVi}</div>
+                                                <div class="ps-lesson-teacher">${section.teacherName}</div>
+                                                <div class="ps-lesson-time">${section.timeSlot}</div>
+                                                <div class="ps-lesson-room">${section.classroom}</div>
+                                            </div>
+                                        </div>
+                                    </c:if>
+                                </c:if>
+                            </c:forEach>
+                            
+                            <c:if test="${not found}">
+                                <div class="ps-schedule-cell"></div>
+                            </c:if>
+                        </c:forEach>
+                    </c:forEach>
+                </div>
+            </div>
+            
+            <div class="ps-schedule-legend">
+                <div class="ps-legend-title">Chú thích:</div>
+                <div class="ps-legend-items" id="legend-items">
+                    <c:forEach var="legendEntry" items="${scheduleData.legend}">
+                        <div class="ps-legend-item">
+                            <c:choose>
+                                <c:when test="${legendEntry.key eq 'paid'}">
+                                    <div class="ps-legend-color ps-lesson-paid"></div>
+                                </c:when>
+                                <c:when test="${legendEntry.key eq 'overdue'}">
+                                    <div class="ps-legend-color ps-lesson-overdue"></div>
+                                </c:when>
+                                <c:when test="${legendEntry.key eq 'pending'}">
+                                    <div class="ps-legend-color ps-lesson-pending"></div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="ps-legend-color ps-lesson-type"></div>
+                                </c:otherwise>
+                            </c:choose>
+                            <span class="ps-legend-text">${legendEntry.value}</span>
+                        </div>
+                    </c:forEach>
+                </div>
             </div>
         </div>
-        <div class="ps-schedule-grid">
-            <div class="ps-schedule-table" id="schedule-table">
-                <!-- Schedule content will be generated by JavaScript -->
+        </c:when>
+        <c:otherwise>
+            <div class="ps-no-selection">
+                <div class="ps-no-selection-content">
+                    <i class="fas fa-user-graduate" style="font-size: 4rem; color: #667eea; margin-bottom: 1rem;"></i>
+                    <h3>Vui lòng chọn con để xem thời khóa biểu</h3>
+                    <p>Nhấp vào một trong các con ở trên để xem lịch học và trạng thái thanh toán</p>
+                </div>
             </div>
-        </div>
-        <div class="ps-schedule-legend">
-            <div class="ps-legend-title">Chú thích:</div>
-            <div class="ps-legend-items" id="legend-items">
-                <!-- Legend items will be generated by JavaScript -->
-            </div>
-        </div>
-    </div>
+        </c:otherwise>
+    </c:choose>
 </div>
 
 <script>
-    let selectedChildId = null;
     let currentWeek = new Date();
     
-    // Sample children data
-    const children = [
-        { 
-            id: 1, 
-            name: 'Nguyễn Văn An', 
-            class: '10A1', 
-            avatar: '👦',
-            schedule: {
-                'Thứ 2': [
-                    { time: '7:00-7:45', subject: 'Toán', teacher: 'Cô Lan', room: 'A101', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Văn', teacher: 'Thầy Minh', room: 'A102', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Anh', teacher: 'Cô Hoa', room: 'B201', type: 'lesson' },
-                    { time: '9:30-10:15', subject: 'Lý', teacher: 'Thầy Nam', room: 'C301', type: 'lesson' }
-                ],
-                'Thứ 3': [
-                    { time: '7:00-7:45', subject: 'Hóa', teacher: 'Cô Mai', room: 'D401', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Sinh', teacher: 'Thầy Tùng', room: 'E501', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Sử', teacher: 'Cô Linh', room: 'F601', type: 'lesson' },
-                    { time: '9:30-10:15', subject: 'Địa', teacher: 'Thầy Đức', room: 'G701', type: 'lesson' }
-                ],
-                'Thứ 4': [
-                    { time: '7:00-7:45', subject: 'Toán', teacher: 'Cô Lan', room: 'A101', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Văn', teacher: 'Thầy Minh', room: 'A102', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Thể dục', teacher: 'Thầy Cường', room: 'Sân thể thao', type: 'lesson' }
-                ],
-                'Thứ 5': [
-                    { time: '7:00-7:45', subject: 'Anh', teacher: 'Cô Hoa', room: 'B201', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Lý', teacher: 'Thầy Nam', room: 'C301', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Hóa', teacher: 'Cô Mai', room: 'D401', type: 'lesson' }
-                ],
-                'Thứ 6': [
-                    { time: '7:00-7:45', subject: 'Sinh', teacher: 'Thầy Tùng', room: 'E501', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Sử', teacher: 'Cô Linh', room: 'F601', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Địa', teacher: 'Thầy Đức', room: 'G701', type: 'lesson' }
-                ]
-            }
-        },
-        { 
-            id: 2, 
-            name: 'Nguyễn Thị Bình', 
-            class: '8B2', 
-            avatar: '👧',
-            schedule: {
-                'Thứ 2': [
-                    { time: '7:00-7:45', subject: 'Toán', teacher: 'Cô Hương', room: 'B101', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Văn', teacher: 'Thầy Dũng', room: 'B102', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Anh', teacher: 'Cô Mai', room: 'C201', type: 'lesson' }
-                ],
-                'Thứ 3': [
-                    { time: '7:00-7:45', subject: 'Sinh', teacher: 'Thầy Nam', room: 'D301', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Lý', teacher: 'Cô Linh', room: 'E401', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Hóa', teacher: 'Thầy Tùng', room: 'F501', type: 'lesson' }
-                ],
-                'Thứ 4': [
-                    { time: '7:00-7:45', subject: 'Toán', teacher: 'Cô Hương', room: 'B101', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Văn', teacher: 'Thầy Dũng', room: 'B102', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Thể dục', teacher: 'Thầy Cường', room: 'Sân thể thao', type: 'lesson' }
-                ],
-                'Thứ 5': [
-                    { time: '7:00-7:45', subject: 'Anh', teacher: 'Cô Mai', room: 'C201', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Lý', teacher: 'Cô Linh', room: 'E401', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Hóa', teacher: 'Thầy Tùng', room: 'F501', type: 'lesson' }
-                ],
-                'Thứ 6': [
-                    { time: '7:00-7:45', subject: 'Sinh', teacher: 'Thầy Nam', room: 'D301', type: 'lesson' },
-                    { time: '7:45-8:30', subject: 'Sử', teacher: 'Cô Hoa', room: 'G601', type: 'lesson' },
-                    { time: '8:30-8:45', subject: 'Giải lao', teacher: '', room: '', type: 'break' },
-                    { time: '8:45-9:30', subject: 'Địa', teacher: 'Thầy Đức', room: 'H701', type: 'lesson' }
-                ]
-            }
-        }
-    ];
-
-    const days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6'];
-    const timeSlots = ['7:00-7:45', '7:45-8:30', '8:30-8:45', '8:45-9:30', '9:30-10:15', '10:15-11:00', '14:00-14:45', '14:45-15:30', '15:30-16:15'];
+    <c:if test="${not empty currentMonday}">
+        currentWeek = new Date('${currentMonday}');
+    </c:if>
 
     function selectChild(childId) {
-        selectedChildId = childId;
-        
-        // Update child card selection
-        document.querySelectorAll('.ps-child-card').forEach(card => card.classList.remove('selected'));
-        event.currentTarget.classList.add('selected');
-        
-        // Show schedule
-        document.getElementById('schedule-display').style.display = 'block';
-        updateSchedule();
-    }
-
-    function getTypeColor(type) {
-        const colors = {
-            'lesson': 'ps-lesson-type',
-            'break': 'ps-break-type'
-        };
-        return colors[type] || 'ps-break-type';
-    }
-
-    function updateSchedule() {
-        if (!selectedChildId) return;
-        
-        const childData = children.find(child => child.id === selectedChildId);
-        if (!childData) return;
-
-        // Update user info
-        document.getElementById('user-name').textContent = childData.name;
-        document.getElementById('user-avatar').textContent = childData.name.charAt(0);
-        document.getElementById('user-info').textContent = 'Lớp ' + childData.class;
-
-        // Generate schedule table
-        let tableHTML = '';
-        tableHTML += '<div class="ps-time-header">Tiết học</div>';
-        
-        days.forEach(day => {
-            tableHTML += '<div class="ps-day-header">' + day + '</div>';
-        });
-        
-        timeSlots.forEach(timeSlot => {
-            tableHTML += '<div class="ps-time-slot">' + timeSlot + '</div>';
-            
-            days.forEach(day => {
-                const lesson = childData.schedule[day] ? childData.schedule[day].find(item => item.time === timeSlot) : null;
-                
-                if (!lesson) {
-                    tableHTML += '<div class="ps-time-slot"></div>';
-                } else {
-                    const typeClass = getTypeColor(lesson.type);
-                    tableHTML += '<div class="ps-lesson-slot ' + typeClass + '">';
-                    tableHTML += '<div class="ps-lesson-subject">' + lesson.subject + '</div>';
-                    tableHTML += '<div class="ps-lesson-detail">' + lesson.teacher + '</div>';
-                    if (lesson.room) {
-                        tableHTML += '<div class="ps-lesson-room">📍 ' + lesson.room + '</div>';
-                    }
-                    tableHTML += '</div>';
-                }
-            });
-        });
-        
-        document.getElementById('schedule-table').innerHTML = tableHTML;
-        updateLegend();
-    }
-
-    function updateLegend() {
-        const legendItems = [
-            { color: 'ps-lesson-type', text: 'Môn học' },
-            { color: 'ps-break-type', text: 'Giải lao' }
-        ];
-        
-        let legendHTML = '';
-        legendItems.forEach(item => {
-            legendHTML += '<div class="ps-legend-item">';
-            legendHTML += '<div class="ps-legend-color ' + item.color + '"></div>';
-            legendHTML += '<span class="ps-legend-text">' + item.text + '</span>';
-            legendHTML += '</div>';
-        });
-        
-        document.getElementById('legend-items').innerHTML = legendHTML;
+        // Redirect với studentId parameter
+        const url = new URL(window.location);
+        url.searchParams.set('studentId', childId);
+        // Giữ nguyên week parameter nếu có
+        if (url.searchParams.has('week')) {
+            const weekParam = url.searchParams.get('week');
+            url.searchParams.set('week', weekParam);
+        }
+        window.location.href = url.toString();
     }
 
     function previousWeek() {
         currentWeek.setDate(currentWeek.getDate() - 7);
         updateWeekDisplay();
+        const url = new URL(window.location);
+        url.searchParams.set('week', currentWeek.toISOString().split('T')[0]);
+        // Giữ nguyên studentId parameter
+        if (url.searchParams.has('studentId')) {
+            const studentId = url.searchParams.get('studentId');
+            url.searchParams.set('studentId', studentId);
+        }
+        window.location.href = url.toString();
     }
 
     function nextWeek() {
         currentWeek.setDate(currentWeek.getDate() + 7);
         updateWeekDisplay();
+        const url = new URL(window.location);
+        url.searchParams.set('week', currentWeek.toISOString().split('T')[0]);
+        // Giữ nguyên studentId parameter
+        if (url.searchParams.has('studentId')) {
+            const studentId = url.searchParams.get('studentId');
+            url.searchParams.set('studentId', studentId);
+        }
+        window.location.href = url.toString();
     }
 
     function updateWeekDisplay() {
         const weekNumber = Math.ceil((currentWeek.getDate() + new Date(currentWeek.getFullYear(), currentWeek.getMonth(), 1).getDay()) / 7);
         const year = currentWeek.getFullYear();
-        document.querySelector('.ps-week-info').textContent = 'Tuần ' + weekNumber + ' - ' + year;
+        const startDate = new Date(currentWeek);
+        const endDate = new Date(currentWeek);
+        endDate.setDate(endDate.getDate() + 4);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -591,4 +685,4 @@
     });
 </script>
 
-<jsp:include page="layout/footer.jsp" /> 
+<jsp:include page="layout/footer.jsp" />

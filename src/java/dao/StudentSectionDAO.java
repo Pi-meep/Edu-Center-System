@@ -32,6 +32,33 @@ public class StudentSectionDAO {
         }
         return courses;
     }
+    
+        public List<CourseModal> getCoursesWithDetailsByTeacherId(int teacherId) throws Exception {
+        List<CourseModal> courses = new ArrayList<>();
+        String sql = """
+        SELECT * FROM course
+        WHERE teacherId = ? AND status = 'activated'
+        ORDER BY 
+            CASE status 
+                WHEN 'activated' THEN 1 
+                WHEN 'upcoming' THEN 2 
+                WHEN 'pending' THEN 3 
+                ELSE 4 
+            END, 
+            name
+    """;
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, teacherId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    courses.add(mapResultSetToCourse(rs));
+                }
+            }
+        }
+        return courses;
+    }
+
 
     public List<SectionModal> getSectionsByCourseId(int courseId) throws Exception {
         List<SectionModal> sections = new ArrayList<>();
@@ -294,7 +321,200 @@ public class StudentSectionDAO {
         
         return ss;
     }
-     public static void main(String[] args) {
+
+     public List<CourseModal> getCoursesWithDetails() throws Exception {
+        List<CourseModal> courses = new ArrayList<>();
+        String sql = """
+            SELECT * FROM course 
+            ORDER BY 
+                CASE status 
+                    WHEN 'activated' THEN 1 
+                    WHEN 'upcoming' THEN 2 
+                    WHEN 'pending' THEN 3 
+                    ELSE 4 
+                END, 
+                name
+        """;
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                courses.add(mapResultSetToCourse(rs));
+            }
+        }
+        return courses;
+    }
+
+    // Method to get courses by filter criteria
+    public List<CourseModal> getCoursesByFilter(String subject, String level, String courseType, String status) throws Exception {
+        List<CourseModal> courses = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM course WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (subject != null && !subject.isEmpty()) {
+            sql.append(" AND subject = ?");
+            params.add(subject);
+        }
+
+        if (level != null && !level.isEmpty()) {
+            sql.append(" AND level = ?");
+            params.add(level);
+        }
+
+        if (courseType != null && !courseType.isEmpty()) {
+            sql.append(" AND courseType = ?");
+            params.add(courseType);
+        }
+
+        if (status != null && !status.isEmpty()) {
+            sql.append(" AND status = ?");
+            params.add(status);
+        }
+
+        sql.append(" ORDER BY name");
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    courses.add(mapResultSetToCourse(rs));
+                }
+            }
+        }
+        return courses;
+    }
+
+    public List<SectionModal> getSectionsByTeacherId(int teacherId) throws Exception {
+        List<SectionModal> sections = new ArrayList<>();
+        String sql = """
+        SELECT sec.* FROM section sec
+        JOIN course c ON sec.courseId = c.id
+        WHERE c.teacherId = ?
+        ORDER BY sec.dateTime
+    """;
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, teacherId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    sections.add(mapResultSetToSection(rs));
+                }
+            }
+        }
+        return sections;
+    }
+
+    public List<StudentSectionModal> getStudentAttendanceBySection(int sectionId) throws Exception {
+        List<StudentSectionModal> list = new ArrayList<>();
+        String sql = """
+        SELECT ss.* FROM student_section ss
+        WHERE ss.sectionId = ?
+        ORDER BY ss.studentId
+    """;
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, sectionId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToStudentSection(rs));
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<Map<String, Object>> getStudentsInSection(int sectionId) throws Exception {
+        List<Map<String, Object>> students = new ArrayList<>();
+
+        String sql = """
+        SELECT s.id AS student_id, a.name AS student_name
+        FROM student s
+        JOIN account a ON s.accountId = a.id
+        JOIN student_course sc ON s.id = sc.studentId
+        JOIN section sec ON sc.courseId = sec.courseId
+        WHERE sec.id = ?
+        ORDER BY a.name
+    """;
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, sectionId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> student = new HashMap<>();
+                    student.put("studentId", rs.getInt("student_id"));
+                    student.put("studentName", rs.getString("student_name"));
+                    students.add(student);
+                }
+            }
+        }
+
+        return students;
+    }
+
+    public boolean getAttendanceStatus(int studentId, int sectionId) throws Exception {
+        String sql = "SELECT attendanceStatus FROM student_section WHERE studentId = ? AND sectionId = ?";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, sectionId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("attendanceStatus");
+                }
+                return false; // Default to false if no record exists
+            }
+        }
+    }
+
+    public boolean upsertAttendance(int studentId, int sectionId, boolean isPresent) {
+        String checkSql = "SELECT COUNT(*) FROM student_section WHERE studentId = ? AND sectionId = ?";
+        String insertSql = "INSERT INTO student_section (studentId, sectionId, attendanceStatus, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
+        String updateSql = "UPDATE student_section SET attendanceStatus = ?, created_at = CURRENT_TIMESTAMP WHERE studentId = ? AND sectionId = ?";
+
+        try (Connection con = DBUtil.getConnection()) {
+            con.setAutoCommit(false); // Start transaction
+            try {
+                // Check if record exists
+                try (PreparedStatement checkStmt = con.prepareStatement(checkSql)) {
+                    checkStmt.setInt(1, studentId);
+                    checkStmt.setInt(2, sectionId);
+                    try (ResultSet rs = checkStmt.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) > 0) {
+                            // Update existing record
+                            try (PreparedStatement updateStmt = con.prepareStatement(updateSql)) {
+                                updateStmt.setBoolean(1, isPresent);
+                                updateStmt.setInt(2, studentId);
+                                updateStmt.setInt(3, sectionId);
+                                updateStmt.executeUpdate();
+                            }
+                        } else {
+                            // Insert new record
+                            try (PreparedStatement insertStmt = con.prepareStatement(insertSql)) {
+                                insertStmt.setInt(1, studentId);
+                                insertStmt.setInt(2, sectionId);
+                                insertStmt.setBoolean(3, isPresent);
+                                insertStmt.executeUpdate();
+                            }
+                        }
+                    }
+                }
+                con.commit(); // Commit transaction
+                return true;
+            } catch (SQLException e) {
+                con.rollback(); // Rollback on error
+                throw new SQLException("Error upserting attendance: " + e.getMessage(), e);
+            } finally {
+                con.setAutoCommit(true); // Restore auto-commit
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+         public static void main(String[] args) {
         try {
             StudentSectionDAO dao = new StudentSectionDAO();
 
@@ -325,4 +545,5 @@ public class StudentSectionDAO {
             e.printStackTrace();
         }
     }
+     
 }

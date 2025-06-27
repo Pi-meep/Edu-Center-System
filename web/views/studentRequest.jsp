@@ -7,6 +7,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <% request.setAttribute("title", "Yêu cầu học sinh");%>
 
@@ -187,12 +188,6 @@
         min-height: 80px;
     }
 
-    .studentrequest-date-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
     .studentrequest-select {
         width: 100%;
         padding: 0.75rem;
@@ -237,6 +232,9 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         border: 1px solid #e1e8ed;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        height: 600px;
     }
 
     .studentrequest-list-header {
@@ -247,6 +245,7 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 1rem;
+        flex-shrink: 0;
     }
 
     .studentrequest-list-title {
@@ -278,7 +277,7 @@
         border: 2px solid #e9ecef;
         border-radius: 8px;
         font-size: 0.9rem;
-        width: 250px;
+        width: 200px;
         transition: all 0.3s ease;
     }
 
@@ -288,23 +287,44 @@
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
-    .studentrequest-filter-btn {
+    .studentrequest-filter-select {
         padding: 0.75rem 1rem;
-        background: #f8f9fa;
         border: 2px solid #e9ecef;
         border-radius: 8px;
-        color: #666;
+        font-size: 0.9rem;
+        background: white;
         cursor: pointer;
         transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
     }
 
-    .studentrequest-filter-btn:hover {
-        background: #e9ecef;
-        color: #333;
+    .studentrequest-filter-select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .studentrequest-list-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .studentrequest-list-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .studentrequest-list-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .studentrequest-list-content::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+
+    .studentrequest-list-content::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
     }
 
     .studentrequest-item {
@@ -359,7 +379,7 @@
         border-color: #ffeaa7;
     }
 
-    .studentrequest-status.approved {
+    .studentrequest-status.accepted {
         background: #d4edda;
         color: #155724;
         border-color: #c3e6cb;
@@ -419,24 +439,6 @@
         background: #bbdefb;
     }
 
-    .studentrequest-action-btn.approve {
-        background: #e8f5e8;
-        color: #2e7d32;
-    }
-
-    .studentrequest-action-btn.approve:hover {
-        background: #c8e6c9;
-    }
-
-    .studentrequest-action-btn.reject {
-        background: #ffebee;
-        color: #c62828;
-    }
-
-    .studentrequest-action-btn.reject:hover {
-        background: #ffcdd2;
-    }
-
     @media (max-width: 1024px) {
         .studentrequest-content {
             grid-template-columns: 1fr;
@@ -476,10 +478,6 @@
             align-items: flex-start;
             gap: 0.5rem;
         }
-        
-        .studentrequest-date-grid {
-            grid-template-columns: 1fr;
-        }
     }
 
     @keyframes studentrequestFadeIn {
@@ -504,7 +502,7 @@
         <div class="studentrequest-header-content">
             <div class="studentrequest-title">
                 <h1>Yêu cầu học sinh</h1>
-                <p>Quản lý các yêu cầu nghỉ học, thay đổi lịch học, chuyển lớp</p>
+                <p>Quản lý các yêu cầu nghỉ học và chuyển lớp</p>
             </div>
             
             <div class="studentrequest-role-badge">
@@ -524,19 +522,13 @@
                 <div class="studentrequest-form-group">
                     <label class="studentrequest-label">Loại yêu cầu</label>
                     <div class="studentrequest-type-grid" id="requestTypeGrid">
-                        <button class="studentrequest-type-btn" data-type="break">
+                        <button class="studentrequest-type-btn" data-type="student-absent-request">
                             <div class="studentrequest-type-content">
                                 <span class="studentrequest-type-icon">🏠</span>
                                 <span class="studentrequest-type-label">Xin nghỉ học</span>
                             </div>
                         </button>
-                        <button class="studentrequest-type-btn" data-type="schedule_change">
-                            <div class="studentrequest-type-content">
-                                <span class="studentrequest-type-icon">📅</span>
-                                <span class="studentrequest-type-label">Thay đổi lịch học</span>
-                            </div>
-                        </button>
-                        <button class="studentrequest-type-btn" data-type="transfer_class">
+                        <button class="studentrequest-type-btn" data-type="student-change-course">
                             <div class="studentrequest-type-content">
                                 <span class="studentrequest-type-icon">🔄</span>
                                 <span class="studentrequest-type-label">Chuyển lớp</span>
@@ -546,103 +538,117 @@
                 </div>
 
                 <div id="requestForm" style="display: none;">
-                    <div class="studentrequest-form-group">
-                        <label class="studentrequest-label">Tiêu đề yêu cầu</label>
-                        <input type="text" class="studentrequest-input" id="requestTitle" placeholder="Nhập tiêu đề yêu cầu..." required>
-                    </div>
-
-                    <div class="studentrequest-form-group">
-                        <label class="studentrequest-label">Mô tả chi tiết</label>
-                        <textarea class="studentrequest-input studentrequest-textarea" id="requestDescription" placeholder="Mô tả chi tiết yêu cầu..."></textarea>
-                    </div>
-
-                    <div class="studentrequest-form-group" id="dateRangeGroup" style="display: none;">
-                        <label class="studentrequest-label">Thời gian</label>
-                        <div class="studentrequest-date-grid">
-                            <div>
-                                <label class="studentrequest-label">Từ ngày</label>
-                                <input type="date" class="studentrequest-input" id="startDate">
-                            </div>
-                            <div>
-                                <label class="studentrequest-label">Đến ngày</label>
-                                <input type="date" class="studentrequest-input" id="endDate">
-                            </div>
+                    <form id="createRequestForm" method="POST" action="">
+                        <input type="hidden" name="action" value="create">
+                        
+                        <div class="studentrequest-form-group" id="courseSelectGroup" style="display: none;">
+                            <label class="studentrequest-label">Chọn khóa học muốn chuyển tới</label>
+                            <select class="studentrequest-select" name="courseId" id="courseSelect">
+                                <option value="">-- Chọn khóa học --</option>
+                                <c:forEach var="course" items="${courses}">
+                                    <option value="${course.id}">${course.name} - ${course.grade}</option>
+                                </c:forEach>
+                            </select>
                         </div>
-                    </div>
 
-                    <button class="studentrequest-submit-btn" id="submitRequest">
-                        📤 Gửi yêu cầu
-                    </button>
+                        <div class="studentrequest-form-group">
+                            <label class="studentrequest-label">Mô tả chi tiết</label>
+                            <textarea class="studentrequest-input studentrequest-textarea" name="description" id="requestDescription" placeholder="Mô tả chi tiết yêu cầu..." required></textarea>
+                        </div>
+
+                        <input type="hidden" name="type" id="selectedType" value="">
+                        
+                        <button type="submit" class="studentrequest-submit-btn" id="submitRequest">
+                            📤 Gửi yêu cầu
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
 
         <div class="studentrequest-list-section">
             <div class="studentrequest-list-header">
-                <h2 class="studentrequest-list-title">Danh sách yêu cầu</h2>
+                <h2 class="studentrequest-list-title">Danh sách yêu cầu của tôi</h2>
                 <div class="studentrequest-search-filter">
                     <div class="studentrequest-search-box">
                         <span class="studentrequest-search-icon">🔍</span>
                         <input type="text" class="studentrequest-search-input" placeholder="Tìm kiếm..." id="searchInput">
                     </div>
-                    <button class="studentrequest-filter-btn" id="filterBtn">
-                        🔧 Lọc
-                    </button>
+                    <select class="studentrequest-filter-select" id="filterType">
+                        <option value="">Tất cả loại</option>
+                        <option value="student-absent-request">Xin nghỉ học</option>
+                        <option value="student-change-course">Chuyển lớp</option>
+                    </select>
                 </div>
             </div>
 
             <div class="studentrequest-list-content" id="requestList">
-                <div class="studentrequest-item">
-                    <div class="studentrequest-item-content">
-                        <div class="studentrequest-item-main">
-                            <div class="studentrequest-item-header">
-                                <h3 class="studentrequest-item-title">Nghỉ học tuần 25</h3>
-                                <span class="studentrequest-status pending">Chờ duyệt</span>
-                            </div>
-                            <div class="studentrequest-item-meta">
-                                <div class="studentrequest-meta-item">
-                                    <span>👤</span>
-                                    <span>Nguyễn Văn A</span>
+                <c:choose>
+                    <c:when test="${not empty requests}">
+                        <c:forEach var="request" items="${requests}">
+                            <div class="studentrequest-item" data-type="${request.type}">
+                                <div class="studentrequest-item-content">
+                                    <div class="studentrequest-item-main">
+                                        <div class="studentrequest-item-header">
+                                            <h3 class="studentrequest-item-title">
+                                                <c:choose>
+                                                    <c:when test="${request.type == 'student-absent-request'}">
+                                                        Xin nghỉ học
+                                                    </c:when>
+                                                    <c:when test="${request.type == 'student-change-course'}">
+                                                        Chuyển lớp
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        ${request.type}
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </h3>
+                                            <span class="studentrequest-status ${request.status}">
+                                                <c:choose>
+                                                    <c:when test="${request.status == 'pending'}">Chờ duyệt</c:when>
+                                                    <c:when test="${request.status == 'accepted'}">Đã duyệt</c:when>
+                                                    <c:when test="${request.status == 'rejected'}">Từ chối</c:when>
+                                                    <c:otherwise>${request.status}</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                        </div>
+                                        <div class="studentrequest-item-meta">
+                                            <div class="studentrequest-meta-item">
+                                                <span>📅</span>
+                                                <span>
+                                                    ${request.createdAt}
+                                                </span>
+                                            </div>
+                                            <div class="studentrequest-meta-item">
+                                                <span>📝</span>
+                                                <span>
+                                                    <c:choose>
+                                                        <c:when test="${fn:length(request.description) > 50}">
+                                                            ${fn:substring(request.description, 0, 50)}...
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            ${request.description}
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="studentrequest-item-actions">
+                                        <button class="studentrequest-action-btn detail" onclick="viewRequestDetail(${request.id})">Xem chi tiết</button>
+                                    </div>
                                 </div>
-                                <div class="studentrequest-meta-item">
-                                    <span>📅</span>
-                                    <span>2024-06-15</span>
-                                </div>
-                                <span class="studentrequest-role-badge">👨‍🎓 Học sinh</span>
                             </div>
+                        </c:forEach>
+                    </c:when>
+                    <c:otherwise>
+                        <div style="text-align: center; padding: 3rem; color: #666;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                            <h3>Chưa có yêu cầu nào</h3>
+                            <p>Bạn chưa tạo yêu cầu nào. Hãy tạo yêu cầu đầu tiên!</p>
                         </div>
-                        <div class="studentrequest-item-actions">
-                            <button class="studentrequest-action-btn detail">Xem chi tiết</button>
-                            <button class="studentrequest-action-btn approve">Duyệt</button>
-                            <button class="studentrequest-action-btn reject">Từ chối</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="studentrequest-item">
-                    <div class="studentrequest-item-content">
-                        <div class="studentrequest-item-main">
-                            <div class="studentrequest-item-header">
-                                <h3 class="studentrequest-item-title">Chuyển lớp Toán 10A1</h3>
-                                <span class="studentrequest-status approved">Đã duyệt</span>
-                            </div>
-                            <div class="studentrequest-item-meta">
-                                <div class="studentrequest-meta-item">
-                                    <span>👤</span>
-                                    <span>Trần Thị B</span>
-                                </div>
-                                <div class="studentrequest-meta-item">
-                                    <span>📅</span>
-                                    <span>2024-06-14</span>
-                                </div>
-                                <span class="studentrequest-role-badge">👨‍🎓 Học sinh</span>
-                            </div>
-                        </div>
-                        <div class="studentrequest-item-actions">
-                            <button class="studentrequest-action-btn detail">Xem chi tiết</button>
-                        </div>
-                    </div>
-                </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
     </div>
@@ -657,45 +663,49 @@
             document.getElementById('requestForm').style.display = 'block';
             
             const requestType = this.dataset.type;
-            const dateRangeGroup = document.getElementById('dateRangeGroup');
-            if (requestType === 'break') {
-                dateRangeGroup.style.display = 'block';
+            const courseSelectGroup = document.getElementById('courseSelectGroup');
+            const selectedTypeInput = document.getElementById('selectedType');
+            
+            // Set type vào hidden input
+            selectedTypeInput.value = requestType;
+            
+            if (requestType === 'student-change-course') {
+                courseSelectGroup.style.display = 'block';
             } else {
-                dateRangeGroup.style.display = 'none';
+                courseSelectGroup.style.display = 'none';
             }
         });
     });
 
-    document.getElementById('submitRequest').addEventListener('click', function() {
-        const title = document.getElementById('requestTitle').value;
+    // Form validation trước khi submit
+    document.getElementById('createRequestForm').addEventListener('submit', function(e) {
         const description = document.getElementById('requestDescription').value;
         const selectedType = document.querySelector('.studentrequest-type-btn.selected');
+        const courseSelect = document.getElementById('courseSelect');
         
-        if (!title || !selectedType) {
-            alert('Vui lòng nhập tiêu đề và chọn loại yêu cầu!');
+        if (!description || !selectedType) {
+            e.preventDefault();
+            alert('Vui lòng nhập mô tả và chọn loại yêu cầu!');
             return;
         }
         
-        alert('Yêu cầu đã được gửi thành công!');
-        
-        document.getElementById('requestTitle').value = '';
-        document.getElementById('requestDescription').value = '';
-        document.getElementById('startDate').value = '';
-        document.getElementById('endDate').value = '';
-        document.getElementById('requestPriority').value = 'normal';
-        document.getElementById('requestForm').style.display = 'none';
-        document.querySelectorAll('.studentrequest-type-btn').forEach(b => b.classList.remove('selected'));
+        if (selectedType.dataset.type === 'student-change-course' && !courseSelect.value) {
+            e.preventDefault();
+            alert('Vui lòng chọn khóa học muốn chuyển tới!');
+            return;
+        }
     });
 
+    // Tìm kiếm theo nội dung
     document.getElementById('searchInput').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         const requestItems = document.querySelectorAll('.studentrequest-item');
         
         requestItems.forEach(item => {
             const title = item.querySelector('.studentrequest-item-title').textContent.toLowerCase();
-            const requester = item.querySelector('.studentrequest-meta-item span:last-child').textContent.toLowerCase();
+            const description = item.querySelector('.studentrequest-meta-item:last-child span:last-child').textContent.toLowerCase();
             
-            if (title.includes(searchTerm) || requester.includes(searchTerm)) {
+            if (title.includes(searchTerm) || description.includes(searchTerm)) {
                 item.style.display = 'block';
             } else {
                 item.style.display = 'none';
@@ -703,34 +713,40 @@
         });
     });
 
-    document.getElementById('filterBtn').addEventListener('click', function() {
-        alert('Tính năng lọc sẽ được phát triển sau!');
-    });
-
-    document.querySelectorAll('.studentrequest-action-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const action = this.textContent.trim();
-            const requestTitle = this.closest('.studentrequest-item').querySelector('.studentrequest-item-title').textContent;
+    // Lọc theo type
+    document.getElementById('filterType').addEventListener('change', function() {
+        const selectedType = this.value;
+        const requestItems = document.querySelectorAll('.studentrequest-item');
+        
+        requestItems.forEach(item => {
+            const itemType = item.dataset.type;
             
-            if (action === 'Xem chi tiết') {
-                alert(`Xem chi tiết yêu cầu: ${requestTitle}`);
-            } else if (action === 'Duyệt') {
-                if (confirm(`Bạn có chắc muốn duyệt yêu cầu: ${requestTitle}?`)) {
-                    this.closest('.studentrequest-item').querySelector('.studentrequest-status').className = 'studentrequest-status approved';
-                    this.closest('.studentrequest-item').querySelector('.studentrequest-status').textContent = 'Đã duyệt';
-                    this.remove();
-                    this.nextElementSibling.remove();
-                }
-            } else if (action === 'Từ chối') {
-                if (confirm(`Bạn có chắc muốn từ chối yêu cầu: ${requestTitle}?`)) {
-                    this.closest('.studentrequest-item').querySelector('.studentrequest-status').className = 'studentrequest-status rejected';
-                    this.closest('.studentrequest-item').querySelector('.studentrequest-status').textContent = 'Từ chối';
-                    this.remove();
-                    this.previousElementSibling.remove();
-                }
+            if (!selectedType || itemType === selectedType) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
             }
         });
     });
+
+    // Hàm xem chi tiết request
+    function viewRequestDetail(requestId) {
+        // Có thể mở modal hoặc chuyển trang để xem chi tiết
+        alert(`Xem chi tiết yêu cầu ID: ${requestId}`);
+    }
 </script>
+
+<!-- Hiển thị thông báo lỗi/thành công nếu có -->
+<c:if test="${not empty error}">
+    <script>
+        alert('${error}');
+    </script>
+</c:if>
+
+<c:if test="${not empty success}">
+    <script>
+        alert('${success}');
+    </script>
+</c:if>
 
 <jsp:include page="layout/footer.jsp" /> 

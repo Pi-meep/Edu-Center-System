@@ -51,6 +51,7 @@
             }
         </style>
     </head>
+            <jsp:include page="layout/header.jsp" />
     <body class="bg-light">
         <div class="container-fluid py-4">
             <!-- Error Display -->
@@ -92,7 +93,7 @@
                                 <div class="row">
                                     <div class="col-md-3">
                                         <strong>Môn học:</strong> 
-                                        <c:out value="${course.subject}" default="N/A"/>
+                                        <c:out value="${course.subject.displayName}" default="N/A"/>
                                     </div>
                                     <div class="col-md-3">
                                         <strong>Lớp:</strong> 
@@ -100,12 +101,12 @@
                                     </div>
                                     <div class="col-md-3">
                                         <strong>Cấp độ:</strong> 
-                                        <c:out value="${course.level}" default="N/A"/>
+                                        <c:out value="${course.level.displayName}" default="N/A"/>
                                     </div>
                                     <div class="col-md-3">
                                         <strong>Loại khóa học:</strong> 
                                         <span class="badge bg-info">
-                                            <c:out value="${course.courseType}" default="N/A"/>
+                                            <c:out value="${course.courseType.displayName}" default="N/A"/>
                                         </span>
                                     </div>
                                 </div>
@@ -185,7 +186,7 @@
                                                     <div class="card-body">
                                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                                             <h6 class="card-title mb-0">
-                                                                <c:out value="${section.dayOfWeek}" default="N/A"/>
+                                                                <c:out value="${section.dayOfWeek.displayName}" default="N/A" />
                                                             </h6>
                                                             <span class="badge
                                                                   <c:choose>
@@ -194,17 +195,15 @@
                                                                       <c:when test="${section.status.toString() == 'cancelled'}">bg-danger</c:when>
                                                                       <c:otherwise>bg-secondary</c:otherwise>
                                                                   </c:choose>">
-                                                                <c:out value="${section.status}" default="N/A"/>
+                                                                <c:out value="${section.status.displayName}" default="N/A" />
                                                             </span>
                                                         </div>
 
-                                                        <!-- FIXED: Time display using proper type checking -->
                                                         <c:choose>
                                                             <c:when test="${not empty section.startTime and not empty section.endTime}">
                                                                 <p class="card-text small text-muted">
                                                                     <i class="fas fa-clock me-1"></i>
-                                                                <td>${section.formattedTimeRange}</td>
-
+                                                                    ${section.formattedTimeRange}
                                                                 </p>
                                                             </c:when>
                                                             <c:otherwise>
@@ -215,26 +214,11 @@
                                                             </c:otherwise>
                                                         </c:choose>
 
-                                                        <!-- FIXED: Date display using proper type checking -->
                                                         <c:choose>
                                                             <c:when test="${not empty section.dateTime}">
                                                                 <p class="card-text small text-muted">
                                                                     <i class="fas fa-calendar me-1"></i>
-                                                                    <c:choose>
-                                                                        <c:when test="${not empty section.dateTime}">
-                                                                        <p class="card-text small text-muted">
-                                                                            <i class="fas fa-calendar me-1"></i>
-                                                                            ${section.formattedDate}
-                                                                        </p>
-                                                                    </c:when>
-                                                                    <c:otherwise>
-                                                                        <p class="card-text small text-muted">
-                                                                            <i class="fas fa-calendar me-1"></i>
-                                                                            Chưa xác định ngày
-                                                                        </p>
-                                                                    </c:otherwise>
-                                                                </c:choose>
-
+                                                                    ${section.formattedDate}
                                                                 </p>
                                                             </c:when>
                                                             <c:otherwise>
@@ -247,13 +231,14 @@
 
                                                         <p class="card-text small text-muted">
                                                             <i class="fas fa-map-marker-alt me-1"></i>
-                                                            <c:out value="${section.classroom}" default="Chưa xác định"/>
+                                                            <c:out value="${section.classroom}" default="Chưa xác định" />
                                                         </p>
 
                                                         <button type="button" class="btn btn-outline-primary btn-sm w-100">
                                                             <i class="fas fa-eye me-1"></i>Chi tiết
                                                         </button>
                                                     </div>
+
                                                 </div>
                                             </div>
                                         </c:forEach>
@@ -328,7 +313,6 @@
                                             <tr>
                                                 <th>STT</th>
                                                 <th>Tên học sinh</th>
-                                                <th>Email</th>
                                                 <th>Trạng thái</th>
                                                 <th>Học phí</th>
                                                 <th>Tổng buổi</th>
@@ -360,12 +344,11 @@
                                                             <td>
                                                                 <strong><c:out value="${student.studentName}"/></strong>
                                                             </td>
-                                                            <td><c:out value="${student.studentEmail}"/></td>
                                                             <td>
                                                                 <span class="badge
                                                                       <c:choose>
-                                                                          <c:when test="${student.enrollmentStatus.toString() == 'accepted'}">bg-success</c:when>
-                                                                          <c:when test="${student.enrollmentStatus.toString() == 'pending'}">bg-warning text-dark</c:when>
+                                                                          <c:when test="${student.enrollmentStatus == 'accepted'}">bg-success</c:when>
+                                                                          <c:when test="${student.enrollmentStatus == 'pending'}">bg-warning text-dark</c:when>
                                                                           <c:otherwise>bg-danger</c:otherwise>
                                                                       </c:choose>">
                                                                     <c:out value="${student.enrollmentStatus}"/>
@@ -424,159 +407,158 @@
         </div>
 
         <script>
-                                                                            function viewSectionReport(sectionId, courseId) {
-                                                                                if (sectionId && courseId) {
-                                                                                    window.location.href = 'bao-cao-diem-danh?action=section-report&sectionId=' + sectionId + '&courseId=' + courseId;
-                                                                                } else {
-                                                                                    alert('Thông tin không hợp lệ');
-                                                                                }
-                                                                            }
+            function viewSectionReport(sectionId, courseId) {
+                if (sectionId && courseId) {
+                    window.location.href = 'bao-cao-diem-danh?action=section-report&sectionId=' + sectionId + '&courseId=' + courseId;
+                } else {
+                    alert('Thông tin không hợp lệ');
+                }
+            }
 
-                                                                            function viewStudentDetails(studentId, courseId) {
-                                                                                if (studentId && courseId) {
-                                                                                    window.location.href = 'bao-cao-diem-danh?action=student-details&studentId=' + studentId + '&courseId=' + courseId;
-                                                                                } else {
-                                                                                    alert('Thông tin không hợp lệ');
-                                                                                }
-                                                                            }
+            function viewStudentDetails(studentId, courseId) {
+                if (studentId && courseId) {
+                    window.location.href = 'bao-cao-diem-danh?action=student-details&studentId=' + studentId + '&courseId=' + courseId;
+                } else {
+                    alert('Thông tin không hợp lệ');
+                }
+            }
 
-                                                                            function toggleFilters() {
-                                                                                const filters = document.getElementById('filters');
-                                                                                if (filters.style.display === 'none') {
-                                                                                    filters.style.display = 'block';
-                                                                                } else {
-                                                                                    filters.style.display = 'none';
-                                                                                }
-                                                                            }
+            function toggleFilters() {
+                const filters = document.getElementById('filters');
+                if (filters.style.display === 'none') {
+                    filters.style.display = 'block';
+                } else {
+                    filters.style.display = 'none';
+                }
+            }
 
-                                                                            // Filter functionality
-                                                                            document.addEventListener('DOMContentLoaded', function () {
-                                                                                const statusFilter = document.getElementById('statusFilter');
-                                                                                const paidFilter = document.getElementById('paidFilter');
-                                                                                const attendanceFilter = document.getElementById('attendanceFilter');
-                                                                                const searchInput = document.getElementById('searchInput');
+            // Filter functionality
+            document.addEventListener('DOMContentLoaded', function () {
+                const statusFilter = document.getElementById('statusFilter');
+                const paidFilter = document.getElementById('paidFilter');
+                const attendanceFilter = document.getElementById('attendanceFilter');
+                const searchInput = document.getElementById('searchInput');
 
-                                                                                function filterTable() {
-                                                                                    const rows = document.querySelectorAll('.student-row');
-                                                                                    let visibleCount = 0;
+                function filterTable() {
+                    const rows = document.querySelectorAll('.student-row');
+                    let visibleCount = 0;
 
-                                                                                    rows.forEach((row, index) => {
-                                                                                        let show = true;
+                    rows.forEach((row, index) => {
+                        let show = true;
 
-                                                                                        // Status filter
-                                                                                        if (statusFilter && statusFilter.value && row.dataset.status !== statusFilter.value) {
-                                                                                            show = false;
-                                                                                        }
+                        // Status filter
+                        if (statusFilter && statusFilter.value && row.dataset.status !== statusFilter.value) {
+                            show = false;
+                        }
 
-                                                                                        // Paid filter
-                                                                                        if (paidFilter && paidFilter.value && row.dataset.paid !== paidFilter.value) {
-                                                                                            show = false;
-                                                                                        }
+                        // Paid filter
+                        if (paidFilter && paidFilter.value && row.dataset.paid !== paidFilter.value) {
+                            show = false;
+                        }
 
-                                                                                        // Attendance filter
-                                                                                        if (attendanceFilter && attendanceFilter.value) {
-                                                                                            const attendance = parseFloat(row.dataset.attendance) || 0;
-                                                                                            if (attendanceFilter.value === 'good' && attendance < 80)
-                                                                                                show = false;
-                                                                                            if (attendanceFilter.value === 'average' && (attendance < 60 || attendance >= 80))
-                                                                                                show = false;
-                                                                                            if (attendanceFilter.value === 'poor' && attendance >= 60)
-                                                                                                show = false;
-                                                                                        }
+                        // Attendance filter
+                        if (attendanceFilter && attendanceFilter.value) {
+                            const attendance = parseFloat(row.dataset.attendance) || 0;
+                            if (attendanceFilter.value === 'good' && attendance < 80)
+                                show = false;
+                            if (attendanceFilter.value === 'average' && (attendance < 60 || attendance >= 80))
+                                show = false;
+                            if (attendanceFilter.value === 'poor' && attendance >= 60)
+                                show = false;
+                        }
 
-                                                                                        // Search filter
-                                                                                        if (searchInput && searchInput.value) {
-                                                                                            const searchTerm = searchInput.value.toLowerCase();
-                                                                                            const name = (row.dataset.name || '').toLowerCase();
-                                                                                            const email = (row.dataset.email || '').toLowerCase();
-                                                                                            if (!name.includes(searchTerm) && !email.includes(searchTerm)) {
-                                                                                                show = false;
-                                                                                            }
-                                                                                        }
+                        // Search filter
+                        if (searchInput && searchInput.value) {
+                            const searchTerm = searchInput.value.toLowerCase();
+                            const name = (row.dataset.name || '').toLowerCase();
+                            if (!name.includes(searchTerm) && !email.includes(searchTerm)) {
+                                show = false;
+                            }
+                        }
 
-                                                                                        if (show) {
-                                                                                            row.style.display = '';
-                                                                                            visibleCount++;
-                                                                                            // Update row number
-                                                                                            const firstCell = row.querySelector('td:first-child');
-                                                                                            if (firstCell) {
-                                                                                                firstCell.textContent = visibleCount;
-                                                                                            }
-                                                                                        } else {
-                                                                                            row.style.display = 'none';
-                                                                                        }
-                                                                                    });
+                        if (show) {
+                            row.style.display = '';
+                            visibleCount++;
+                            // Update row number
+                            const firstCell = row.querySelector('td:first-child');
+                            if (firstCell) {
+                                firstCell.textContent = visibleCount;
+                            }
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
 
-                                                                                    // Show message if no results
-                                                                                    const tbody = document.querySelector('#attendanceTable tbody');
-                                                                                    let noResultsRow = tbody.querySelector('.no-results-row');
+                    // Show message if no results
+                    const tbody = document.querySelector('#attendanceTable tbody');
+                    let noResultsRow = tbody.querySelector('.no-results-row');
 
-                                                                                    if (visibleCount === 0 && rows.length > 0) {
-                                                                                        if (!noResultsRow) {
-                                                                                            noResultsRow = document.createElement('tr');
-                                                                                            noResultsRow.className = 'no-results-row';
-                                                                                            noResultsRow.innerHTML = `
+                    if (visibleCount === 0 && rows.length > 0) {
+                        if (!noResultsRow) {
+                            noResultsRow = document.createElement('tr');
+                            noResultsRow.className = 'no-results-row';
+                            noResultsRow.innerHTML = `
                                 <td colspan="10" class="text-center text-muted py-4">
                                     <i class="fas fa-search fa-2x mb-2 d-block"></i>
                                     Không tìm thấy kết quả phù hợp
                                 </td>
                             `;
-                                                                                            tbody.appendChild(noResultsRow);
-                                                                                        }
-                                                                                        noResultsRow.style.display = '';
-                                                                                    } else if (noResultsRow) {
-                                                                                        noResultsRow.style.display = 'none';
-                                                                                    }
-                                                                                }
+                            tbody.appendChild(noResultsRow);
+                        }
+                        noResultsRow.style.display = '';
+                    } else if (noResultsRow) {
+                        noResultsRow.style.display = 'none';
+                    }
+                }
 
-                                                                                // Add event listeners
-                                                                                if (statusFilter)
-                                                                                    statusFilter.addEventListener('change', filterTable);
-                                                                                if (paidFilter)
-                                                                                    paidFilter.addEventListener('change', filterTable);
-                                                                                if (attendanceFilter)
-                                                                                    attendanceFilter.addEventListener('change', filterTable);
-                                                                                if (searchInput)
-                                                                                    searchInput.addEventListener('input', filterTable);
+                // Add event listeners
+                if (statusFilter)
+                    statusFilter.addEventListener('change', filterTable);
+                if (paidFilter)
+                    paidFilter.addEventListener('change', filterTable);
+                if (attendanceFilter)
+                    attendanceFilter.addEventListener('change', filterTable);
+                if (searchInput)
+                    searchInput.addEventListener('input', filterTable);
 
-                                                                                // Clear filters button
-                                                                                const clearFiltersBtn = document.createElement('button');
-                                                                                clearFiltersBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
-                                                                                clearFiltersBtn.innerHTML = '<i class="fas fa-times me-1"></i>Xóa bộ lọc';
-                                                                                clearFiltersBtn.onclick = function () {
-                                                                                    if (statusFilter)
-                                                                                        statusFilter.value = '';
-                                                                                    if (paidFilter)
-                                                                                        paidFilter.value = '';
-                                                                                    if (attendanceFilter)
-                                                                                        attendanceFilter.value = '';
-                                                                                    if (searchInput)
-                                                                                        searchInput.value = '';
-                                                                                    filterTable();
-                                                                                };
+                // Clear filters button
+                const clearFiltersBtn = document.createElement('button');
+                clearFiltersBtn.className = 'btn btn-sm btn-outline-secondary ms-2';
+                clearFiltersBtn.innerHTML = '<i class="fas fa-times me-1"></i>Xóa bộ lọc';
+                clearFiltersBtn.onclick = function () {
+                    if (statusFilter)
+                        statusFilter.value = '';
+                    if (paidFilter)
+                        paidFilter.value = '';
+                    if (attendanceFilter)
+                        attendanceFilter.value = '';
+                    if (searchInput)
+                        searchInput.value = '';
+                    filterTable();
+                };
 
-                                                                                const filtersDiv = document.getElementById('filters');
-                                                                                if (filtersDiv) {
-                                                                                    const lastCol = filtersDiv.querySelector('.row .col-md-3:last-child');
-                                                                                    if (lastCol) {
-                                                                                        lastCol.appendChild(clearFiltersBtn);
-                                                                                    }
-                                                                                }
-                                                                            });
+                const filtersDiv = document.getElementById('filters');
+                if (filtersDiv) {
+                    const lastCol = filtersDiv.querySelector('.row .col-md-3:last-child');
+                    if (lastCol) {
+                        lastCol.appendChild(clearFiltersBtn);
+                    }
+                }
+            });
 
-                                                                            // Auto-hide alerts after 5 seconds
-                                                                            document.addEventListener('DOMContentLoaded', function () {
-                                                                                const alerts = document.querySelectorAll('.alert');
-                                                                                alerts.forEach(alert => {
-                                                                                    setTimeout(() => {
-                                                                                        alert.style.transition = 'opacity 0.5s';
-                                                                                        alert.style.opacity = '0';
-                                                                                        setTimeout(() => {
-                                                                                            alert.remove();
-                                                                                        }, 500);
-                                                                                    }, 5000);
-                                                                                });
-                                                                            });
+            // Auto-hide alerts after 5 seconds
+            document.addEventListener('DOMContentLoaded', function () {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    setTimeout(() => {
+                        alert.style.transition = 'opacity 0.5s';
+                        alert.style.opacity = '0';
+                        setTimeout(() => {
+                            alert.remove();
+                        }, 500);
+                    }, 5000);
+                });
+            });
         </script>
     </body>
 </html>

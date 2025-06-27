@@ -16,6 +16,41 @@ import modal.SchoolClass;
  * @author ASUS
  */
 public class SchoolClassDAO {
+    
+    public List<SchoolClass> getAllSchoolClasses() throws Exception {
+        List<SchoolClass> list = new ArrayList<>();
+
+        String sql = "SELECT id, schoolId, class_name, grade, academic_year, created_at, updated_at FROM school_class";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                SchoolClass sc = new SchoolClass();
+
+                sc.setId(rs.getInt("id"));
+                sc.setSchoolId(rs.getInt("schoolId"));
+                sc.setClassName(rs.getString("class_name"));
+                sc.setGrade(rs.getString("grade"));
+                sc.setAcademicYear(rs.getString("academic_year"));
+
+                Timestamp createdAt = rs.getTimestamp("created_at");
+                Timestamp updatedAt = rs.getTimestamp("updated_at");
+
+                if (createdAt != null) {
+                    sc.setCreatedAt(createdAt.toLocalDateTime());
+                }
+                if (updatedAt != null) {
+                    sc.setUpdatedAt(updatedAt.toLocalDateTime());
+                }
+
+                list.add(sc);
+            }
+        }
+
+        return list;
+    }
+
+    
     public Map<Integer, List<SchoolClass>> getMapSchoolClass() {
     Map<Integer, List<SchoolClass>> map = new HashMap<>();
     String sql = "SELECT * FROM school_class";

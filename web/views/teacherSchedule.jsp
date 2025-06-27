@@ -7,12 +7,31 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
+<%
+    // Tính toán tuần hiện tại
+    java.time.LocalDate targetWeek = (java.time.LocalDate) request.getAttribute("targetWeek");
+    if (targetWeek == null) {
+        targetWeek = java.time.LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+    }
+    
+    java.util.List<String> weekDays = new java.util.ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+        java.time.LocalDate day = targetWeek.plusDays(i);
+        weekDays.add(day.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    }
+    request.setAttribute("currentWeekDays", weekDays);
+    request.setAttribute("currentMonday", targetWeek);
+%>
+
 <!DOCTYPE html>
 <% request.setAttribute("title", "Thời khóa biểu giáo viên");%>
 
 <jsp:include page="layout/header.jsp" />
 
 <style>
+/* Teacher Schedule Styles */
 .ts-schedule-header {
     background: white;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
@@ -138,138 +157,185 @@
     border: 1px solid rgba(102,126,234,0.2);
 }
 .ts-time-slot {
-    height: 80px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    color: #666;
-    background: #f8f9ff;
-    border: 1px solid #e1e8ed;
+    font-size: 0.85rem;
+    color: #495057;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
     border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
 }
-.ts-lesson-slot {
-    height: 80px;
-    padding: 0.5rem;
+.ts-schedule-cell {
+    height: 100px;
+    padding: 8px;
+    background: white;
+    border: 1px solid #dee2e6;
     border-radius: 8px;
-    border: 2px solid;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    position: relative;
+}
+.ts-lesson {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
 }
-.ts-lesson-slot:hover {
+.ts-lesson:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.ts-lesson-title {
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    line-height: 1.3;
 }
 .ts-lesson-subject {
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    line-height: 1.2;
+    color: #424242;
+    font-weight: 500;
+    margin-bottom: 3px;
 }
-.ts-lesson-detail {
-    font-size: 0.7rem;
+.ts-lesson-grade {
     color: #666;
-    line-height: 1.2;
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+.ts-lesson-time {
+    color: #1976d2;
+    font-weight: 500;
+    font-size: 0.8rem;
+    margin-bottom: 3px;
 }
 .ts-lesson-room {
-    font-size: 0.7rem;
-    color: #888;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    color: #666;
+    font-size: 0.8rem;
+    margin-bottom: 3px;
 }
+.ts-lesson-students {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+/* Course Type Colors */
 .ts-lesson-type {
     background: #e3f2fd;
     border-color: #2196f3;
+}
+.ts-lesson-type .ts-lesson-title {
     color: #1976d2;
 }
+.ts-lesson-type .ts-lesson-time {
+    color: #1976d2;
+}
+
 .ts-meeting-type {
     background: #f3e5f5;
     border-color: #9c27b0;
+}
+.ts-meeting-type .ts-lesson-title {
     color: #7b1fa2;
 }
+.ts-meeting-type .ts-lesson-time {
+    color: #7b1fa2;
+}
+
 .ts-extra-type {
     background: #e8f5e8;
     border-color: #4caf50;
+}
+.ts-extra-type .ts-lesson-title {
     color: #388e3c;
 }
+.ts-extra-type .ts-lesson-time {
+    color: #388e3c;
+}
+
 .ts-admin-type {
     background: #fff3e0;
     border-color: #ff9800;
+}
+.ts-admin-type .ts-lesson-title {
     color: #f57c00;
 }
-.ts-schedule-legend {
-    padding: 1.5rem 2rem 2rem;
-    background: #f8f9ff;
-    border-top: 1px solid #e1e8ed;
+.ts-admin-type .ts-lesson-time {
+    color: #f57c00;
+}
+
+/* Legend Styles */
+.ts-legend {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
 }
 .ts-legend-title {
-    font-size: 0.9rem;
     font-weight: 600;
-    color: #333;
-    margin-bottom: 1rem;
+    margin-bottom: 10px;
+    color: #495057;
 }
 .ts-legend-items {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.5rem;
+    gap: 15px;
 }
 .ts-legend-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
+    font-size: 0.9rem;
 }
 .ts-legend-color {
     width: 16px;
     height: 16px;
-    border-radius: 4px;
-    border: 1px solid;
+    border-radius: 3px;
+    border: 1px solid #dee2e6;
 }
-.ts-legend-text {
-    font-size: 0.8rem;
-    color: #666;
-}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-    .ts-schedule-header-container {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    .ts-schedule-header-info {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
     .ts-schedule-table {
         grid-template-columns: 100px repeat(5, 1fr);
-        gap: 0.25rem;
+        min-width: 600px;
     }
-    .ts-time-slot, .ts-lesson-slot {
-        height: 60px;
-        font-size: 0.7rem;
+    .ts-time-slot {
+        font-size: 0.75rem;
+        padding: 10px 5px;
+        height: 100px;
     }
-    .ts-lesson-subject {
-        font-size: 0.7rem;
+    .ts-day-header {
+        font-size: 0.85rem;
+        padding: 10px 5px;
+        height: 50px;
     }
-    .ts-lesson-detail, .ts-lesson-room {
-        font-size: 0.6rem;
+    .ts-schedule-cell {
+        height: 100px;
+        padding: 6px;
     }
-}
-@keyframes ts-fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+    .ts-lesson {
+        padding: 8px;
+        font-size: 0.8rem;
+        height: calc(100% - 12px);
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .ts-lesson-title {
+        font-size: 0.85rem;
     }
-}
-.ts-schedule-container {
-    animation: ts-fadeInUp 0.6s ease;
 }
 </style>
 
@@ -287,155 +353,227 @@
     <div class="ts-schedule-container">
         <div class="ts-schedule-header-info">
             <div class="ts-user-info">
-                <div class="ts-user-avatar" id="user-avatar">C</div>
+                <div class="ts-user-avatar" id="user-avatar">
+                    <c:if test="${not empty account}">${account.name.charAt(0)}</c:if>
+                </div>
                 <div class="ts-user-details">
-                    <h2 id="user-name">Cô Lan</h2>
-                    <p id="user-info">Môn Toán</p>
+                    <h2 id="user-name">
+                        <c:if test="${not empty account}">${account.name}</c:if>
+                    </h2>
+                    <p id="user-info">
+                        <c:if test="${not empty scheduleData.teacherInfo}">
+                            ${scheduleData.teacherInfo.subject}
+                            <c:if test="${not empty scheduleData.teacherInfo.experience}">
+                                - ${scheduleData.teacherInfo.experience} năm kinh nghiệm
+                            </c:if>
+                        </c:if>
+                    </p>
                 </div>
             </div>
             <div class="ts-week-navigator">
                 <button class="ts-nav-btn" onclick="previousWeek()">←</button>
-                <span class="ts-week-info">Tuần 25 - 2024</span>
+                <span class="ts-week-info">
+                    <c:if test="${not empty currentWeekDays and not empty currentWeekDays[0]}">
+                        Tuần từ ${currentWeekDays[0]}
+                    </c:if>
+                </span>
                 <button class="ts-nav-btn" onclick="nextWeek()">→</button>
             </div>
         </div>
+        
+        <c:choose>
+            <c:when test="${not empty scheduleData.schedule}">
         <div class="ts-schedule-grid">
             <div class="ts-schedule-table" id="schedule-table">
-                <!-- Schedule content will be generated by JavaScript -->
+                        <!-- Header row -->
+                        <div class="ts-time-header">Tiết học</div>
+                        <div class="ts-day-header">Thứ 2</div>
+                        <div class="ts-day-header">Thứ 3</div>
+                        <div class="ts-day-header">Thứ 4</div>
+                        <div class="ts-day-header">Thứ 5</div>
+                        <div class="ts-day-header">Thứ 6</div>
+                        
+                        <!-- Tạo danh sách time slots (2 tiếng mỗi slot) -->
+                        <c:set var="timeSlots" value="" />
+                        <c:forEach var="hour" begin="7" end="21" step="2">
+                            <c:set var="startHour" value="${hour}" />
+                            <c:set var="endHour" value="${hour + 2}" />
+                            <c:set var="timeSlot" value="${startHour < 10 ? '0' : ''}${startHour}:00:00 - ${endHour < 10 ? '0' : ''}${endHour}:00:00" />
+                            <c:set var="timeSlots" value="${timeSlots}${timeSlot}," />
+                        </c:forEach>
+                        <c:forTokens var="timeSlot" items="${timeSlots}" delims=",">
+                            <div class="ts-time-slot">${timeSlot}</div>
+                            
+                            <!-- Hiển thị section cho từng ngày -->
+                            <c:forEach var="day" items="${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}">
+                                <div class="ts-schedule-cell">
+                                    <c:forEach var="section" items="${scheduleData.schedule[day]}">
+                                        <c:set var="sectionDate" value="${section.dateTime}" />
+                                        <c:if test="${not empty sectionDate}">
+                                            <fmt:parseDate value="${sectionDate}" pattern="yyyy-MM-dd HH:mm:ss" var="parsedDate" />
+                                            <fmt:formatDate value="${parsedDate}" pattern="yyyy-MM-dd" var="formattedDate" />
+                                            <fmt:formatDate value="${parsedDate}" pattern="EEEE" var="actualDayOfWeek" />
+                                            
+                                            <!-- Kiểm tra section có thuộc tuần hiện tại và đúng ngày không -->
+                                            <c:set var="isCurrentWeek" value="false" />
+                                            <c:forEach var="weekDay" items="${currentWeekDays}">
+                                                <c:if test="${weekDay eq formattedDate}">
+                                                    <c:set var="isCurrentWeek" value="true" />
+                                                </c:if>
+                                            </c:forEach>
+                                            
+                                            <!-- Kiểm tra section có thuộc time slot hiện tại không -->
+                                            <c:set var="sectionStartTime" value="${section.startTime}" />
+                                            <c:set var="sectionEndTime" value="${section.endTime}" />
+                                            <c:set var="belongsToTimeSlot" value="false" />
+                                            
+                                            <c:if test="${not empty sectionStartTime and not empty sectionEndTime}">
+                                                <!-- Parse time slot string để lấy start và end hour -->
+                                                <c:set var="timeSlotStart" value="${fn:substring(timeSlot, 0, 2)}" />
+                                                <c:set var="timeSlotEnd" value="${fn:substring(timeSlot, 11, 13)}" />
+                                                
+                                                <!-- Parse section start time -->
+                                                <c:set var="sectionStartHour" value="${fn:substring(sectionStartTime, 0, 2)}" />
+                                                <c:set var="sectionEndHour" value="${fn:substring(sectionEndTime, 0, 2)}" />
+                                                
+                                                <!-- Kiểm tra xem section có thuộc time slot này không -->
+                                                <c:if test="${sectionStartHour >= timeSlotStart and sectionStartHour < timeSlotEnd}">
+                                                    <c:set var="belongsToTimeSlot" value="true" />
+                                                </c:if>
+                                            </c:if>
+                                            
+                                            <!-- Hiển thị section nếu thuộc tuần hiện tại, đúng ngày và đúng time slot -->
+                                            <c:if test="${isCurrentWeek and actualDayOfWeek eq day and belongsToTimeSlot}">
+                                                <!-- Ánh xạ subject từ tiếng Anh sang tiếng Việt -->
+                                                <c:set var="subjectVi" value="" />
+                                                <c:choose>
+                                                    <c:when test="${section.subject eq 'Mathematics'}">
+                                                        <c:set var="subjectVi" value="Toán học" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Physics'}">
+                                                        <c:set var="subjectVi" value="Vật lý" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Chemistry'}">
+                                                        <c:set var="subjectVi" value="Hóa học" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Biology'}">
+                                                        <c:set var="subjectVi" value="Sinh học" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Literature'}">
+                                                        <c:set var="subjectVi" value="Ngữ văn" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'History'}">
+                                                        <c:set var="subjectVi" value="Lịch sử" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Geography'}">
+                                                        <c:set var="subjectVi" value="Địa lý" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'English'}">
+                                                        <c:set var="subjectVi" value="Tiếng Anh" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Computer Science'}">
+                                                        <c:set var="subjectVi" value="Tin học" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Physical Education'}">
+                                                        <c:set var="subjectVi" value="Thể dục" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Art'}">
+                                                        <c:set var="subjectVi" value="Mỹ thuật" />
+                                                    </c:when>
+                                                    <c:when test="${section.subject eq 'Music'}">
+                                                        <c:set var="subjectVi" value="Âm nhạc" />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <c:set var="subjectVi" value="${section.subject}" />
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                
+                                                <div class="ts-lesson ${section.typeClass}">
+                                                    <div class="ts-lesson-subject">${subjectVi}</div>
+                                                    <div class="ts-lesson-grade">Lớp ${section.courseGrade}</div>
+                                                    <div class="ts-lesson-time">${section.timeSlot}</div>
+                                                    <div class="ts-lesson-room">Phòng ${section.classroom}</div>
+                                                    <div class="ts-lesson-students">${section.studentCount} học sinh</div>
+                                                </div>
+                                            </c:if>
+                                        </c:if>
+                                    </c:forEach>
+                                </div>
+                            </c:forEach>
+                        </c:forTokens>
             </div>
         </div>
         <div class="ts-schedule-legend">
             <div class="ts-legend-title">Chú thích:</div>
             <div class="ts-legend-items" id="legend-items">
-                <!-- Legend items will be generated by JavaScript -->
+                        <c:forEach var="legendEntry" items="${scheduleData.legend}">
+                            <div class="ts-legend-item">
+                                <c:choose>
+                                    <c:when test="${legendEntry.key eq 'regular'}">
+                                        <div class="ts-legend-color ts-lesson-type"></div>
+                                    </c:when>
+                                    <c:when test="${legendEntry.key eq 'intensive'}">
+                                        <div class="ts-legend-color ts-meeting-type"></div>
+                                    </c:when>
+                                    <c:when test="${legendEntry.key eq 'remedial'}">
+                                        <div class="ts-legend-color ts-extra-type"></div>
+                                    </c:when>
+                                    <c:when test="${legendEntry.key eq 'advanced'}">
+                                        <div class="ts-legend-color ts-admin-type"></div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div class="ts-legend-color ts-lesson-type"></div>
+                                    </c:otherwise>
+                                </c:choose>
+                                <span class="ts-legend-text">${legendEntry.value}</span>
+                            </div>
+                        </c:forEach>
             </div>
         </div>
+            </c:when>
+            <c:otherwise>
+                <div class="ts-no-schedule">
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>Chưa có thời khóa biểu</h3>
+                    <p>Bạn chưa có khóa học nào được sắp xếp lịch giảng dạy.</p>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 </div>
 
 <script>
     let currentWeek = new Date();
     
-    // Sample teacher schedule data
-    const teacherSchedule = {
-        name: 'Cô Lan',
-        subject: 'Toán',
-        schedule: {
-            'Thứ 2': [
-                { time: '7:00-7:45', subject: 'Toán 10A1', class: '10A1', room: 'A101', students: 35, type: 'lesson' },
-                { time: '7:45-8:30', subject: 'Toán 10B2', class: '10B2', room: 'A103', students: 32, type: 'lesson' },
-                { time: '9:30-10:15', subject: 'Toán 11C1', class: '11C1', room: 'A105', students: 28, type: 'lesson' }
-            ],
-            'Thứ 3': [
-                { time: '7:00-7:45', subject: 'Toán 10A1', class: '10A1', room: 'A101', students: 35, type: 'lesson' },
-                { time: '8:45-9:30', subject: 'Họp tổ bộ môn', class: '', room: 'Phòng họp', students: 0, type: 'meeting' },
-                { time: '14:00-15:30', subject: 'Bồi dưỡng học sinh giỏi', class: 'Nhóm HSG', room: 'A107', students: 12, type: 'extra' }
-            ],
-            'Thứ 4': [
-                { time: '7:00-7:45', subject: 'Toán 10B2', class: '10B2', room: 'A103', students: 32, type: 'lesson' },
-                { time: '7:45-8:30', subject: 'Toán 11C1', class: '11C1', room: 'A105', students: 28, type: 'lesson' },
-                { time: '9:30-10:15', subject: 'Toán 10A1', class: '10A1', room: 'A101', students: 35, type: 'lesson' }
-            ],
-            'Thứ 5': [
-                { time: '7:45-8:30', subject: 'Toán 10B2', class: '10B2', room: 'A103', students: 32, type: 'lesson' },
-                { time: '8:45-9:30', subject: 'Toán 11C1', class: '11C1', room: 'A105', students: 28, type: 'lesson' }
-            ],
-            'Thứ 6': [
-                { time: '7:00-7:45', subject: 'Toán 10A1', class: '10A1', room: 'A101', students: 35, type: 'lesson' },
-                { time: '14:00-16:00', subject: 'Chấm bài kiểm tra', class: '', room: 'Văn phòng', students: 0, type: 'admin' }
-            ]
-        }
-    };
-
-    const days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6'];
-    const timeSlots = ['7:00-7:45', '7:45-8:30', '8:30-8:45', '8:45-9:30', '9:30-10:15', '10:15-11:00', '14:00-14:45', '14:45-15:30', '15:30-16:15'];
-
-    function getTypeColor(type) {
-        const colors = {
-            'lesson': 'ts-lesson-type',
-            'meeting': 'ts-meeting-type',
-            'extra': 'ts-extra-type',
-            'admin': 'ts-admin-type'
-        };
-        return colors[type] || 'ts-lesson-type';
-    }
-
-    function updateSchedule() {
-        // Update user info
-        document.getElementById('user-name').textContent = teacherSchedule.name;
-        document.getElementById('user-avatar').textContent = teacherSchedule.name.charAt(0);
-        document.getElementById('user-info').textContent = 'Môn ' + teacherSchedule.subject;
-
-        // Generate schedule table
-        let tableHTML = '';
-        tableHTML += '<div class="ts-time-header">Tiết học</div>';
-        
-        days.forEach(day => {
-            tableHTML += '<div class="ts-day-header">' + day + '</div>';
-        });
-        
-        timeSlots.forEach(timeSlot => {
-            tableHTML += '<div class="ts-time-slot">' + timeSlot + '</div>';
-            
-            days.forEach(day => {
-                const lesson = teacherSchedule.schedule[day] ? teacherSchedule.schedule[day].find(item => item.time === timeSlot) : null;
-                
-                if (!lesson) {
-                    tableHTML += '<div class="ts-time-slot"></div>';
-                } else {
-                    const typeClass = getTypeColor(lesson.type);
-                    tableHTML += '<div class="ts-lesson-slot ' + typeClass + '">';
-                    tableHTML += '<div class="ts-lesson-subject">' + lesson.subject + '</div>';
-                    tableHTML += '<div class="ts-lesson-detail">' + lesson.class + '</div>';
-                    if (lesson.room) {
-                        tableHTML += '<div class="ts-lesson-room">📍 ' + lesson.room + '</div>';
-                    }
-                    tableHTML += '</div>';
-                }
-            });
-        });
-        
-        document.getElementById('schedule-table').innerHTML = tableHTML;
-        updateLegend();
-    }
-
-    function updateLegend() {
-        const legendItems = [
-            { color: 'ts-lesson-type', text: 'Giảng dạy' },
-            { color: 'ts-meeting-type', text: 'Họp' },
-            { color: 'ts-extra-type', text: 'Bồi dưỡng' },
-            { color: 'ts-admin-type', text: 'Công việc khác' }
-        ];
-        
-        let legendHTML = '';
-        legendItems.forEach(item => {
-            legendHTML += '<div class="ts-legend-item">';
-            legendHTML += '<div class="ts-legend-color ' + item.color + '"></div>';
-            legendHTML += '<span class="ts-legend-text">' + item.text + '</span>';
-            legendHTML += '</div>';
-        });
-        
-        document.getElementById('legend-items').innerHTML = legendHTML;
-    }
+    <c:if test="${not empty currentMonday}">
+        currentWeek = new Date('${currentMonday}');
+    </c:if>
 
     function previousWeek() {
         currentWeek.setDate(currentWeek.getDate() - 7);
         updateWeekDisplay();
+        const url = new URL(window.location);
+        url.searchParams.set('week', currentWeek.toISOString().split('T')[0]);
+        window.location.href = url.toString();
     }
 
     function nextWeek() {
         currentWeek.setDate(currentWeek.getDate() + 7);
         updateWeekDisplay();
+        const url = new URL(window.location);
+        url.searchParams.set('week', currentWeek.toISOString().split('T')[0]);
+        window.location.href = url.toString();
     }
 
     function updateWeekDisplay() {
         const weekNumber = Math.ceil((currentWeek.getDate() + new Date(currentWeek.getFullYear(), currentWeek.getMonth(), 1).getDay()) / 7);
         const year = currentWeek.getFullYear();
-        document.querySelector('.ts-week-info').textContent = 'Tuần ' + weekNumber + ' - ' + year;
+        const startDate = new Date(currentWeek);
+        const endDate = new Date(currentWeek);
+        endDate.setDate(endDate.getDate() + 4);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        updateSchedule();
         updateWeekDisplay();
     });
 </script>

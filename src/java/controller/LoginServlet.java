@@ -41,7 +41,7 @@ public class LoginServlet extends HttpServlet {
                 switch (acc.getStatus()) {
                     case active:
                         // Tạo JWT
-                        String token = JWTUtils.generateToken(identifier, acc.getRole().name());
+                        String token = JWTUtils.generateToken(identifier, acc.getRole().name(), acc.getId());
                         Cookie cookie = new Cookie("accessToken", token);
                         cookie.setHttpOnly(true);
                         cookie.setMaxAge(24 * 60 * 60); // 1 ngày

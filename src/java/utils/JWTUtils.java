@@ -21,10 +21,11 @@ public class JWTUtils {
     private static final Key key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 1 ngày
 
-    public static String generateToken(String identifier, String role) {
+    public static String generateToken(String identifier, String role, Integer id) {
         return Jwts.builder()
                 .setSubject(identifier)
                 .claim("role", role)
+                .claim("id", id)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(key)

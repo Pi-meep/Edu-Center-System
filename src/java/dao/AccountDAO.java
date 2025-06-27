@@ -78,6 +78,57 @@ public class AccountDAO {
     }
 
 
+ public List<AccountModal> getAllAccounts() throws Exception {
+        List<AccountModal> list = new ArrayList<>();
+
+        String sql = "SELECT id, name, phone, password, dob, address, avatarURL, status, role, created_at, updated_at FROM account";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                AccountModal acc = new AccountModal();
+
+                acc.setId(rs.getInt("id"));
+                acc.setName(rs.getString("name"));
+                acc.setPhone(rs.getString("phone"));
+                acc.setPassword(rs.getString("password"));
+
+                Timestamp dob = rs.getTimestamp("dob");
+                if (dob != null) {
+                    acc.setDob(dob.toLocalDateTime());
+                }
+
+                acc.setAddress(rs.getString("address"));
+                acc.setAvatarURL(rs.getString("avatarURL"));
+
+                String statusStr = rs.getString("status");
+                if (statusStr != null) {
+                    acc.setStatus(AccountModal.Status.valueOf(statusStr));
+                }
+
+                String roleStr = rs.getString("role");
+                if (roleStr != null) {
+                    acc.setRole(AccountModal.Role.valueOf(roleStr));
+                }
+
+                Timestamp createdAt = rs.getTimestamp("created_at");
+                if (createdAt != null) {
+                    acc.setCreatedAt(createdAt.toLocalDateTime());
+                }
+
+                Timestamp updatedAt = rs.getTimestamp("updated_at");
+                if (updatedAt != null) {
+                    acc.setUpdatedAt(updatedAt.toLocalDateTime());
+                }
+
+                list.add(acc);
+            }
+        }
+
+        return list;
+    }
+        
+        
     public AccountModal checkLogin(String identifier, String plainPassword) {
         String sql = "SELECT * FROM account WHERE username = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -194,6 +245,23 @@ public class AccountDAO {
         }
         return false;
     }
+    
+     public void updateAccount(AccountModal account) throws Exception {
+        String sql = "UPDATE account SET name = ?, address = ?, dob = ?, avatarURL = ? WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, account.getName());
+            ps.setString(2, account.getAddress());
+            if (account.getDob() != null) {
+                ps.setTimestamp(3, Timestamp.valueOf(account.getDob()));
+            } else {
+                ps.setNull(3, Types.TIMESTAMP);
+            }
+            ps.setString(4, account.getAvatarURL());
+            ps.setInt(5, account.getId());
+            ps.executeUpdate();
+        }
+    }
+
 
     public boolean updatePassword(String username, String newHashedPassword) throws Exception {
         String sql = "UPDATE account SET password = ?, updated_at = ? WHERE username = ?";

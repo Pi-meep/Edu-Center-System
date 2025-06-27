@@ -355,6 +355,17 @@
             <img src="${pageContext.request.contextPath}/assets/avatars/${info.avatarURL}" class="avatar" alt="Avatar giáo viên">
             <div class="story-text">
                 <p>${teacher.bio}</p>
+                <c:if test="${not empty certOfTeacher}">
+                    <div class="teacher-awards">
+                        <p><strong>Thành tích nổi bật:</strong></p>
+                        <ul>
+                            <c:forEach var="cert" items="${certOfTeacher}">
+                                <li>${cert.certificateName} (${certYearMap[cert.id]})</li>
+                                </c:forEach>
+                        </ul>
+                    </div>
+                </c:if>
+
             </div>
         </div>
     </section>

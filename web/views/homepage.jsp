@@ -373,15 +373,15 @@
     <div class="homepage-container">
         <div class="homepage-stats-grid">
             <div class="homepage-stat-item">
-                <h3><%= request.getAttribute("studentsCount") != null ? request.getAttribute("studentsCount") : "500+" %></h3>
+                <h3>${stats.studentCount != null ? stats.studentCount : '500'}</h3>
                 <p>Học Sinh Đang Theo Học</p>
             </div>
             <div class="homepage-stat-item">
-                <h3><%= request.getAttribute("teachersCount") != null ? request.getAttribute("teachersCount") : "50+" %></h3>
+                <h3>${stats.teacherCount != null ? stats.teacherCount : '50'}</h3>
                 <p>Giáo Viên Chuyên Nghiệp</p>
             </div>
             <div class="homepage-stat-item">
-                <h3><%= request.getAttribute("coursesCount") != null ? request.getAttribute("coursesCount") : "50+" %></h3>
+                <h3>${stats.courseCount != null ? stats.courseCount : '20'}</h3>
                 <p>Khóa Học Chất Lượng Đang Hoạt Động</p>
             </div>
         </div>

@@ -208,7 +208,7 @@
                             Xin chào, <%= request.getAttribute("loggedInUserName")%>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="trang-ca-nhan">Trang cá nhân</a></li>
+                            <li><a class="dropdown-item" href="userProfile">Trang cá nhân</a></li>
                             <li><hr class="dropdown-divider"></li>
                                 <% if (request.getAttribute("loggedInUserRole").equals("student")) {%>
                             <li><a class="dropdown-item" href="yeu-cau-hoc-sinh">Yêu cầu</a></li>
@@ -217,9 +217,13 @@
                                 <% } else if (request.getAttribute("loggedInUserRole").equals("teacher")) {%>
                             <li><a class="dropdown-item" href="yeu-cau-giao-vien">Yêu cầu</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="classBeingTaught">Khoá học đang dạy </a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="thoi-gian-bieu-giao-vien">Thời gian biểu</a></li>
                                 <% } else if (request.getAttribute("loggedInUserRole").equals("parent")) {%>
                             <li><a class="dropdown-item" href="yeu-cau-phu-huynh">Yêu cầu</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="viewChild">Xem điểm con</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="thoi-gian-bieu-phu-huynh">Thời gian biểu</a></li>
                                 <% } %>

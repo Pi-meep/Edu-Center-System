@@ -39,6 +39,7 @@
             }
         </style>
     </head>
+            <jsp:include page="layout/header.jsp" />
     <body class="bg-light">
         <div class="container-fluid py-4">
             <!-- Header -->
@@ -68,6 +69,10 @@
                                class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i>Quay lại khóa học
                             </a>
+                            <a href="chuyen-can?courseId=${courseId}&sectionId=${section.id}" 
+                               class="btn btn-outline-primary">
+                                <i class="fas fa-pen me-1"></i>Chuyển đến trang điểm danh
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -82,7 +87,7 @@
                                 <div class="col-md-8">
                                     <h4 class="mb-2">
                                         <i class="fas fa-calendar-day me-2"></i>
-                                        ${section.dayOfWeek} - ${section.classroom}
+                                        ${section.dayOfWeek.displayName} - ${section.classroom}
                                     </h4>
                                     <div class="row">
                                         <div class="col-md-4">
@@ -99,7 +104,7 @@
                                         <div class="col-md-4">
                                             <i class="fas fa-info-circle me-1"></i>
                                             <strong>Trạng thái:</strong><br>
-                                            <span class="badge bg-light text-dark">${section.status}</span>
+                                            <span class="badge bg-light text-dark">${section.status.displayName}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -220,9 +225,6 @@
                                                 <div class="card student-card ${student.attendanceStatus ? 'present' : 'absent'}">
                                                     <div class="card-body">
                                                         <h6 class="card-title mb-1">${student.studentName}</h6>
-                                                        <p class="mb-1 small text-muted">
-                                                            <i class="fas fa-envelope me-1"></i>${student.studentEmail}
-                                                        </p>
                                                         <p class="mb-1 small">
                                                             <i class="fas fa-check-circle me-1 ${student.attendanceStatus ? 'text-success' : 'text-danger'}"></i>
                                                             Trạng thái: 
@@ -257,36 +259,36 @@
         </div>
 
         <script>
-                                    const filterByAttendance = (status) => {
-                                        document.querySelectorAll('.student-card-wrapper').forEach(el => {
-                                            const attendance = el.dataset.attendance;
-                                            if (status === 'all') {
-                                                el.style.display = '';
-                                            } else {
-                                                el.style.display = (attendance === status) ? '' : 'none';
-                                            }
-                                        });
-                                    };
+            const filterByAttendance = (status) => {
+                document.querySelectorAll('.student-card-wrapper').forEach(el => {
+                    const attendance = el.dataset.attendance;
+                    if (status === 'all') {
+                        el.style.display = '';
+                    } else {
+                        el.style.display = (attendance === status) ? '' : 'none';
+                    }
+                });
+            };
 
-                                    const filterByPayment = (status) => {
-                                        document.querySelectorAll('.student-card-wrapper').forEach(el => {
-                                            const paid = el.dataset.paid === 'true';
-                                            if (status === 'unpaid') {
-                                                el.style.display = paid ? 'none' : '';
-                                            } else {
-                                                el.style.display = '';
-                                            }
-                                        });
-                                    };
+            const filterByPayment = (status) => {
+                document.querySelectorAll('.student-card-wrapper').forEach(el => {
+                    const paid = el.dataset.paid === 'true';
+                    if (status === 'unpaid') {
+                        el.style.display = paid ? 'none' : '';
+                    } else {
+                        el.style.display = '';
+                    }
+                });
+            };
 
-                                    document.getElementById('searchInput').addEventListener('input', function () {
-                                        const keyword = this.value.toLowerCase();
-                                        document.querySelectorAll('.student-card-wrapper').forEach(el => {
-                                            const name = el.dataset.name;
-                                            const email = el.dataset.email;
-                                            el.style.display = (name.includes(keyword) || email.includes(keyword)) ? '' : 'none';
-                                        });
-                                    });
+            document.getElementById('searchInput').addEventListener('input', function () {
+                const keyword = this.value.toLowerCase();
+                document.querySelectorAll('.student-card-wrapper').forEach(el => {
+                    const name = el.dataset.name;
+                    const email = el.dataset.email;
+                    el.style.display = (name.includes(keyword) || email.includes(keyword)) ? '' : 'none';
+                });
+            });
         </script>
     </body>
 </html>

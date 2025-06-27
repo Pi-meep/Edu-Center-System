@@ -88,6 +88,54 @@
         <servlet-name>AttendanceReportServlet</servlet-name>
         <servlet-class>controller.AttendanceReportServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AboutServlet</servlet-name>
+        <servlet-class>controller.AboutServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ManagerConsultationServlet</servlet-name>
+        <servlet-class>controller.ManagerConsultationServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ManagerSectionServlet</servlet-name>
+        <servlet-class>controller.ManagerSectionServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ClassBeingTaughtServlet</servlet-name>
+        <servlet-class>modal.ClassBeingTaughtServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateScoreServlet</servlet-name>
+        <servlet-class>modal.CreateScoreServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UserProfileServlet</servlet-name>
+        <servlet-class>controller.UserProfileServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ViewChildServlet</servlet-name>
+        <servlet-class>controller.ViewChildServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ViewScoreServlet</servlet-name>
+        <servlet-class>controller.ViewScoreServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>NotificationAPIServlet</servlet-name>
+        <servlet-class>controller.NotificationAPIServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ManagerDashboardServlet</servlet-name>
+        <servlet-class>controller.ManagerDashboardServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>NotificationServlet</servlet-name>
+        <servlet-class>controller.NotificationServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StudentAttendanceServlet</servlet-name>
+        <servlet-class>controller.StudentAttendanceServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>HomePageServlet</servlet-name>
         <url-pattern>/trang-chu</url-pattern>
@@ -167,5 +215,53 @@
     <servlet-mapping>
         <servlet-name>AttendanceReportServlet</servlet-name>
         <url-pattern>/bao-cao-diem-danh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AboutServlet</servlet-name>
+        <url-pattern>/gioi-thieu</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ManagerConsultationServlet</servlet-name>
+        <url-pattern>/quan-ly-tu-van</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ManagerSectionServlet</servlet-name>
+        <url-pattern>/quan-ly-lop-hoc</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ClassBeingTaughtServlet</servlet-name>
+        <url-pattern>/classBeingTaught</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateScoreServlet</servlet-name>
+        <url-pattern>/createScore</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UserProfileServlet</servlet-name>
+        <url-pattern>/userProfile</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ViewChildServlet</servlet-name>
+        <url-pattern>/viewChild</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ViewScoreServlet</servlet-name>
+        <url-pattern>/viewScore</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>NotificationAPIServlet</servlet-name>
+        <url-pattern>/notificationAPI</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ManagerDashboardServlet</servlet-name>
+        <url-pattern>/quan-ly</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>NotificationServlet</servlet-name>
+        <url-pattern>/notification</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StudentAttendanceServlet</servlet-name>
+        <url-pattern>/diem-chuyen-can</url-pattern>
     </servlet-mapping>
 </web-app>

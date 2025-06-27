@@ -4,6 +4,10 @@
  */
 package dao;
 
+import dto.ClassBeingTaughtDTO;
+import dto.TeacherDTO;
+import dto.TeacherProfile;
+import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +15,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import modal.TeacherCertificateModal;
 import modal.TeacherModal;
 import utils.DBUtil;
 
@@ -34,6 +39,45 @@ public class TeacherDAO extends DBUtil {
 
         return teacher;
     }
+    
+    private TeacherCertificateModal mapResultSetToCertificate(ResultSet rs) throws SQLException {
+        TeacherCertificateModal certificate = new TeacherCertificateModal();
+        certificate.setId(rs.getInt("id"));
+        certificate.setTeacherId(rs.getInt("teacherId"));
+        certificate.setCertificateName(rs.getString("certificate_name"));
+        certificate.setImageURL(rs.getString("imageURL"));
+        certificate.setIssuedDate(rs.getObject("issued_date", LocalDateTime.class));
+        certificate.setCreatedAt(rs.getObject("created_at", LocalDateTime.class));
+
+        return certificate;
+    }
+    
+    public List<TeacherCertificateModal> getCertOfTeacher(int teacherId) {
+        List<TeacherCertificateModal> certificateList = new ArrayList<>();
+
+        String sql = "SELECT tc.* "
+                + "FROM teacher t "
+                + "LEFT JOIN teacher_certificate tc ON t.id = tc.teacherId "
+                + "WHERE t.id = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, teacherId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    certificateList.add(mapResultSetToCertificate(rs));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return certificateList;
+    }
+
+
 
     /**
      * Lấy danh sách tất cả giáo viên trong hệ thống.
@@ -53,6 +97,29 @@ public class TeacherDAO extends DBUtil {
         return teacherList;
     }
 
+    public List<TeacherDTO> getAllTeachers() {
+        List<TeacherDTO> teacherList = new ArrayList<>();
+        String sql = """
+        SELECT t.id, a.name, t.subject
+        FROM teacher t
+        JOIN account a ON t.accountId = a.id
+    """;
+        try (
+                Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                TeacherDTO teacher = new TeacherDTO();
+                teacher.setId(rs.getInt("id"));
+                teacher.setName(rs.getString("name"));
+                teacher.setSubject(rs.getString("subject"));
+                teacherList.add(teacher);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return teacherList;
+    }
+
     /**
      * Lấy thông tin giáo viên dựa theo `account_id`.
      *
@@ -60,7 +127,7 @@ public class TeacherDAO extends DBUtil {
      * @return Đối tượng TeacherModal nếu tìm thấy, ngược lại trả về null
      */
     public TeacherModal getTeacherByAccountID(int account_id) {
-        String sql = "SELECT * FROM teacher WHERE account_id = ?";
+        String sql = "SELECT * FROM teacher WHERE accountId = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, account_id);
@@ -194,8 +261,8 @@ public class TeacherDAO extends DBUtil {
 
         return teacherList;
     }
-    
-        public int countStudentsFollowByTeacherId(int teacherId) {
+
+    public int countStudentsFollowByTeacherId(int teacherId) {
         String sql = "SELECT COUNT(DISTINCT e.studentId) "
                 + "FROM student_course e "
                 + "JOIN course c ON e.courseId = c.id "
@@ -214,5 +281,166 @@ public class TeacherDAO extends DBUtil {
         return 0;
     }
 
-    
+    public TeacherModal getTeacherByPhone(String phone) throws Exception {
+        String sql = "SELECT t.id, t.accountId, t.schoolId, t.schoolClassId, t.experience, t.subject, t.bio, t.created_at, t.updated_at "
+                + "FROM teacher t "
+                + "JOIN account a ON t.accountId = a.id "
+                + "WHERE a.phone = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, phone);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TeacherModal teacher = new TeacherModal();
+
+                    teacher.setId(rs.getInt("id"));
+                    teacher.setAccountId(rs.getInt("accountId"));
+                    teacher.setSchoolId(rs.getInt("schoolId"));
+                    teacher.setSchoolClassId(rs.getInt("schoolClassId"));
+                    teacher.setExperience(rs.getString("experience"));
+                    teacher.setSubject(rs.getString("subject"));
+                    teacher.setBio(rs.getString("bio"));
+
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+                    Timestamp updatedAt = rs.getTimestamp("updated_at");
+
+                    if (createdAt != null) {
+                        teacher.setCreatedAt(createdAt.toLocalDateTime());
+                    }
+                    if (updatedAt != null) {
+                        teacher.setUpdatedAt(updatedAt.toLocalDateTime());
+                    }
+
+                    return teacher;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi lấy giáo viên theo số điện thoại", e);
+        }
+
+        return null;
+    }
+
+    public TeacherProfile getTeacherProfileByPhone(String phone) throws Exception {
+        String sql = "SELECT ac.name, sc.name as schoolName, t.experience, t.bio, t.subject, t.schoolId "
+                + "FROM account AS ac "
+                + "JOIN teacher AS t ON t.accountId = ac.id "
+                + "JOIN school AS sc ON sc.id = t.schoolId "
+                + "WHERE ac.phone = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, phone);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TeacherProfile profile = new TeacherProfile();
+                    profile.setName(rs.getString("name"));
+                    profile.setSchoolName(rs.getString("schoolName"));
+                    profile.setExperience(rs.getString("experience"));
+                    profile.setBio(rs.getString("bio"));
+                    profile.setSubject(rs.getString("subject"));
+                    profile.setSchoolId(rs.getInt("schoolId"));
+                    return profile;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Error fetching teacher profile", e);
+        }
+
+        return null;
+    }
+
+    public boolean updateTeacher(TeacherModal teacher) throws Exception {
+        String sql = "UPDATE teacher SET schoolId = ?, experience = ?, bio = ?, updated_at = NOW() WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, teacher.getSchoolId());
+            ps.setString(2, teacher.getExperience());
+            ps.setString(3, teacher.getBio());
+            ps.setInt(4, teacher.getId());
+
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi cập nhật thông tin giáo viên", e);
+        }
+    }
+
+    public TeacherModal getTeacherByAccountId(int accountId) throws Exception {
+        String sql = "SELECT id, accountId, schoolId, subject, experience, bio, created_at, updated_at "
+                + "FROM teacher WHERE accountId = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    TeacherModal teacher = new TeacherModal();
+                    teacher.setId(rs.getInt("id"));
+                    teacher.setAccountId(rs.getInt("accountId"));
+                    teacher.setSchoolId(rs.getInt("schoolId"));
+                    teacher.setSubject(rs.getString("subject"));
+                    teacher.setExperience(rs.getString("experience"));
+                    teacher.setBio(rs.getString("bio"));
+
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+                    Timestamp updatedAt = rs.getTimestamp("updated_at");
+                    if (createdAt != null) {
+                        teacher.setCreatedAt(createdAt.toLocalDateTime());
+                    }
+                    if (updatedAt != null) {
+                        teacher.setUpdatedAt(updatedAt.toLocalDateTime());
+                    }
+
+                    return teacher;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi lấy thông tin giáo viên theo accountId", e);
+        }
+
+        return null;
+    }
+
+    public List<ClassBeingTaughtDTO> getClassesByTeacherPhone(String phone) throws Exception {
+        List<ClassBeingTaughtDTO> list = new ArrayList<>();
+
+        String sql = """
+        SELECT c.teacherId, c.id AS courseId, c.name, c.grade, c.subject, c.level, c.studentEnrollment
+        FROM account ac
+        JOIN teacher t ON t.accountId = ac.id
+        JOIN course c ON c.teacherId = t.id
+        WHERE ac.phone = ?
+    """;
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, phone);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ClassBeingTaughtDTO cb = new ClassBeingTaughtDTO();
+                    cb.setTeacherId(rs.getInt("teacherId"));
+                    cb.setCourseId(rs.getInt("courseId"));
+                    cb.setName(rs.getString("name"));
+                    cb.setGrade(rs.getString("grade"));
+                    cb.setSubject(rs.getString("subject"));
+                    cb.setLevel(rs.getString("level"));
+                    cb.setStudentEnrollment(rs.getInt("studentEnrollment"));
+                    list.add(cb);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi lấy danh sách lớp đang dạy theo phone", e);
+        }
+
+        return list;
+    }
+
 }

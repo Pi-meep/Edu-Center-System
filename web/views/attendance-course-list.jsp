@@ -85,14 +85,9 @@
                                                 <i class="fas fa-check-circle me-1"></i>${course.status}
                                             </span>
                                             <span class="badge bg-info course-type-badge ms-1">
-                                                ${course.courseType}
+                                                ${course.courseType.displayName}
                                             </span>
                                         </div>
-                                        <c:if test="${course.isHot}">
-                                            <span class="badge bg-danger">
-                                                <i class="fas fa-fire me-1"></i>HOT
-                                            </span>
-                                        </c:if>
                                     </div>
 
                                     <div class="card-body">
@@ -126,7 +121,7 @@
                                         <div class="row small text-muted">
                                             <div class="col-6">
                                                 <i class="fas fa-book me-1"></i>
-                                                ${course.subject}
+                                                ${course.subject.displayName}
                                             </div>
                                             <div class="col-6">
                                                 <i class="fas fa-layer-group me-1"></i>
@@ -136,7 +131,7 @@
                                         <div class="row small text-muted mt-1">
                                             <div class="col-12">
                                                 <i class="fas fa-level-up-alt me-1"></i>
-                                                Level: ${course.level}
+                                                Level: ${course.level.displayName}
                                             </div>
                                         </div>
                                     </div>

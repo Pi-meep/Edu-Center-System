@@ -5,10 +5,17 @@
 package controller;
 
 import java.io.IOException;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import dao.StudentScheduleDAO;
+import dao.StudentDAO;
+import dao.AccountDAO;
+import modal.StudentModal;
+import modal.AccountModal;
 
 /**
  *
@@ -27,7 +34,75 @@ public class StudentSchedule extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/views/studentSchedule.jsp").forward(request, response);
+        
+        try {
+            // Lấy thông tin user từ request attribute (được set bởi AuthFilter)
+            String loggedInUserName = (String) request.getAttribute("loggedInUserName");
+            String loggedInUserRole = (String) request.getAttribute("loggedInUserRole");
+            
+            // Kiểm tra đăng nhập và role
+            if (loggedInUserName == null || loggedInUserRole == null) {
+                response.sendRedirect("dang-nhap");
+                return;
+            }
+            
+            if (!"student".equals(loggedInUserRole)) {
+                response.sendRedirect("dang-nhap");
+                return;
+            }
+            
+            // Lấy thông tin account từ database
+            AccountDAO accountDAO = new AccountDAO();
+            AccountModal account = accountDAO.getAccountByUsername(loggedInUserName);
+            
+            if (account == null) {
+                response.sendRedirect("dang-nhap");
+                return;
+            }
+            
+            // Lấy thông tin học sinh
+            StudentDAO studentDAO = new StudentDAO();
+            StudentModal student = studentDAO.getStudentByAccountId(account.getId());
+            
+            if (student == null) {
+                request.setAttribute("error", "Không tìm thấy thông tin học sinh");
+                request.getRequestDispatcher("/views/error.jsp").forward(request, response);
+                return;
+            }
+            
+            // Lấy parameter week nếu có
+            String weekParam = request.getParameter("week");
+            java.time.LocalDate targetWeek = null;
+            
+            if (weekParam != null && !weekParam.isEmpty()) {
+                try {
+                    targetWeek = java.time.LocalDate.parse(weekParam);
+                } catch (Exception e) {
+                    // Nếu parse lỗi thì dùng tuần hiện tại
+                    targetWeek = java.time.LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+                }
+            } else {
+                // Mặc định là tuần hiện tại
+                targetWeek = java.time.LocalDate.now().with(java.time.DayOfWeek.MONDAY);
+            }
+            
+            // Lấy schedule từ database
+            StudentScheduleDAO scheduleDAO = new StudentScheduleDAO();
+            Map<String, Object> scheduleData = scheduleDAO.getStudentSchedule(student.getId());
+            
+            // Truyền dữ liệu cho JSP
+            request.setAttribute("scheduleData", scheduleData);
+            request.setAttribute("student", student);
+            request.setAttribute("account", account);
+            request.setAttribute("targetWeek", targetWeek);
+            
+            request.getRequestDispatcher("/views/studentSchedule.jsp").forward(request, response);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Có lỗi xảy ra khi tải thời khóa biểu: " + e.getMessage());
+            request.getRequestDispatcher("/views/error.jsp").forward(request, response);
+        }
     }
 
     /**
@@ -41,7 +116,7 @@ public class StudentSchedule extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-            request.getRequestDispatcher("/views/studentSchedule.jsp").forward(request, response);
+        doGet(request, response);
     }
  
 

@@ -42,12 +42,14 @@ public class AuthFilter implements Filter {
                         DecodedJWT jwt = JWT.require(Algorithm.HMAC256("this-is-a-very-strong-super-secret-key-123456")) // trùng với bên JWTUtils
                                 .build()
                                 .verify(token); // ✅ Dùng biến token
-
+                        
                         String name = jwt.getSubject(); // nếu bạn dùng setSubject() trong JWTUtils
                         String role = jwt.getClaim("role").asString();
-
+                        Integer id = jwt.getClaim("id").asInt();
+                        
                         request.setAttribute("loggedInUserName", name);
                         request.setAttribute("loggedInUserRole", role);
+                        request.setAttribute("loggedInUserId", id);
                     } catch (JWTVerificationException e) {
                         // Token không hợp lệ
                     }

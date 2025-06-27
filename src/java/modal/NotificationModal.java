@@ -69,7 +69,15 @@ public class NotificationModal {
         this.createdAt = createdAt;
     }
     
-    
-    
-    
+    @Override
+    public String toString() {
+        return "NotificationModal{" +
+                "id=" + id +
+                ", accountId=" + accountId +
+                ", description='" + description + '\'' +
+                ", isRead=" + isRead +
+                ", createdAt=" + createdAt +
+                '}';
+    }
+
 }
