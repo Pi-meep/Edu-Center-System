@@ -427,7 +427,7 @@
                             <c:set var="account" value="${pair[0]}" />
                             <c:set var="teacher" value="${pair[1]}" />
                             
-                            <div class="homepage-teacher-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: transform 0.3s ease; display: flex; flex-direction: column; height: 100%; ư">
+                            <div class="homepage-teacher-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: transform 0.3s ease; display: flex; flex-direction: column; height: 100%;">
                                 <div style="position: relative; height: 200px; background-color: #e9ecef; overflow: hidden;">
                                     <c:choose>
                                         <c:when test="${fn:startsWith(account.avatarURL, 'http')}">

@@ -140,6 +140,10 @@
         <servlet-name>SystemConfigServlet</servlet-name>
         <servlet-class>controller.SystemConfigServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ErrorServlet</servlet-name>
+        <servlet-class>controller.ErrorServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>HomePageServlet</servlet-name>
         <url-pattern>/trang-chu</url-pattern>
@@ -271,5 +275,9 @@
     <servlet-mapping>
         <servlet-name>SystemConfigServlet</servlet-name>
         <url-pattern>/admin-cau-hinh-he-thong</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ErrorServlet</servlet-name>
+        <url-pattern>/error</url-pattern>
     </servlet-mapping>
 </web-app>

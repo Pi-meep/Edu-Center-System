@@ -86,10 +86,22 @@
         <i class="fas fa-exclamation-triangle"></i>
     </div>
     
-    <h1 class="error-title">Đã xảy ra lỗi</h1>
+    <h1 class="error-title">
+        <c:choose>
+            <c:when test="${not empty errorLog and errorLog.contains('quyền')}">
+                Không có quyền truy cập
+            </c:when>
+            <c:otherwise>
+                Đã xảy ra lỗi
+            </c:otherwise>
+        </c:choose>
+    </h1>
     
     <p class="error-message">
         <c:choose>
+            <c:when test="${not empty errorLog}">
+                ${errorLog}
+            </c:when>
             <c:when test="${not empty error}">
                 ${error}
             </c:when>
