@@ -11,6 +11,12 @@
 <div class="container mt-5">
     <div class="card shadow rounded-4">
         <div class="card-body p-4">
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger" role="alert">
+                    ${error}
+                </div>
+            </c:if>
+
             <h4 class="mb-4 text-primary fw-bold">
                 <i class="fas fa-edit me-2"></i>Chỉnh sửa lớp học
             </h4>
@@ -18,6 +24,7 @@
             <form method="post" action="quan-ly-lop-hoc">
                 <input type="hidden" name="action" value="update" />
                 <input type="hidden" name="id" value="${section.id}" />
+                <input type="hidden" name="courseId" value="${section.courseId}" />
                 <input type="hidden" name="courseName" value="${section.courseName}" />
 
                 <!-- Khóa học -->
@@ -44,11 +51,11 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Giờ bắt đầu</label>
-                        <input type="time" name="startTime" class="form-control" value="${section.formattedStartTime}" required>
+                        <input type="time" name="startTime" class="form-control" value="${section.startTimeFormatted}" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Giờ kết thúc</label>
-                        <input type="time" name="endTime" class="form-control" value="${section.formattedEndTime}" required>
+                        <input type="time" name="endTime" class="form-control" value="${section.endTimeFormatted}" required>
                     </div>
                 </div>
 
@@ -61,7 +68,7 @@
                 <!-- Ngày học -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Ngày học</label>
-                    <input type="date" name="dateTime" class="form-control" value="${section.formattedDateTime}" required>
+                    <input type="date" name="dateTime" class="form-control" value="${section.dateFormatted}" required>
                 </div>
 
                 <!-- Trạng thái -->
@@ -87,5 +94,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    const weekdayMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const dateInput = document.querySelector("input[name='dateTime']");
+        const dayOfWeekSelect = document.querySelector("select[name='dayOfWeek']");
+
+        dateInput.addEventListener("change", function () {
+            const selectedDate = new Date(this.value);
+            if (!isNaN(selectedDate)) {
+                const dayOfWeek = weekdayMap[selectedDate.getDay()];
+                dayOfWeekSelect.value = dayOfWeek;
+            }
+        });
+    });
+
+</script>
+
 
 <jsp:include page="layout/footer.jsp" />

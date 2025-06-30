@@ -23,9 +23,11 @@ public class SectionModal {
     private Status status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String note;
+    private int teacherId;
 
     public enum Status {
-        inactive("Ngưng hoạt động"),
+        inactive("Chưa diễn ra"),
         active("Đang diễn ra"),
         completed("Đã hoàn thành");
 
@@ -63,7 +65,9 @@ public class SectionModal {
     public SectionModal() {
     }
 
-    public SectionModal(Integer id, Integer courseId, DayOfWeekEnum dayOfWeek, LocalDateTime startTime, LocalDateTime endTime, String classroom, LocalDateTime dateTime, Status status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+
+
+    public SectionModal(Integer id, Integer courseId, DayOfWeekEnum dayOfWeek, LocalDateTime startTime, LocalDateTime endTime, String classroom, LocalDateTime dateTime, Status status, LocalDateTime createdAt, LocalDateTime updatedAt, String note, int teacherId) {
         this.id = id;
         this.courseId = courseId;
         this.dayOfWeek = dayOfWeek;
@@ -74,6 +78,24 @@ public class SectionModal {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.note = note;
+        this.teacherId = teacherId;
+    }
+
+    public String getNote() {
+        return note;
+    }
+
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public int getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(int teacherId) {
+        this.teacherId = teacherId;
     }
 
     public Integer getId() {

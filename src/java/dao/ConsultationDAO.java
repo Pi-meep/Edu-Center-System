@@ -6,14 +6,12 @@ package dao;
 
 import dto.ConsultationDTO;
 import java.sql.*;
-import modal.AccountModal;
-import utils.DBUtil;
-import utils.HashUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import modal.ConsultationModal;
+import utils.DBUtil;
 
 /**
  *
@@ -49,10 +47,13 @@ public class ConsultationDAO {
         return -1;
     }
 
-     public List<ConsultationDTO> listAndSearchConsultations(String name, String status) {
+    public List<ConsultationDTO> listAndSearchConsultations(String name, String status) {
         List<ConsultationDTO> list = new ArrayList<>();
-        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status "
-                + "FROM consultation c WHERE 1=1 ";
+        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status, cc.imageURL as certificateImageUrl\n"
+        + "FROM consultation c\n"
+        + "LEFT JOIN consultation_certificate cc ON c.id = cc.consultationId\n"
+        + "WHERE 1=1 ";
+
 
         if (name != null && !name.trim().isEmpty()) {
             sql += " AND LOWER(TRIM(c.name)) LIKE ?";
@@ -89,6 +90,7 @@ public class ConsultationDAO {
 
                 c.setPhone(rs.getString("phone"));
                 c.setStatus(ConsultationDTO.Status.valueOf(rs.getString("status")));
+                c.setCertificateImageUrl(rs.getString("certificateImageUrl"));
 
                 list.add(c);
             }
@@ -101,8 +103,8 @@ public class ConsultationDAO {
     }
 
      
-     public ConsultationDTO getConsultationById(int id) {
-        String sql = "SELECT c.*, s.name AS schoolName, sc.class_name AS schoolClassName, cert.imageURL AS certificateImageUrl "
+    public ConsultationDTO getConsultationById(int id) {
+         String sql = "SELECT c.*, s.name AS schoolName, sc.classname AS schoolClassName, cert.imageURL AS certificateImageUrl "
                 + "FROM consultation c "
                 + "LEFT JOIN school s ON c.schoolId = s.id "
                 + "LEFT JOIN school_class sc ON c.schoolClassId = sc.id "

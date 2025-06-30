@@ -7,11 +7,11 @@ package dao;
 import dto.ClassBeingTaughtDTO;
 import dto.TeacherDTO;
 import dto.TeacherProfile;
-import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -190,6 +190,55 @@ public class TeacherDAO extends DBUtil {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     topTeachers.add(mapResultSetToTeacher(rs));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return topTeachers;
+    }
+
+    /**
+     * Lấy danh sách giáo viên nổi bật bao gồm thông tin account
+     * @param limit Giới hạn số lượng giáo viên
+     * @return List<Object[]> với Object[0] là AccountModal, Object[1] là TeacherModal
+     */
+    public List<Object[]> getTopTeachersWithAccount(int limit) {
+        List<Object[]> topTeachers = new ArrayList<>();
+
+        String sql = """
+        SELECT t.*, a.id as acc_id, a.name, a.phone, a.avatarURL, a.status
+        FROM teacher t
+        JOIN account a ON t.accountId = a.id
+        JOIN (
+            SELECT teacherId, COUNT(*) AS course_count
+            FROM course
+            GROUP BY teacherId
+            ORDER BY course_count DESC
+            LIMIT ?
+        ) top ON t.id = top.teacherId
+        ORDER BY top.course_count DESC
+        """;
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, limit);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    // Tạo AccountModal
+                    modal.AccountModal account = new modal.AccountModal();
+                    account.setId(rs.getInt("acc_id"));
+                    account.setName(rs.getString("name"));
+                    account.setPhone(rs.getString("phone"));
+                    account.setAvatarURL(rs.getString("avatarURL"));
+                    // Tạo TeacherModal
+                    TeacherModal teacher = mapResultSetToTeacher(rs);
+
+                    // Thêm vào list
+                    topTeachers.add(new Object[]{account, teacher});
                 }
             }
 

@@ -141,7 +141,7 @@ public class ConsultationServlet extends HttpServlet {
             }
 
             // Thành công: chuyển tới trang riêng
-            response.sendRedirect("dang-ki-tu-van-thanh-cong");
+            response.sendRedirect("dang-ky-tu-van-thanh-cong");
             return;
 
         } catch (IllegalArgumentException ex) {

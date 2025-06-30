@@ -16,6 +16,7 @@ public class StudentAttendanceServlet extends HttpServlet {
     private StudentSectionDAO studentSectionDAO;
     private SectionDAO sectionDAO;
     private StudentDAO studentDAO;
+    private ParentDAO parentDAO;
 
     @Override
     public void init() {
@@ -23,6 +24,7 @@ public class StudentAttendanceServlet extends HttpServlet {
         studentSectionDAO = new StudentSectionDAO();
         sectionDAO = new SectionDAO();
         studentDAO = new StudentDAO();
+        parentDAO = new ParentDAO();
     }
 
     @Override
@@ -33,88 +35,118 @@ public class StudentAttendanceServlet extends HttpServlet {
             return;
         }
 
+        String role = JWTUtils.getRole(token);
         String identifier = JWTUtils.getIdentifier(token);
 
         try {
-            AccountModal studentAccount = new AccountDAO().getAccountByUsername(identifier);
-            if (studentAccount == null) {
-                request.setAttribute("errorLog", "Không tìm thấy tài khoản học sinh.");
+            AccountModal account = new AccountDAO().getAccountByUsername(identifier);
+
+            if (account == null) {
+                request.setAttribute("errorLog", "Không tìm thấy tài khoản.");
                 request.getRequestDispatcher("/views/layout/error.jsp").forward(request, response);
                 return;
             }
 
-            StudentModal student = studentDAO.getStudentByAccountId(studentAccount.getId());
-            if (student == null) {
-                request.setAttribute("errorLog", "Không tìm thấy hồ sơ học sinh.");
-                request.getRequestDispatcher("/views/layout/error.jsp").forward(request, response);
-                return;
-            }
-
-            int studentId = student.getId();
-            String studentName = studentAccount.getName();
-            List<CourseModal> studentCourses = courseDAO.getCoursesByStudentId(studentId);
-
-            request.setAttribute("studentName", studentName);
-            request.setAttribute("studentCourses", studentCourses);
-
-            String courseIdParam = request.getParameter("courseId");
-            if (courseIdParam != null && !courseIdParam.trim().isEmpty()) {
-                showStudentDetailsForStudent(request, response, studentId, studentName, studentCourses, courseIdParam);
-            } else {
+            if ("student".equals(role)) {
+                StudentModal student = studentDAO.getStudentByAccountId(account.getId());
+                if (student == null) {
+                    request.setAttribute("errorLog", "Không tìm thấy hồ sơ học sinh.");
+                    request.getRequestDispatcher("/views/layout/error.jsp").forward(request, response);
+                    return;
+                }
+                processAttendanceForStudent(request, response, student);
                 request.getRequestDispatcher("/views/student-attendance.jsp").forward(request, response);
-            }
+                return;
+            } else if ("parent".equals(role)) {
+                ParentModal parent = parentDAO.getParentByAccountID(account.getId());
+                if (parent == null) {
+                    request.setAttribute("errorLog", "Không tìm thấy hồ sơ phụ huynh.");
+                    request.getRequestDispatcher("/views/layout/error.jsp").forward(request, response);
+                    return;
+                }
 
+                List<StudentModal> children = studentDAO.getChildrenOfParent(parent.getId());
+                Map<Integer, String> studentNameMap = new HashMap<>();
+
+                for (StudentModal child : children) {
+                    try {
+                        String name = new StudentDAO().getStudentNameById(child.getId());
+                        studentNameMap.put(child.getId(), name);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                request.setAttribute("children", children);
+                request.setAttribute("studentNameMap", studentNameMap);
+
+                String studentIdParam = request.getParameter("studentId");
+                if (studentIdParam != null && !studentIdParam.isEmpty()) {
+                    try {
+                        int studentId = Integer.parseInt(studentIdParam);
+                        StudentModal selectedStudent = studentDAO.getStudentById(studentId);
+                        if (selectedStudent != null) {
+
+                            request.setAttribute("selectedStudentId", studentId);
+                            processAttendanceForStudent(request, response, selectedStudent);
+                            request.getRequestDispatcher("/views/student-attendance.jsp").forward(request, response);
+                            return;
+                        }
+                    } catch (NumberFormatException e) {
+                        request.setAttribute("error", "ID học sinh không hợp lệ.");
+                    }
+                }
+                request.getRequestDispatcher("/views/student-attendance.jsp").forward(request, response);
+            } else {
+                request.setAttribute("errorLog", "Vai trò không được hỗ trợ.");
+                request.getRequestDispatcher("/views/layout/error.jsp").forward(request, response);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
-            request.getRequestDispatcher("/views/student-attendance.jsp").forward(request, response);
+            request.setAttribute("error", "Lỗi khi truy xuất tài khoản: " + e.getMessage());
+            request.getRequestDispatcher("/views/layout/error.jsp").forward(request, response);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     }
-    
 
-    private void showStudentDetailsForStudent(HttpServletRequest request, HttpServletResponse response,
-            int studentId, String studentName,
-            List<CourseModal> studentCourses, String courseIdParam)
-            throws Exception {
-
-        int courseId;
+    private void processAttendanceForStudent(HttpServletRequest request, HttpServletResponse response, StudentModal student)
+            throws ServletException, IOException {
+        int studentId = student.getId();
         try {
-            courseId = Integer.parseInt(courseIdParam.trim());
-            if (courseId <= 0) {
-                throw new NumberFormatException();
+            String studentName = studentDAO.getStudentNameById(studentId);
+
+            List<CourseModal> studentCourses = courseDAO.getCoursesByStudentId(studentId);
+            request.setAttribute("studentName", studentName);
+            request.setAttribute("studentCourses", studentCourses);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("studentName", "Không xác định");
+        }
+
+        String courseIdParam = request.getParameter("courseId");
+        if (courseIdParam != null && !courseIdParam.trim().isEmpty()) {
+            try {
+                int courseId = Integer.parseInt(courseIdParam);
+                List<StudentSectionModal> attendanceDetails = studentSectionDAO.getStudentAttendanceDetails(studentId, courseId);
+                List<SectionModal> sections = studentSectionDAO.getSectionsByCourseId(courseId);
+
+                Map<Integer, SectionModal> sectionMap = sections.stream()
+                        .filter(s -> s.getId() != null)
+                        .collect(Collectors.toMap(SectionModal::getId, s -> s));
+
+                request.setAttribute("attendanceDetails", attendanceDetails);
+                request.setAttribute("sectionMap", sectionMap);
+                request.setAttribute("selectedCourseId", courseId);
+
+            } catch (NumberFormatException e) {
+                request.setAttribute("error", "ID khóa học không hợp lệ.");
+            } catch (Exception e) {
+                request.setAttribute("error", "Lỗi khi truy xuất dữ liệu: " + e.getMessage());
             }
-        } catch (NumberFormatException e) {
-            request.setAttribute("error", "ID khóa học không hợp lệ.");
-            request.getRequestDispatcher("/views/student-attendance.jsp").forward(request, response);
-            return;
         }
 
-        List<StudentSectionModal> attendanceDetails = studentSectionDAO.getStudentAttendanceDetails(studentId, courseId);
-        List<SectionModal> sections = studentSectionDAO.getSectionsByCourseId(courseId);
-
-        if (attendanceDetails.isEmpty()) {
-            request.setAttribute("warning", "Không có dữ liệu điểm danh cho khóa học này.");
-        }
-
-        Map<Integer, SectionModal> sectionMap = sections.stream()
-                .filter(s -> s.getId() != null)
-                .collect(Collectors.toMap(SectionModal::getId, s -> s));
-
-        CourseModal selectedCourse = studentCourses.stream()
-                .filter(c -> c.getId().equals(courseId))
-                .findFirst()
-                .orElse(null);
-
-        request.setAttribute("attendanceDetails", attendanceDetails);
-        request.setAttribute("sectionMap", sectionMap);
-        request.setAttribute("selectedCourseId", courseId);
-        request.setAttribute("course", selectedCourse);
-
-        request.getRequestDispatcher("/views/student-attendance.jsp").forward(request, response);
     }
 
     private String getTokenFromCookies(HttpServletRequest request) {
@@ -128,5 +160,4 @@ public class StudentAttendanceServlet extends HttpServlet {
         }
         return null;
     }
-
 }

@@ -122,7 +122,7 @@
             <div class="row mb-4">
                 <c:set var="presentCount" value="0"/>
                 <c:forEach var="student" items="${sectionReport}">
-                    <c:if test="${student.attendanceStatus}">
+                    <c:if test="${student.attendanceStatus == 'present'}">
                         <c:set var="presentCount" value="${presentCount + 1}"/>
                     </c:if>
                 </c:forEach>
@@ -218,18 +218,37 @@
                                     <div class="row" id="studentList">
                                         <c:forEach var="student" items="${sectionReport}">
                                             <div class="col-md-4 mb-3 student-card-wrapper"
-                                                 data-attendance="${student.attendanceStatus ? 'present' : 'absent'}"
+                                                 data-attendance="${student.attendanceStatus}"
                                                  data-paid="${student.coursePaid}"
                                                  data-name="${student.studentName.toLowerCase()}"
                                                  data-email="${student.studentEmail.toLowerCase()}">
-                                                <div class="card student-card ${student.attendanceStatus ? 'present' : 'absent'}">
+                                                 <div class="card student-card
+                                                 ${student.attendanceStatus == 'present' ? 'present' :
+                                                   student.attendanceStatus == 'absent' ? 'absent' :
+                                                   student.attendanceStatus == 'excused' ? 'excused' :
+                                                   'notyet'}"
+                                                   >
                                                     <div class="card-body">
                                                         <h6 class="card-title mb-1">${student.studentName}</h6>
                                                         <p class="mb-1 small">
-                                                            <i class="fas fa-check-circle me-1 ${student.attendanceStatus ? 'text-success' : 'text-danger'}"></i>
-                                                            Trạng thái: 
-                                                            <span class="attendance-status ${student.attendanceStatus ? 'text-success' : 'text-danger'}">
-                                                                ${student.attendanceStatus ? 'Có mặt' : 'Vắng mặt'}
+                                                            <i class="fas fa-check-circle me-1
+                                                            ${student.attendanceStatus == 'present' ? 'text-success' :
+                                                              student.attendanceStatus == 'absent' ? 'text-danger' :
+                                                              student.attendanceStatus == 'excused' ? 'text-warning' :
+                                                              'text-secondary'}"></i>
+                                                         Trạng thái: 
+                                                         <span class="attendance-status
+                                                         ${student.attendanceStatus == 'present' ? 'text-success' :
+                                                           student.attendanceStatus == 'absent' ? 'text-danger' :
+                                                           student.attendanceStatus == 'excused' ? 'text-warning' :
+                                                           'text-secondary'}">
+                                                         <c:choose>
+                                                             <c:when test="${student.attendanceStatus == 'present'}">Có mặt</c:when>
+                                                             <c:when test="${student.attendanceStatus == 'absent'}">Vắng mặt</c:when>
+                                                             <c:when test="${student.attendanceStatus == 'excused'}">Có phép</c:when>
+                                                             <c:when test="${student.attendanceStatus == 'notyet'}">Chưa diễn ra</c:when>
+                                                             <c:otherwise>Không xác định</c:otherwise>
+                                                         </c:choose>
                                                             </span>
                                                         </p>
                                                         <p class="mb-0 small">

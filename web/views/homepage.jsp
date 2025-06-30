@@ -7,6 +7,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <% request.setAttribute("title", "Trang chủ");%>
 <jsp:include page="layout/header.jsp" />
@@ -309,31 +310,53 @@
 <!-- Hero Section as Carousel -->
 <section class="homepage-hero" id="home" style="padding:0; min-height:unset; position:relative;">
   <div class="carousel-container">
-    <div class="carousel-slide active">
-      <img src="<%= request.getContextPath()%>/assets/image_4.jpg" alt="Slide 1" class="carousel-img">
-      <div class="carousel-caption">
-        <h1>Nâng Tầm Tri Thức<br>Vững Bước Tương Lai</h1>
-        <p>Trung tâm dạy thêm hàng đầu với đội ngũ giáo viên giàu kinh nghiệm, phương pháp giảng dạy hiện đại và môi trường học tập thân thiện</p>
-        <div class="homepage-hero-buttons">
-          <a href="danh-sach-lop" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Danh Sách Lớp</a>
-          <a href="gioi-thieu" class="homepage-btn homepage-btn-outline" style="font-size: 1.1rem; padding: 1rem 2rem;">Tìm Hiểu Thêm</a>
+    <c:choose>
+      <c:when test="${not empty banners}">
+        <c:forEach var="banner" items="${banners}" varStatus="status">
+          <div class="carousel-slide ${status.first ? 'active' : ''}">
+            <img src="${pageContext.request.contextPath}/${banner.imageUrl}" alt="${banner.title}" class="carousel-img">
+            <div class="carousel-caption">
+              <h1>${banner.title}</h1>
+              <p>${banner.description}</p>
+              <c:if test="${status.first}">
+                <div class="homepage-hero-buttons">
+                  <a href="danh-sach-lop" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Danh Sách Lớp</a>
+                  <a href="gioi-thieu" class="homepage-btn homepage-btn-outline" style="font-size: 1.1rem; padding: 1rem 2rem;">Tìm Hiểu Thêm</a>
+                </div>
+              </c:if>
+            </div>
+          </div>
+        </c:forEach>
+      </c:when>
+      <c:otherwise>
+        <!-- Fallback banners nếu không có data từ database -->
+        <div class="carousel-slide active">
+          <img src="<%= request.getContextPath()%>/assets/image_4.jpg" alt="Slide 1" class="carousel-img">
+          <div class="carousel-caption">
+            <h1>Nâng Tầm Tri Thức<br>Vững Bước Tương Lai</h1>
+            <p>Trung tâm dạy thêm hàng đầu với đội ngũ giáo viên giàu kinh nghiệm, phương pháp giảng dạy hiện đại và môi trường học tập thân thiện</p>
+            <div class="homepage-hero-buttons">
+              <a href="danh-sach-lop" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Danh Sách Lớp</a>
+              <a href="gioi-thieu" class="homepage-btn homepage-btn-outline" style="font-size: 1.1rem; padding: 1rem 2rem;">Tìm Hiểu Thêm</a>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    <div class="carousel-slide">
-      <img src="<%= request.getContextPath()%>/assets/image_1.jpg" alt="Slide 2" class="carousel-img">
-      <div class="carousel-caption">
-        <h1>Giáo Viên Tận Tâm</h1>
-        <p>Đội ngũ giáo viên chuyên nghiệp, luôn đồng hành cùng học sinh trên con đường chinh phục tri thức.</p>
-      </div>
-    </div>
-    <div class="carousel-slide">
-      <img src="<%= request.getContextPath()%>/assets/pic1.jpg" alt="Slide 3" class="carousel-img">
-      <div class="carousel-caption">
-        <h1>Môi Trường Năng Động</h1>
-        <p>Không gian học tập hiện đại, thân thiện, khơi dậy niềm đam mê học hỏi cho học sinh.</p>
-      </div>
-    </div>
+        <div class="carousel-slide">
+          <img src="<%= request.getContextPath()%>/assets/image_1.jpg" alt="Slide 2" class="carousel-img">
+          <div class="carousel-caption">
+            <h1>Giáo Viên Tận Tâm</h1>
+            <p>Đội ngũ giáo viên chuyên nghiệp, luôn đồng hành cùng học sinh trên con đường chinh phục tri thức.</p>
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <img src="<%= request.getContextPath()%>/assets/pic1.jpg" alt="Slide 3" class="carousel-img">
+          <div class="carousel-caption">
+            <h1>Môi Trường Năng Động</h1>
+            <p>Không gian học tập hiện đại, thân thiện, khơi dậy niềm đam mê học hỏi cho học sinh.</p>
+          </div>
+        </div>
+      </c:otherwise>
+    </c:choose>
     <div class="carousel-dots"></div>
   </div>
 </section>
@@ -388,14 +411,163 @@
     </div>
 </section>
 
-<!-- CTA Section -->
+<!-- Teachers Section -->
+<section class="homepage-teachers" style="padding: 100px 0; background: #f8f9ff;">
+    <div class="homepage-container">
+        <div class="homepage-section-title">
+            <h2>Giáo Viên Nổi Bật</h2>
+            <p>Đội ngũ giáo viên chất lượng cao với kinh nghiệm giảng dạy phong phú</p>
+        </div>
+        
+        <c:choose>
+            <c:when test="${not empty topTeachers}">
+                <div class="homepage-teachers-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                    <c:forEach var="pair" items="${topTeachers}" varStatus="status">
+                        <c:if test="${status.index < 6}">
+                            <c:set var="account" value="${pair[0]}" />
+                            <c:set var="teacher" value="${pair[1]}" />
+                            
+                            <div class="homepage-teacher-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: transform 0.3s ease; display: flex; flex-direction: column; height: 100%; ư">
+                                <div style="position: relative; height: 200px; background-color: #e9ecef; overflow: hidden;">
+                                    <c:choose>
+                                        <c:when test="${fn:startsWith(account.avatarURL, 'http')}">
+                                            <img src="${account.avatarURL}" alt="${account.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img src="${pageContext.request.contextPath}/assets/avatars/${account.avatarURL}" alt="${account.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(103, 58, 183, 0.85); color: #fff; padding: 8px 12px; font-weight: bold; font-size: 1rem; text-align: center;">
+                                        ${account.name}
+                                    </div>
+                                </div>
+                                <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #673ab7; margin: 0 0 0.5rem 0;">${teacher.subject.displayName}</h3>
+                                    <p style="font-size: 0.9rem; color: #555; line-height: 1.4; margin-bottom: 1rem; flex-grow: 1;">
+                                        <c:choose>
+                                            <c:when test="${not empty teacher.bio}">
+                                                <c:choose>
+                                                    <c:when test="${fn:length(teacher.bio) > 100}">
+                                                        ${fn:substring(teacher.bio, 0, 100)}...
+                                                    </c:when>
+                                                    <c:otherwise>${teacher.bio}</c:otherwise>
+                                                </c:choose>
+                                            </c:when>
+                                            <c:otherwise>Giáo viên có kinh nghiệm giảng dạy lâu năm.</c:otherwise>
+                                        </c:choose>
+                                    </p>
+                                    <a href="thong-tin-giao-vien?teacherId=${teacher.id}" style="text-decoration: none; color: #673ab7; font-weight: 600; display: inline-block; margin-top: auto; text-align: center; padding: 0.5rem; border: 2px solid #673ab7; border-radius: 8px; transition: all 0.3s ease;">
+                                        <span style="position: relative; padding-bottom: 2px;">Xem chi tiết</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </c:if>
+                    </c:forEach>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="danh-sach-giao-vien" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Xem Tất Cả Giáo Viên</a>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div style="text-align: center; padding: 3rem;">
+                    <p style="font-size: 1.1rem; color: #666;">Đang cập nhật thông tin giáo viên...</p>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</section>
+
+<!-- Hot Courses Section -->
+<section class="homepage-courses" style="padding: 100px 0; background: white;">
+    <div class="homepage-container">
+        <div class="homepage-section-title">
+            <h2>Khóa Học Nổi Bật</h2>
+            <p>Những khóa học được yêu thích nhất với phương pháp giảng dạy hiện đại</p>
+        </div>
+        
+        <c:choose>
+            <c:when test="${not empty hotCourses}">
+                <div class="homepage-courses-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+                    <c:forEach var="course" items="${hotCourses}" varStatus="status">
+                        <c:if test="${status.index < 6}">
+                            <div class="homepage-course-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.08); transition: transform 0.3s ease; border: 1px solid #e1e8ed; display: flex; flex-direction: column; height: 100%;">
+                                <div style="position: relative; height: 200px; background-color: #e9ecef; overflow: hidden;">
+                                    <c:choose>
+                                        <c:when test="${not empty course.course_img}">
+                                            <img src="${pageContext.request.contextPath}/assets/banners_course/${course.course_img}" alt="${course.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img src="${pageContext.request.contextPath}/assets/banners_course/banner.jpg" alt="${course.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <div style="position: absolute; top: 10px; right: 10px; background: #ff5722; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">
+                                        HOT
+                                    </div>
+                                </div>
+                                <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #333; margin: 0 0 0.5rem 0;">${course.name}</h3>
+                                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                                        <strong>Môn học:</strong> ${course.subject.displayName}
+                                    </p>
+                                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 0.5rem;">
+                                        <strong>Khối:</strong> ${course.grade}
+                                    </p>
+                                    <p style="font-size: 0.9rem; color: #555; line-height: 1.4; margin-bottom: 1rem; flex-grow: 1;">
+                                        <c:choose>
+                                            <c:when test="${not empty course.description}">
+                                                <c:choose>
+                                                    <c:when test="${fn:length(course.description) > 80}">
+                                                        ${fn:substring(course.description, 0, 80)}...
+                                                    </c:when>
+                                                    <c:otherwise>${course.description}</c:otherwise>
+                                                </c:choose>
+                                            </c:when>
+                                            <c:otherwise>Khóa học chất lượng cao với phương pháp giảng dạy hiện đại.</c:otherwise>
+                                        </c:choose>
+                                    </p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                        <c:if test="${course.courseType == 'combo'}">
+                                            <span style="font-size: 1.1rem; font-weight: bold; color: #673ab7;">
+                                                <fmt:formatNumber value="${course.feeCombo}" type="currency" currencySymbol="₫"/>
+                                            </span>
+                                        </c:if>
+                                        <c:if test="${course.courseType == 'daily'}">
+                                            <span style="font-size: 1.1rem; font-weight: bold; color: #673ab7;">
+                                                <fmt:formatNumber value="${course.feeDaily}" type="currency" currencySymbol="₫"/> / buổi
+                                            </span>
+                                        </c:if>
+                                        <span style="font-size: 0.9rem; color: #666;">
+                                            ${course.studentEnrollment}/${course.maxStudents} học sinh
+                                        </span>
+                                    </div>
+                                    <a href="chi-tiet-khoa-hoc?courseId=${course.id}" style="text-decoration: none; color: #673ab7; font-weight: 600; display: inline-block; width: 100%; text-align: center; padding: 0.5rem; border: 2px solid #673ab7; border-radius: 8px; transition: all 0.3s ease; margin-top: auto;">
+                                        Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>
+                        </c:if>
+                    </c:forEach>
+                </div>
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="danh-sach-lop" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Xem Tất Cả Khóa Học</a>
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div style="text-align: center; padding: 3rem;">
+                    <p style="font-size: 1.1rem; color: #666;">Đang cập nhật thông tin khóa học...</p>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</section>
+
 <section class="homepage-cta">
     <div class="homepage-container">
         <h2>Bắt Đầu Hành Trình Học Tập Ngay Hôm Nay</h2>
         <p>Đăng ký ngay để được tư vấn miễn phí và nhận ưu đãi đặc biệt cho khóa học đầu tiên</p>
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <a href="dang-ky" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Tư Vấn Miễn Phí</a>
-            <a href="tel:0123456789" class="homepage-btn" style="background: #f8f9fa; color: #333; font-size: 1.1rem; padding: 1rem 2rem;">Gọi Ngay: 0123 456 789</a>
+            <a href="tel:${centerInfo != null ? centerInfo.phone : '0123456789'}" class="homepage-btn" style="background: #f8f9fa; color: #333; font-size: 1.1rem; padding: 1rem 2rem;">Gọi Ngay: ${centerInfo != null ? centerInfo.phone : '0123 456 789'}</a>
         </div>
     </div>
 </section>

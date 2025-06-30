@@ -51,7 +51,7 @@
                     <label class="form-label fw-semibold">Ngày học</label>
                     <select class="form-select" name="dayOfWeek">
                         <option value="">-- Tất cả --</option>
-                        <option value="Moday" ${param.dayOfWeek == 'Moday' ? 'selected' : ''}>Thứ 2</option>
+                        <option value="Monday" ${param.dayOfWeek == 'Monday' ? 'selected' : ''}>Thứ 2</option>
                         <option value="Tuesday" ${param.dayOfWeek == 'Tuesday' ? 'selected' : ''}>Thứ 3</option>
                         <option value="Wednesday" ${param.dayOfWeek == 'Wednesday' ? 'selected' : ''}>Thứ 4</option>
                         <option value="Thursday" ${param.dayOfWeek == 'Thursday' ? 'selected' : ''}>Thứ 5</option>
@@ -116,10 +116,10 @@
                                        section.dayOfWeek
                                    }"/>
                         </td>
-                        <td>${section.formattedStartTime}</td>
-                        <td>${section.formattedEndTime}</td>
+                        <td>${section.startTimeFormatted}</td>
+                        <td>${section.endTimeFormatted}</td>
                         <td>${section.classroom}</td>
-                        <td>${section.formattedDateTime}</td>
+                        <td>${section.dateFormatted}</td>
                         <td>
                             <c:choose>
                                 <c:when test="${section.status.toString() == 'active'}">

@@ -22,7 +22,7 @@ import modal.NotificationModal;
  *
  * @author Minh Thu
  */
-public class NotificationAPI extends HttpServlet {
+public class NotificationAPIServlet extends HttpServlet {
    private NotificationDao dao;
 
     @Override

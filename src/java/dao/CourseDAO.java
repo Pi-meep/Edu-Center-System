@@ -5,16 +5,12 @@
 package dao;
 
 import dto.CourseDTO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import modal.CourseModal;
 import utils.DBUtil;
-import java.sql.*;
 
 /**
  *
@@ -544,15 +540,14 @@ public class CourseDAO extends DBUtil {
 
     public List<CourseModal> getCoursesByStudentId(int studentId) {
         List<CourseModal> courseList = new ArrayList<>();
-        String sql = "SELECT DISTINCT c.* "
-                + "FROM course c "
-                + "JOIN section s ON c.id = s.courseId "
-                + "JOIN student_section ss ON ss.sectionId = s.id "
-                + "WHERE ss.studentId = ? "
-                + "ORDER BY c.created_at DESC";
+        String sql = """
+            SELECT c.* FROM course c
+            JOIN student_course sc ON c.id = sc.courseId
+            WHERE sc.studentId = ? AND c.status = 'activated'
+            ORDER BY c.created_at DESC
+        """;
 
-        try (Connection conn = DBUtil.getConnection(); PreparedStatement pre = conn.prepareStatement(sql)) {
-
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) {
             pre.setInt(1, studentId);
             try (ResultSet rs = pre.executeQuery()) {
                 while (rs.next()) {
@@ -562,8 +557,39 @@ public class CourseDAO extends DBUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return courseList;
+    }
+
+    /**
+     * Lấy danh sách khóa học hot (isHot = true)
+     * @param limit Giới hạn số lượng khóa học
+     * @return Danh sách khóa học hot
+     */
+    public List<CourseModal> getHotCourses(int limit) {
+        List<CourseModal> hotCourses = new ArrayList<>();
+        String sql = """
+            SELECT c.*, a.name as teacherName 
+            FROM course c
+            JOIN teacher t ON c.teacherId = t.id
+            JOIN account a ON t.accountId = a.id
+            WHERE c.isHot = true AND c.status = 'activated'
+            ORDER BY c.created_at DESC
+            LIMIT ?
+        """;
+
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) {
+            pre.setInt(1, limit);
+            try (ResultSet rs = pre.executeQuery()) {
+                while (rs.next()) {
+                    CourseModal course = mapResultSetToCourse(rs);
+                    // Có thể thêm teacherName vào course nếu cần
+                    hotCourses.add(course);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return hotCourses;
     }
 
 }

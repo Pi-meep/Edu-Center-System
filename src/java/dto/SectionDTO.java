@@ -4,6 +4,7 @@
  */
 package dto;
 
+import java.time.LocalDateTime;
 import modal.SectionModal;
 import modal.SectionModal.DayOfWeekEnum;
 import modal.SectionModal.Status;
@@ -16,32 +17,77 @@ public class SectionDTO {
 
     private Integer id;
     private Integer courseId;
+    private String courseName;
     private DayOfWeekEnum dayOfWeek;
     private String classroom;
     private Status status;
     private String teacherName;
 
-    private String formattedStartTime;
-    private String formattedEndTime;
-    private String formattedDateTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private LocalDateTime dateTime;
+    private String startTimeFormatted;
+    private String endTimeFormatted;
+    private String dateFormatted;
 
     private SectionModal section;
 
-    public SectionDTO(SectionModal section,
-            String formattedStartTime,
-            String formattedEndTime,
-            String formattedDateTime) {
+    public SectionDTO() {
+    }
+
+    public SectionDTO(String startTimeFormatted, String endTimeFormatted, String dateFormatted, SectionModal section) {
+        this.startTimeFormatted = startTimeFormatted;
+        this.endTimeFormatted = endTimeFormatted;
+        this.dateFormatted = dateFormatted;
         this.section = section;
+    }
 
-        this.id = section.getId();
-        this.courseId = section.getCourseId();
-        this.dayOfWeek = section.getDayOfWeek();
-        this.classroom = section.getClassroom();
-        this.status = section.getStatus();
+    public String getStartTimeFormatted() {
+        return startTimeFormatted;
+    }
 
-        this.formattedStartTime = formattedStartTime;
-        this.formattedEndTime = formattedEndTime;
-        this.formattedDateTime = formattedDateTime;
+    public void setStartTimeFormatted(String startTimeFormatted) {
+        this.startTimeFormatted = startTimeFormatted;
+    }
+
+    public String getEndTimeFormatted() {
+        return endTimeFormatted;
+    }
+
+    public void setEndTimeFormatted(String endTimeFormatted) {
+        this.endTimeFormatted = endTimeFormatted;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime;
+    }
+    
+    public String getDateFormatted() {
+        return dateFormatted;
+    }
+
+    public void setDateFormatted(String dateFormatted) {
+        this.dateFormatted = dateFormatted;
     }
 
     public Integer getId() {
@@ -54,6 +100,14 @@ public class SectionDTO {
 
     public String getTeacherName() {
         return teacherName;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
     }
 
     public void setTeacherName(String teacherName) {
@@ -70,18 +124,6 @@ public class SectionDTO {
 
     public Status getStatus() {
         return status;
-    }
-
-    public String getFormattedStartTime() {
-        return formattedStartTime;
-    }
-
-    public String getFormattedEndTime() {
-        return formattedEndTime;
-    }
-
-    public String getFormattedDateTime() {
-        return formattedDateTime;
     }
 
     public SectionModal getSection() {
@@ -108,21 +150,8 @@ public class SectionDTO {
         this.status = status;
     }
 
-    public void setFormattedStartTime(String formattedStartTime) {
-        this.formattedStartTime = formattedStartTime;
-    }
-
-    public void setFormattedEndTime(String formattedEndTime) {
-        this.formattedEndTime = formattedEndTime;
-    }
-
-    public void setFormattedDateTime(String formattedDateTime) {
-        this.formattedDateTime = formattedDateTime;
-    }
-
     public void setSection(SectionModal section) {
         this.section = section;
     }
-    
-    
+
 }

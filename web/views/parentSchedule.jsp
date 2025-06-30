@@ -17,7 +17,7 @@
     }
     
     java.util.List<String> weekDays = new java.util.ArrayList<>();
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 7; i++) {
         java.time.LocalDate day = targetWeek.plusDays(i);
         weekDays.add(day.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
     }
@@ -197,7 +197,7 @@
 }
 .ps-schedule-table {
     display: grid;
-    grid-template-columns: 120px repeat(5, 1fr);
+    grid-template-columns: 120px repeat(7, 1fr);
     gap: 0.5rem;
 }
 .ps-time-header, .ps-day-header {
@@ -219,24 +219,27 @@
     border: 1px solid rgba(102,126,234,0.2);
 }
 .ps-time-slot {
-    height: 80px;
+    height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    color: #666;
-    background: #f8f9ff;
-    border: 1px solid #e1e8ed;
+    font-size: 0.85rem;
+    color: #495057;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
     border-radius: 8px;
+    font-weight: 600;
+    text-align: center;
 }
 
 /* Fixed CSS for schedule cells and lessons */
 .ps-schedule-cell {
     position: relative;
-    height: 80px;
-    border: 1px solid #e1e8ed;
+    height: 140px;
+    padding: 12px;
+    border: 1px solid #dee2e6;
     border-radius: 8px;
-    background: #f8f9ff;
+    background: white;
 }
 
 .ps-lesson {
@@ -384,29 +387,40 @@
         gap: 1rem;
         text-align: center;
     }
+    .ps-schedule-main {
+        padding: 0 1rem;
+        overflow-x: auto;
+    }
+    .ps-schedule-container {
+        min-width: 900px;
+    }
     .ps-schedule-table {
-        grid-template-columns: 100px repeat(5, 1fr);
+        grid-template-columns: 80px repeat(7, 1fr);
+        min-width: 900px;
         gap: 0.25rem;
     }
     .ps-time-slot {
-        height: 60px;
-        font-size: 0.7rem;
+        height: 120px;
+        font-size: 0.75rem;
+        padding: 8px 4px;
     }
     .ps-schedule-cell {
-        height: 60px;
+        height: 120px;
+        padding: 8px;
     }
     .ps-lesson {
-        padding: 6px;
-        font-size: 0.7rem;
+        padding: 8px;
+        font-size: 0.75rem;
+        height: calc(100% - 10px);
     }
     .ps-lesson-subject {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         margin-bottom: 2px;
     }
     .ps-lesson-teacher,
     .ps-lesson-time,
     .ps-lesson-room {
-        font-size: 0.65rem;
+        font-size: 0.7rem;
         margin-bottom: 1px;
     }
     .ps-children-grid {
@@ -509,18 +523,20 @@
                     <div class="ps-day-header">Thứ 4</div>
                     <div class="ps-day-header">Thứ 5</div>
                     <div class="ps-day-header">Thứ 6</div>
+                    <div class="ps-day-header">Thứ 7</div>
+                    <div class="ps-day-header">Chủ nhật</div>
                     
                     <!-- Time slots and lessons -->
-                    <c:forEach var="hour" begin="7" end="21" step="2">
+                    <c:forEach var="hour" begin="7" end="19" step="3">
                         <c:set var="startHour" value="${hour}" />
-                        <c:set var="endHour" value="${hour + 2}" />
+                        <c:set var="endHour" value="${hour + 3}" />
                         <c:set var="timeSlot" value="${startHour < 10 ? '0' : ''}${startHour}:00:00 - ${endHour < 10 ? '0' : ''}${endHour}:00:00" />
                         
                         <!-- Time slot header -->
                         <div class="ps-time-slot">${timeSlot}</div>
                         
                         <!-- Days -->
-                        <c:forEach var="day" items="${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}">
+                        <c:forEach var="day" items="${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}">
                             <c:set var="found" value="false" />
                             <c:forEach var="section" items="${scheduleData.schedule[day]}">
                                 <c:set var="sectionDate" value="${section.dateTime}" />

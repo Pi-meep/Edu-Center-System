@@ -39,11 +39,6 @@ public class ManagerConsultationServlet extends HttpServlet {
      * - approve: cập nhật trạng thái tư vấn thành "accepted".
      * - create: chuyển hướng sang trang tạo tài khoản với ID tư vấn.
      * - list (mặc định): hiển thị danh sách tư vấn kèm tìm kiếm/lọc theo tên và trạng thái.
-     *
-     * @param request yêu cầu HTTP từ client
-     * @param response phản hồi HTTP gửi về client
-     * @throws ServletException nếu xảy ra lỗi Servlet
-     * @throws IOException nếu xảy ra lỗi I/O
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -77,7 +72,7 @@ public class ManagerConsultationServlet extends HttpServlet {
             case "list":
             default:
                 String name = request.getParameter("name");
-                String status = request.getParameter("filter");
+                String status = request.getParameter("status");
 
                 List<ConsultationDTO> consultations = dao.listAndSearchConsultations(name, status);
 

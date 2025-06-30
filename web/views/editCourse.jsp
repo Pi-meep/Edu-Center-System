@@ -18,7 +18,14 @@
             <form method="post" action="quan-ly-khoa-hoc" id="editCourseForm">
                 <input type="hidden" name="action" value="update" />
                 <input type="hidden" name="id" value="${course.id}" />
-
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Giáo viên</label>
+                    <select name="teacherId" class="form-select" required>
+                        <c:forEach var="t" items="${teacherList}">
+                            <option value="${t.id}" ${t.id == course.teacherId ? 'selected' : ''}>${t.name}</option>
+                        </c:forEach>
+                    </select>
+                </div>
                 <!-- Tên khóa học -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Tên khóa học</label>
@@ -124,9 +131,7 @@
                         <i class="fas fa-save me-2"></i>Lưu thay đổi
                     </button>
                 </div>
-                <p style="color:red">FORM END</p>
             </form>
-                    <p style="color:red">FORM END</p>
         </div>
     </div>
 </div>

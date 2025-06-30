@@ -295,6 +295,12 @@
                                         <span class="ttr-label">Hồ sơ</span>
                                     </a>
                                 </li>
+                                <li>
+                                    <a href="admin-cau-hinh-he-thong" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fa fa-cog"></i></span>
+                                        <span class="ttr-label">Cấu hình</span>
+                                    </a>
+                                </li>
                             </c:when>
                             <c:when test="${loggedInUserRole == 'staff'}">
                                 <li>
@@ -311,30 +317,6 @@
                                 </li>
                             </c:when>
                             <c:when test="${loggedInUserRole == null}">
-                                <li>
-                                    <a href="bang-dieu-khien" class="ttr-material-button">
-                                        <span class="ttr-icon"><i class="fa fa-home"></i></span>
-                                        <span class="ttr-label">Bảng điều khiển</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin-quan-ly-tai-khoan" class="ttr-material-button">
-                                        <span class="ttr-icon"><i class="fa fa-user-circle"></i></span>
-                                        <span class="ttr-label">Tài khoản</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin-quan-ly-nhan-su" class="ttr-material-button">
-                                        <span class="ttr-icon"><i class="fa fa-user-circle"></i></span>
-                                        <span class="ttr-label">Tài khoản nhân sự</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin-ca-nhan" class="ttr-material-button">
-                                        <span class="ttr-icon"><i class="fa fa-address-card"></i></span>
-                                        <span class="ttr-label">Hồ sơ</span>
-                                    </a>
-                                </li>
                             </c:when>
                         </c:choose>
                         <li class="ttr-seperate"></li>

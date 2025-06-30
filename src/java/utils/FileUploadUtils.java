@@ -52,6 +52,54 @@ public class FileUploadUtils {
         return "certs/" + randomName;
     }
 
+    /**
+     * Upload file cho banners, logos, qr_codes
+     * @param part phần multipart upload
+     * @param subDir thư mục con (banners, logos, qr_codes)
+     * @param webRootPath đường dẫn gốc web
+     * @return đường dẫn tương đối lưu vào DB, ví dụ "banners/abc123.jpg"
+     */
+    public static String uploadFile(Part part, String subDir, String webRootPath) throws IOException {
+        if (part == null || part.getSize() == 0) {
+            return null;
+        }
+
+        // 1) Validate file type
+        String fileName = part.getSubmittedFileName();
+        if (!isValidImageFile(fileName)) {
+            throw new IOException("Chỉ chấp nhận file hình ảnh (jpg, jpeg, png, gif)");
+        }
+
+        // 2) Tạo tên file ngẫu nhiên
+        String ext = getFileExtension(fileName);
+        String randomName = UUID.randomUUID().toString() + "." + ext;
+
+        // 3) Tạo thư mục đích
+        File targetDir = new File(webRootPath, "assets/" + subDir);
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
+        }
+
+        // 4) Ghi file
+        File destFile = new File(targetDir, randomName);
+        part.write(destFile.getAbsolutePath());
+
+        // 5) Trả về đường dẫn tương đối
+        return "assets/" + subDir + "/" + randomName;
+    }
+
+    /**
+     * Kiểm tra file có phải là hình ảnh không
+     */
+    private static boolean isValidImageFile(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return false;
+        }
+        
+        String ext = getFileExtension(fileName).toLowerCase();
+        return ext.equals("jpg") || ext.equals("jpeg") || ext.equals("png") || ext.equals("gif");
+    }
+
     private static String getFileExtension(String name) {
         int dot = name.lastIndexOf('.');
         return dot > 0 && dot < name.length() - 1

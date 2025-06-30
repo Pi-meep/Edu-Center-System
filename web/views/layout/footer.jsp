@@ -78,8 +78,8 @@
 <footer class="footer">
     <div class="footer-content">
         <div class="footer-section">
-            <h3>EduCenter</h3>
-            <p>Trung tâm dạy thêm uy tín, chất lượng hàng đầu với sứ mệnh nâng cao trình độ học vấn cho mọi học sinh.</p>
+            <h3>${centerInfo != null ? centerInfo.centerName : 'EduCenter'}</h3>
+            <p>${centerInfo != null ? centerInfo.description : 'Trung tâm dạy thêm uy tín, chất lượng hàng đầu với sứ mệnh nâng cao trình độ học vấn cho mọi học sinh.'}</p>
         </div>
         <div class="footer-section">
             <h3>Khóa Học</h3>
@@ -93,24 +93,38 @@
         <div class="footer-section">
             <h3>Liên Hệ</h3>
             <ul>
-                <li>📍 123 Đường ABC, Quận XYZ, TP.HCM</li>
-                <li>📞 0123 456 789</li>
-                <li>✉️ info@educenter.vn</li>
-                <li>🌐 www.educenter.vn</li>
+                <li>📍 ${centerInfo != null ? centerInfo.address : '123 Đường ABC, Quận XYZ, TP.HCM'}</li>
+                <li>📞 ${centerInfo != null ? centerInfo.phone : '0123 456 789'}</li>
+                <li>✉️ ${centerInfo != null ? centerInfo.email : 'info@educenter.vn'}</li>
+                <li>🌐 ${centerInfo != null ? centerInfo.website : 'www.educenter.vn'}</li>
             </ul>
         </div>
         <div class="footer-section">
             <h3>Theo Dõi</h3>
             <ul>
-                <li><a href="#">Facebook</a></li>
-                <li><a href="#">YouTube</a></li>
-                <li><a href="#">Zalo</a></li>
-                <li><a href="#">Instagram</a></li>
+                <c:if test="${centerInfo != null && not empty centerInfo.facebook}">
+                    <li><a href="${centerInfo.facebook}" target="_blank">Facebook</a></li>
+                </c:if>
+                <c:if test="${centerInfo != null && not empty centerInfo.youtube}">
+                    <li><a href="${centerInfo.youtube}" target="_blank">YouTube</a></li>
+                </c:if>
+                <c:if test="${centerInfo != null && not empty centerInfo.instagram}">
+                    <li><a href="${centerInfo.instagram}" target="_blank">Instagram</a></li>
+                </c:if>
+                <c:if test="${centerInfo == null || empty centerInfo.facebook}">
+                    <li><a href="#">Facebook</a></li>
+                </c:if>
+                <c:if test="${centerInfo == null || empty centerInfo.youtube}">
+                    <li><a href="#">YouTube</a></li>
+                </c:if>
+                <c:if test="${centerInfo == null || empty centerInfo.instagram}">
+                    <li><a href="#">Instagram</a></li>
+                </c:if>
             </ul>
         </div>
     </div>
     <div class="footer-bottom">
-        <p>&copy; 2025 EduCenter. Tất cả quyền được bảo lưu.</p>
+        <p>&copy; 2025 ${centerInfo != null ? centerInfo.centerName : 'EduCenter'}. Tất cả quyền được bảo lưu.</p>
     </div>
 </footer>
 

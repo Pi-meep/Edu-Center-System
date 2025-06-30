@@ -33,11 +33,11 @@
         </div>
 
         <div class="row mb-2">
-            <div class="col-md-6"><strong>Giờ bắt đầu:</strong> ${section.formattedStartTime}</div>
-            <div class="col-md-6"><strong>Giờ kết thúc:</strong> ${section.formattedEndTime}</div>
+            <div class="col-md-6"><strong>Giờ bắt đầu:</strong> ${section.startTimeFormatted}</div>
+            <div class="col-md-6"><strong>Giờ kết thúc:</strong> ${section.endTimeFormatted}</div>
         </div>
         <div class="row mb-2">
-            <div class="col-md-6"><strong>Ngày học:</strong> ${section.formattedDateTime}</div>
+            <div class="col-md-6"><strong>Ngày học:</strong> ${section.dateFormatted}</div>
             <div class="col-md-6"><strong>Phòng học:</strong> ${section.classroom}</div>
         </div>
         <div class="row mb-2">

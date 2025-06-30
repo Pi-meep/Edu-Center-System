@@ -29,7 +29,15 @@
             </tr>
             <tr>
                 <th>Trạng thái</th>
-                <td class="text-capitalize">${consultation.status}</td>
+                <td class="text-capitalize">
+                    <c:choose>
+                        <c:when test="${consultation.status == 'pending'}">Chờ xử lý</c:when>
+                        <c:when test="${consultation.status == 'accepted'}">Đã chấp nhận</c:when>
+                        <c:when test="${consultation.status == 'rejected'}">Từ chối</c:when>
+                        <c:otherwise>Không xác định</c:otherwise>
+                    </c:choose>
+                </td>
+
             </tr>
 
             <c:if test="${not empty consultation.address}">

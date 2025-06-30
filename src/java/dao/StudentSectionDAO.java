@@ -4,18 +4,17 @@
 package dao;
 
 import java.sql.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import utils.DBUtil;
-import modal.StudentSectionModal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import modal.CourseModal;
 import modal.SectionModal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
+import modal.StudentSectionModal;
+import utils.DBUtil;
 
 public class StudentSectionDAO {
 
@@ -80,23 +79,23 @@ public class StudentSectionDAO {
         List<Map<String, Object>> report = new ArrayList<>();
         String sql = """
             SELECT 
-                s.id as student_id,
-                a.name as student_name,
-                a.username as student_email,
-                sc.status as enrollment_status,
-                sc.isPaid as course_paid,
-                COUNT(ss.id) as total_sections,
-                SUM(CASE WHEN ss.attendanceStatus = true THEN 1 ELSE 0 END) as attended_sections,
-                SUM(CASE WHEN ss.attendanceStatus = false THEN 1 ELSE 0 END) as missed_sections,
-                ROUND((SUM(CASE WHEN ss.attendanceStatus = true THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(ss.id), 0)), 2) as attendance_percentage
-            FROM student s
-            JOIN account a ON s.accountId = a.id
-            JOIN student_course sc ON s.id = sc.studentId
-            LEFT JOIN student_section ss ON s.id = ss.studentId
-            LEFT JOIN section sec ON ss.sectionId = sec.id
-            WHERE sc.courseId = ? AND (sec.courseId = ? OR sec.courseId IS NULL)
-            GROUP BY s.id, a.name, a.username, sc.status, sc.isPaid
-            ORDER BY a.name
+            s.id as student_id,
+            a.name as student_name,
+            a.username as student_email,
+            sc.status as enrollment_status,
+            sc.isPaid as course_paid,
+            COUNT(ss.id) as total_sections,
+            SUM(CASE WHEN ss.attendanceStatus = 'present' THEN 1 ELSE 0 END) as attended_sections,
+            SUM(CASE WHEN ss.attendanceStatus = 'absent' THEN 1 ELSE 0 END) as missed_sections,
+            ROUND((SUM(CASE WHEN ss.attendanceStatus = 'present' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(ss.id), 0)), 2) as attendance_percentage
+        FROM student s
+        JOIN account a ON s.accountId = a.id
+        JOIN student_course sc ON s.id = sc.studentId
+        LEFT JOIN student_section ss ON s.id = ss.studentId
+        LEFT JOIN section sec ON ss.sectionId = sec.id
+        WHERE sc.courseId = ? AND (sec.courseId = ? OR sec.courseId IS NULL)
+        GROUP BY s.id, a.name, a.username, sc.status, sc.isPaid
+        ORDER BY a.name
         """;
 
         try (Connection con = DBUtil.getConnection(); 
@@ -130,16 +129,16 @@ public class StudentSectionDAO {
         Map<String, Object> stats = new HashMap<>();
         String sql = """
             SELECT 
-                COUNT(DISTINCT sc.studentId) as total_students,
-                COUNT(DISTINCT sec.id) as total_sections,
-                COUNT(ss.id) as total_attendance_records,
-                SUM(CASE WHEN ss.attendanceStatus = true THEN 1 ELSE 0 END) as total_present,
-                SUM(CASE WHEN ss.attendanceStatus = false THEN 1 ELSE 0 END) as total_absent,
-                ROUND((SUM(CASE WHEN ss.attendanceStatus = true THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(ss.id), 0)), 2) as overall_attendance_rate
-            FROM student_course sc
-            LEFT JOIN section sec ON sc.courseId = sec.courseId
-            LEFT JOIN student_section ss ON sc.studentId = ss.studentId AND ss.sectionId = sec.id
-            WHERE sc.courseId = ?
+            COUNT(DISTINCT sc.studentId) as total_students,
+            COUNT(DISTINCT sec.id) as total_sections,
+            COUNT(ss.id) as total_attendance_records,
+            SUM(CASE WHEN ss.attendanceStatus = 'present' THEN 1 ELSE 0 END) as total_present,
+            SUM(CASE WHEN ss.attendanceStatus = 'absent' THEN 1 ELSE 0 END) as total_absent,
+            ROUND((SUM(CASE WHEN ss.attendanceStatus = 'present' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(ss.id), 0)), 2) as overall_attendance_rate
+        FROM student_course sc
+        LEFT JOIN section sec ON sc.courseId = sec.courseId
+        LEFT JOIN student_section ss ON sc.studentId = ss.studentId AND ss.sectionId = sec.id
+        WHERE sc.courseId = ?
         """;
 
         try (Connection con = DBUtil.getConnection(); 
@@ -159,28 +158,6 @@ public class StudentSectionDAO {
             }
         }
         return stats;
-    }
-
-    public List<StudentSectionModal> getStudentAttendanceDetails(int studentId, int courseId) throws Exception {
-        List<StudentSectionModal> attendanceList = new ArrayList<>();
-        String sql = """
-            SELECT ss.* FROM student_section ss
-            JOIN section sec ON ss.sectionId = sec.id
-            WHERE ss.studentId = ? AND sec.courseId = ?
-            ORDER BY sec.dateTime
-        """;
-
-        try (Connection con = DBUtil.getConnection(); 
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setInt(1, studentId);
-            stmt.setInt(2, courseId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    attendanceList.add(mapResultSetToStudentSection(rs));
-                }
-            }
-        }
-        return attendanceList;
     }
 
     // FIXED: Section report with consistent column naming
@@ -221,7 +198,19 @@ public class StudentSectionDAO {
                     studentReport.put("studentId", rs.getInt("student_id"));
                     studentReport.put("studentName", rs.getString("student_name"));
                     studentReport.put("studentEmail", rs.getString("student_email"));
-                    studentReport.put("attendanceStatus", rs.getBoolean("attendance_status"));
+                    // Lấy attendanceStatus là chuỗi ENUM → chuyển thành display name từ enum
+                    String statusStr = rs.getString("attendance_status");
+                    System.out.println("Raw status from DB: " + statusStr); // <-- DEBUG
+
+                    StudentSectionModal.AttendanceStatus status = null;
+                    try {
+                        status = StudentSectionModal.AttendanceStatus.valueOf(statusStr);
+                        System.out.println("Mapped enum: " + status + " → displayName: " + status.name()); // <-- DEBUG
+                    } catch (IllegalArgumentException | NullPointerException e) {
+                        System.out.println("Invalid status value: " + statusStr); // <-- DEBUG
+                        status = null;
+                    }
+                    studentReport.put("attendanceStatus", status != null ? status.name() : "Không xác định");
                     studentReport.put("coursePaid", rs.getBoolean("course_paid"));
                     
                     // Handle potential null attendance_date
@@ -244,8 +233,8 @@ public class StudentSectionDAO {
                         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
                         LocalTime startTime = startTimeDb.toLocalTime();
                         LocalTime endTime = endTimeDb.toLocalTime();
-                        studentReport.put("startTime", timeFormatter.format(startTime));
-                        studentReport.put("endTime", timeFormatter.format(endTime));
+                        studentReport.put("startTime", timeFormatter.format(startTimeDb.toLocalTime()));
+                        studentReport.put("endTime", timeFormatter.format(endTimeDb.toLocalTime()));
                     }
 
                     studentReport.put("courseName", rs.getString("course_name"));
@@ -303,6 +292,8 @@ public class StudentSectionDAO {
         
         s.setClassroom(rs.getString("classroom"));
         s.setStatus(SectionModal.Status.valueOf(rs.getString("status")));
+        s.setTeacherId(rs.getInt("teacherId"));
+        s.setNote(rs.getString("note"));
         return s;
     }
 
@@ -312,7 +303,11 @@ public class StudentSectionDAO {
         ss.setStudentId(rs.getInt("studentId"));
         ss.setSectionId(rs.getInt("sectionId"));
         ss.setIsPaid(rs.getBoolean("isPaid"));
-        ss.setAttendanceStatus(rs.getBoolean("attendanceStatus"));
+        String statusStr = rs.getString("attendanceStatus");
+        if (statusStr != null) {
+            ss.setAttendanceStatus(StudentSectionModal.AttendanceStatus.valueOf(statusStr));
+        }
+
         
         Timestamp createdAtTs = rs.getTimestamp("created_at");
         if (createdAtTs != null) {
@@ -454,21 +449,50 @@ public class StudentSectionDAO {
         return students;
     }
 
-    public boolean getAttendanceStatus(int studentId, int sectionId) throws Exception {
+    public StudentSectionModal.AttendanceStatus getAttendanceStatus(int studentId, int sectionId) throws Exception {
         String sql = "SELECT attendanceStatus FROM student_section WHERE studentId = ? AND sectionId = ?";
         try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, sectionId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getBoolean("attendanceStatus");
+                    String statusStr = rs.getString("attendanceStatus");
+                    if (statusStr != null) {
+                        try {
+                            return StudentSectionModal.AttendanceStatus.valueOf(statusStr);
+                        } catch (IllegalArgumentException e) {
+                            System.err.println("Invalid attendance status: " + statusStr);
+                            return null;
+                        }
+                    }
                 }
-                return false; // Default to false if no record exists
+                return null;
             }
         }
     }
 
-    public boolean upsertAttendance(int studentId, int sectionId, boolean isPresent) {
+    public List<StudentSectionModal> getStudentAttendanceDetails(int studentId, int courseId) throws Exception {
+        List<StudentSectionModal> attendanceList = new ArrayList<>();
+        String sql = """
+            SELECT ss.* FROM student_section ss
+            JOIN section sec ON ss.sectionId = sec.id
+            WHERE ss.studentId = ? AND sec.courseId = ?
+            ORDER BY sec.dateTime
+        """;
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, courseId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    attendanceList.add(mapResultSetToStudentSection(rs));
+                }
+            }
+        }
+        return attendanceList;
+    }
+
+    public boolean upsertAttendance(int studentId, int sectionId, StudentSectionModal.AttendanceStatus attendanceStatus) {
         String checkSql = "SELECT COUNT(*) FROM student_section WHERE studentId = ? AND sectionId = ?";
         String insertSql = "INSERT INTO student_section (studentId, sectionId, attendanceStatus, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
         String updateSql = "UPDATE student_section SET attendanceStatus = ?, created_at = CURRENT_TIMESTAMP WHERE studentId = ? AND sectionId = ?";
@@ -484,7 +508,7 @@ public class StudentSectionDAO {
                         if (rs.next() && rs.getInt(1) > 0) {
                             // Update existing record
                             try (PreparedStatement updateStmt = con.prepareStatement(updateSql)) {
-                                updateStmt.setBoolean(1, isPresent);
+                                updateStmt.setString(1, attendanceStatus.name());
                                 updateStmt.setInt(2, studentId);
                                 updateStmt.setInt(3, sectionId);
                                 updateStmt.executeUpdate();
@@ -494,7 +518,7 @@ public class StudentSectionDAO {
                             try (PreparedStatement insertStmt = con.prepareStatement(insertSql)) {
                                 insertStmt.setInt(1, studentId);
                                 insertStmt.setInt(2, sectionId);
-                                insertStmt.setBoolean(3, isPresent);
+                                insertStmt.setString(3, attendanceStatus.name());
                                 insertStmt.executeUpdate();
                             }
                         }

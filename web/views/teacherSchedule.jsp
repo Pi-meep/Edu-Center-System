@@ -17,7 +17,7 @@
     }
     
     java.util.List<String> weekDays = new java.util.ArrayList<>();
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 7; i++) {
         java.time.LocalDate day = targetWeek.plusDays(i);
         weekDays.add(day.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
     }
@@ -135,7 +135,7 @@
 }
 .ts-schedule-table {
     display: grid;
-    grid-template-columns: 120px repeat(5, 1fr);
+    grid-template-columns: 120px repeat(7, 1fr);
     gap: 0.5rem;
 }
 .ts-time-header, .ts-day-header {
@@ -157,7 +157,7 @@
     border: 1px solid rgba(102,126,234,0.2);
 }
 .ts-time-slot {
-    height: 100px;
+    height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,8 +170,8 @@
     text-align: center;
 }
 .ts-schedule-cell {
-    height: 100px;
-    padding: 8px;
+    height: 140px;
+    padding: 12px;
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
@@ -309,15 +309,15 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
     .ts-schedule-table {
-        grid-template-columns: 100px repeat(5, 1fr);
-        min-width: 600px;
+        grid-template-columns: 100px repeat(7, 1fr);
+        min-width: 800px;
     }
     .ts-time-slot {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         padding: 10px 5px;
-        height: 100px;
+        height: 130px;
     }
     .ts-day-header {
         font-size: 0.85rem;
@@ -325,8 +325,8 @@
         height: 50px;
     }
     .ts-schedule-cell {
-        height: 100px;
-        padding: 6px;
+        height: 130px;
+        padding: 10px;
     }
     .ts-lesson {
         padding: 8px;
@@ -335,6 +335,57 @@
     }
     .ts-lesson-title {
         font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .ts-schedule-main {
+        padding: 0 1rem;
+        overflow-x: auto;
+    }
+    .ts-schedule-container {
+        min-width: 900px;
+    }
+    .ts-schedule-table {
+        grid-template-columns: 80px repeat(7, 1fr);
+        min-width: 900px;
+    }
+    .ts-time-slot {
+        font-size: 0.75rem;
+        padding: 8px 4px;
+        height: 120px;
+    }
+    .ts-day-header {
+        font-size: 0.8rem;
+        padding: 8px 4px;
+        height: 45px;
+    }
+    .ts-schedule-cell {
+        height: 120px;
+        padding: 8px;
+    }
+    .ts-lesson {
+        padding: 8px;
+        font-size: 0.75rem;
+        height: calc(100% - 10px);
+    }
+    .ts-lesson-title {
+        font-size: 0.8rem;
+    }
+    .ts-lesson-subject {
+        font-size: 0.75rem;
+    }
+    .ts-lesson-grade {
+        font-size: 0.7rem;
+    }
+    .ts-lesson-time {
+        font-size: 0.7rem;
+    }
+    .ts-lesson-room {
+        font-size: 0.7rem;
+    }
+    .ts-lesson-students {
+        font-size: 0.7rem;
     }
 }
 </style>
@@ -392,12 +443,14 @@
                         <div class="ts-day-header">Thứ 4</div>
                         <div class="ts-day-header">Thứ 5</div>
                         <div class="ts-day-header">Thứ 6</div>
+                        <div class="ts-day-header">Thứ 7</div>
+                        <div class="ts-day-header">Chủ nhật</div>
                         
-                        <!-- Tạo danh sách time slots (2 tiếng mỗi slot) -->
+                        <!-- Tạo danh sách time slots (3 tiếng mỗi slot) -->
                         <c:set var="timeSlots" value="" />
-                        <c:forEach var="hour" begin="7" end="21" step="2">
+                        <c:forEach var="hour" begin="7" end="19" step="3">
                             <c:set var="startHour" value="${hour}" />
-                            <c:set var="endHour" value="${hour + 2}" />
+                            <c:set var="endHour" value="${hour + 3}" />
                             <c:set var="timeSlot" value="${startHour < 10 ? '0' : ''}${startHour}:00:00 - ${endHour < 10 ? '0' : ''}${endHour}:00:00" />
                             <c:set var="timeSlots" value="${timeSlots}${timeSlot}," />
                         </c:forEach>
@@ -405,7 +458,7 @@
                             <div class="ts-time-slot">${timeSlot}</div>
                             
                             <!-- Hiển thị section cho từng ngày -->
-                            <c:forEach var="day" items="${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']}">
+                            <c:forEach var="day" items="${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']}">
                                 <div class="ts-schedule-cell">
                                     <c:forEach var="section" items="${scheduleData.schedule[day]}">
                                         <c:set var="sectionDate" value="${section.dateTime}" />

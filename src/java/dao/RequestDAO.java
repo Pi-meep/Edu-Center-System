@@ -11,11 +11,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import modal.RequestModal;
 import modal.RequestModal.Status;
 import utils.DBUtil;
-
 /**
  *
  * @author Astersa
@@ -252,4 +253,30 @@ public class RequestDAO {
         
         return request;
     }
+
+    public List<Map<String, Object>> getRequestsWithAccountBySectionAndCourse(int sectionId, int courseId) throws Exception {
+        List<Map<String, Object>> requests = new ArrayList<>();
+        String sql = "SELECT r.*, a.name AS requesterName FROM request r JOIN account a ON r.requestBy = a.id WHERE r.sectionId = ? AND r.courseId = ? ORDER BY r.createdAt DESC";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, sectionId);
+            ps.setInt(2, courseId);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Map<String, Object> req = new HashMap<>();
+                req.put("id", rs.getInt("id"));
+                req.put("type", rs.getString("type"));
+                req.put("description", rs.getString("description"));
+                req.put("status", rs.getString("status"));
+                req.put("requesterName", rs.getString("requesterName"));
+                req.put("createdAt", rs.getTimestamp("createdAt").toLocalDateTime());
+                requests.add(req);
+            }
+        }
+
+        return requests;
+    }
+
 } 

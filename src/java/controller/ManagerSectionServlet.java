@@ -21,30 +21,24 @@ import modal.SectionModal.DayOfWeekEnum;
 import modal.SectionModal.Status;
 
 /**
- * Servlet dùng để quản lý các chức năng liên quan đến lớp học (section), bao gồm:
- * - Hiển thị danh sách lớp học (tìm kiếm, lọc)
- * - Xem chi tiết lớp học và danh sách học viên
- * - Cập nhật lớp học
- * - Xóa lớp học
+ * Servlet dùng để quản lý các chức năng liên quan đến lớp học (section), bao
+ * gồm: - Hiển thị danh sách lớp học (tìm kiếm, lọc) - Xem chi tiết lớp học và
+ * danh sách học viên - Cập nhật lớp học - Xóa lớp học
  *
  * URL mapping: /quan-ly-lop-hoc
  *
- * Các action hỗ trợ qua tham số ?action=: 
- * - list 
- * - edit 
- * - detail 
- * - delete
+ * Các action hỗ trợ qua tham số ?action=: - list - edit - detail - delete
  *
  * Phần "update" được xử lý ở method POST.
  *
  * @author HanND
  */
-
 public class ManagerSectionServlet extends HttpServlet {
+
     /**
      * Xử lý các request GET: hiển thị danh sách, sửa, xóa và chi tiết lớp học.
      *
-     * @param request  yêu cầu HTTP từ client
+     * @param request yêu cầu HTTP từ client
      * @param response phản hồi HTTP trả về cho client
      * @throws ServletException nếu có lỗi khi forward
      * @throws IOException nếu có lỗi I/O
@@ -60,34 +54,30 @@ public class ManagerSectionServlet extends HttpServlet {
 
         SectionDAO dao = new SectionDAO();
 
-        switch (action) {
-            case "edit" -> {
-                // Hiển thị form chỉnh sửa section
-                int id = Integer.parseInt(request.getParameter("id"));
-                List<SectionDTO> sectionList = dao.getAllSectionsByCourse();
+        try {
+            switch (action) {
+                case "edit" -> {
+                    int id = Integer.parseInt(request.getParameter("id"));
+                    List<SectionDTO> sectionList = dao.getAllSectionsByCourse();
 
-                for (SectionDTO dto : sectionList) {
-                    if (dto.getId() == id) {
-                        request.setAttribute("section", dto);
-                        break;
+                    for (SectionDTO dto : sectionList) {
+                        if (dto.getId() == id) {
+                            request.setAttribute("section", dto);
+                            break;
+                        }
                     }
+                    request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
                 }
-                request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
-            }
-            case "delete" -> {
-                 // Xóa section theo ID
-                try {
+
+                case "delete" -> {
                     int id = Integer.parseInt(request.getParameter("id"));
                     dao.deleteSection(id);
                     response.sendRedirect("quan-ly-lop-hoc");
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            }
-            case "detail" -> {
-                try {
-                 // Hiển thị chi tiết section và danh sách học sinh
+
+                case "detail" -> {
                     int id = Integer.parseInt(request.getParameter("id"));
+
                     SectionDTO section = dao.getSectionDetail(id);
                     request.setAttribute("section", section);
 
@@ -95,40 +85,33 @@ public class ManagerSectionServlet extends HttpServlet {
                     request.setAttribute("studentList", studentList);
 
                     request.getRequestDispatcher("views/detailSection.jsp").forward(request, response);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    response.sendRedirect("quan-ly-lop-hoc");
-                }
-            }
-
-            default -> {
-                 // Hiển thị danh sách hoặc kết quả tìm kiếm section
-                String keyword = request.getParameter("keyword"); // tên khóa học
-                String dayOfWeek = request.getParameter("dayOfWeek");
-                String status = request.getParameter("status");
-
-                List<SectionDTO> sectionList;
-
-                boolean hasFilter = (keyword != null && !keyword.trim().isEmpty())
-                        || (dayOfWeek != null && !dayOfWeek.trim().isEmpty())
-                        || (status != null && !status.trim().isEmpty());
-
-                if (hasFilter) {
-                    sectionList = dao.searchSections(keyword, dayOfWeek, status);
-                } else {
-                    sectionList = dao.getAllSectionsByCourse();
                 }
 
-                request.setAttribute("sectionList", sectionList);
-                request.getRequestDispatcher("views/managerSection.jsp").forward(request, response);
-            }
+                default -> {
+                    String keyword = request.getParameter("keyword");
+                    String dayOfWeek = request.getParameter("dayOfWeek");
+                    String status = request.getParameter("status");
 
+                    List<SectionDTO> sectionList = (keyword != null && !keyword.isBlank())
+                            || (dayOfWeek != null && !dayOfWeek.isBlank())
+                            || (status != null && !status.isBlank())
+                            ? dao.searchSections(keyword, dayOfWeek, status)
+                            : dao.getAllSectionsByCourse();
+
+                    request.setAttribute("sectionList", sectionList);
+                    request.getRequestDispatcher("views/managerSection.jsp").forward(request, response);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("quan-ly-lop-hoc");
         }
     }
+
     /**
      * Xử lý request POST: cập nhật thông tin lớp học (section).
      *
-     * @param request  yêu cầu HTTP từ client
+     * @param request yêu cầu HTTP từ client
      * @param response phản hồi HTTP trả về cho client
      * @throws ServletException nếu có lỗi khi xử lý
      * @throws IOException nếu có lỗi I/O
@@ -140,6 +123,7 @@ public class ManagerSectionServlet extends HttpServlet {
         if ("update".equals(action)) {
             try {
                 int id = Integer.parseInt(request.getParameter("id"));
+                int courseId = Integer.parseInt(request.getParameter("courseId"));
                 String dayOfWeekStr = request.getParameter("dayOfWeek");
                 String startTimeStr = request.getParameter("startTime");
                 String endTimeStr = request.getParameter("endTime");
@@ -150,32 +134,68 @@ public class ManagerSectionServlet extends HttpServlet {
                 LocalDate date = LocalDate.parse(dateStr);
                 LocalTime startTimeOnly = LocalTime.parse(startTimeStr);
                 LocalTime endTimeOnly = LocalTime.parse(endTimeStr);
-
                 LocalDateTime startTime = LocalDateTime.of(date, startTimeOnly);
                 LocalDateTime endTime = LocalDateTime.of(date, endTimeOnly);
-                LocalDateTime dateTime = date.atStartOfDay();
+                LocalDateTime dateTime = startTime;
 
-                SectionModal section = new SectionModal();
-                section.setId(id);
-                section.setDayOfWeek(DayOfWeekEnum.valueOf(dayOfWeekStr));
-                section.setStartTime(startTime);
-                section.setEndTime(endTime);
-                section.setClassroom(classroom);
-                section.setDateTime(dateTime);
-                section.setStatus(Status.valueOf(statusStr));
+                SectionDTO dto = new SectionDTO();
+                dto.setId(id);
+                dto.setCourseId(courseId);
+                dto.setDayOfWeek(DayOfWeekEnum.valueOf(dayOfWeekStr));
+                dto.setStartTime(startTime);
+                dto.setEndTime(endTime);
+                dto.setDateTime(dateTime);
+                dto.setClassroom(classroom);
+                dto.setStatus(Status.valueOf(statusStr));
+
+                dto.setStartTimeFormatted(startTimeOnly.toString());  // "HH:mm"
+                dto.setEndTimeFormatted(endTimeOnly.toString());      // "HH:mm"
+                dto.setDateFormatted(date.toString());                // "yyyy-MM-dd"
 
                 SectionDAO dao = new SectionDAO();
-                dao.updateSection(section);
+                if (dao.isConflictSection(id, classroom, date, startTimeOnly, endTimeOnly)) {
+                    String courseName = dao.getCourseNameById(courseId);
+                    dto.setCourseName(courseName);
 
+                    request.setAttribute("section", dto);
+                    request.setAttribute("error", "Đã có lớp học khác trong cùng phòng, cùng ngày và trùng thời gian.");
+                    request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
+                    return;
+                }
+
+                dao.updateSection(dto);
                 response.sendRedirect("quan-ly-lop-hoc");
 
             } catch (Exception e) {
                 e.printStackTrace();
+
+                // Gán lại DTO nếu có lỗi để hiển thị lại form
+                SectionDTO dto = new SectionDTO();
+                dto.setId(Integer.parseInt(request.getParameter("id")));
+                dto.setCourseId(Integer.parseInt(request.getParameter("courseId")));
+                dto.setClassroom(request.getParameter("classroom"));
+                dto.setStartTimeFormatted(request.getParameter("startTime"));
+                dto.setEndTimeFormatted(request.getParameter("endTime"));
+                dto.setDateFormatted(request.getParameter("dateTime"));
+                dto.setDayOfWeek(DayOfWeekEnum.valueOf(request.getParameter("dayOfWeek")));
+                dto.setStatus(Status.valueOf(request.getParameter("status")));
+
+                try {
+                    SectionDAO dao = new SectionDAO();
+                    String courseName = dao.getCourseNameById(dto.getCourseId());
+                    dto.setCourseName(courseName);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                request.setAttribute("section", dto);
+                request.setAttribute("error", "Đã xảy ra lỗi khi cập nhật lớp học.");
+                request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
             }
         }
-
     }
-/**
+
+    /**
      * Trả về mô tả ngắn gọn về servlet.
      *
      * @return chuỗi mô tả

@@ -230,6 +230,8 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="viewChild">Xem điểm con</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="diem-chuyen-can">Báo cáo điểm danh của con</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="thoi-gian-bieu-phu-huynh">Thời gian biểu</a></li>
                                 <% } %>
                             <li><hr class="dropdown-divider"></li>

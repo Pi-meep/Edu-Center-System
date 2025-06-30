@@ -136,6 +136,10 @@
         <servlet-name>StudentAttendanceServlet</servlet-name>
         <servlet-class>controller.StudentAttendanceServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>SystemConfigServlet</servlet-name>
+        <servlet-class>controller.SystemConfigServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>HomePageServlet</servlet-name>
         <url-pattern>/trang-chu</url-pattern>
@@ -263,5 +267,9 @@
     <servlet-mapping>
         <servlet-name>StudentAttendanceServlet</servlet-name>
         <url-pattern>/diem-chuyen-can</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SystemConfigServlet</servlet-name>
+        <url-pattern>/admin-cau-hinh-he-thong</url-pattern>
     </servlet-mapping>
 </web-app>

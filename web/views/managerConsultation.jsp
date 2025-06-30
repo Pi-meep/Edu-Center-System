@@ -126,10 +126,13 @@
                                 <span class="badge bg-warning text-dark">Chờ xử lý</span>
                             </c:when>
                             <c:when test="${consult.status == 'accepted'}">
-                                <span class="badge bg-success">Đã duyệt</span>
+                                <span class="badge bg-success">Đã chấp nhận</span>
+                            </c:when>
+                            <c:when test="${consult.status == 'rejected'}">
+                                <span class="badge bg-success">Từ chối</span>
                             </c:when>
                             <c:otherwise>
-                                <span>${consult.status}</span>
+                                <span class="badge bg-secondary">Không xác định</span>
                             </c:otherwise>
                         </c:choose>
                     </td>
@@ -150,6 +153,13 @@
                     </td>
                 </tr>
             </c:forEach>
+
+            <c:if test="${empty consultations}">
+                <tr>
+                    <td colspan="6" class="text-center text-danger">Không có kết quả phù hợp</td>
+                </tr>
+            </c:if>
+
         </tbody>
     </table>
 </div>

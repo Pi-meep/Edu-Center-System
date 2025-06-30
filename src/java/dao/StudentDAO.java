@@ -343,4 +343,62 @@ public class StudentDAO extends DBUtil {
     }
 
 
+    public StudentModal getStudentById(int id) {
+        String sql = "SELECT * FROM student WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement pre = conn.prepareStatement(sql)) {
+            pre.setInt(1, id);
+            try (ResultSet rs = pre.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSet(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<StudentModal> getChildrenOfParent(int parentId) {
+        List<StudentModal> children = new ArrayList<>();
+        String sql = "SELECT * FROM student WHERE parentId = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, parentId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    children.add(mapResultSet(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return children;
+    }
+
+    public String getStudentNameById(int studentId) throws Exception {
+    String sql = """
+        SELECT a.name 
+        FROM student s
+        JOIN account a ON s.accountId = a.id
+        WHERE s.id = ?
+    """;
+
+    try (Connection conn = DBUtil.getConnection(); 
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setInt(1, studentId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getString("name");
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+        throw new Exception("Lỗi khi lấy tên học sinh theo ID", e);
+    }
+
+    return null;
+}
+
+
 }

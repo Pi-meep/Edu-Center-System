@@ -1,27 +1,39 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package modal;
 
 import java.time.LocalDateTime;
 
-/**
- *
- * @author Astersa
- */
 public class StudentSectionModal {
+
+    public enum AttendanceStatus {
+        notyet("Chưa diễn ra buổi học"),
+        present("Có mặt"),
+        absent("Vắng"),
+        excused("Có phép");
+
+        private final String displayName;
+
+        AttendanceStatus(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+    }
+
     private Integer id;
     private Integer studentId;
     private Integer sectionId;
     private Boolean isPaid;
-    private Boolean attendanceStatus;
+    private AttendanceStatus attendanceStatus;
     private LocalDateTime createdAt;
 
     public StudentSectionModal() {
     }
 
-    public StudentSectionModal(Integer id, Integer studentId, Integer sectionId, Boolean isPaid, Boolean attendanceStatus, LocalDateTime createdAt) {
+    public StudentSectionModal(Integer id, Integer studentId, Integer sectionId, Boolean isPaid,
+                                AttendanceStatus attendanceStatus, LocalDateTime createdAt) {
         this.id = id;
         this.studentId = studentId;
         this.sectionId = sectionId;
@@ -62,11 +74,11 @@ public class StudentSectionModal {
         this.isPaid = isPaid;
     }
 
-    public Boolean getAttendanceStatus() {
+    public AttendanceStatus getAttendanceStatus() {
         return attendanceStatus;
     }
 
-    public void setAttendanceStatus(Boolean attendanceStatus) {
+    public void setAttendanceStatus(AttendanceStatus attendanceStatus) {
         this.attendanceStatus = attendanceStatus;
     }
 
@@ -77,6 +89,4 @@ public class StudentSectionModal {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-    
-    
 }

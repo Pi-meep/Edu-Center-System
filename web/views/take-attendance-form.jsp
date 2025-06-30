@@ -20,9 +20,15 @@
                 max-height: 500px;
                 overflow-y: auto;
             }
+            textarea.form-control {
+                resize: vertical;
+                min-height: 80px;
+                max-height: 200px;
+            }
+            
         </style>
     </head>
-            <jsp:include page="layout/header.jsp" />
+    <jsp:include page="layout/header.jsp" />
     <body class="bg-light py-4">
         <div class="container">
             <h2 class="mb-4">Điểm Danh Học Sinh</h2>
@@ -79,8 +85,6 @@
                                 <tr>
                                     <th>STT</th>
                                     <th>Họ tên</th>
-                                    <th>Mã học sinh</th>
-                                    <th>Lớp</th>
                                     <th>Trạng thái</th>
                                 </tr>
                             </thead>
@@ -89,20 +93,30 @@
                                     <tr>
                                         <td>${loop.index + 1}</td>
                                         <td>${student.studentName}</td>
-                                        <td>${student.code}</td>
-                                        <td>${student.className}</td>
                                         <td>
-                                            <input type="hidden" name="studentIds" value="${student.studentId}"/>
+                                            <input type="hidden" name="studentIds" value="${student.studentId}" />
                                             <div class="btn-group" role="group">
+
                                                 <input type="radio" class="btn-check" name="attendance_${student.studentId}"
                                                        id="present_${student.studentId}" value="present"
-                                                       <c:if test="${attendanceMap[student.studentId] == true}">checked</c:if> required>
+                                                       <c:if test="${attendanceMap[student.studentId] == 'present'}">checked</c:if> required>
                                                 <label class="btn btn-outline-success" for="present_${student.studentId}">Có mặt</label>
 
                                                 <input type="radio" class="btn-check" name="attendance_${student.studentId}"
                                                        id="absent_${student.studentId}" value="absent"
-                                                       <c:if test="${attendanceMap[student.studentId] == false}">checked</c:if> required>
+                                                       <c:if test="${attendanceMap[student.studentId] == 'absent'}">checked</c:if> required>
                                                 <label class="btn btn-outline-danger" for="absent_${student.studentId}">Vắng</label>
+
+                                                <input type="radio" class="btn-check" name="attendance_${student.studentId}"
+                                                       id="excused_${student.studentId}" value="excused"
+                                                       <c:if test="${attendanceMap[student.studentId] == 'excused'}">checked</c:if> required>
+                                                <label class="btn btn-outline-warning" for="excused_${student.studentId}">Có phép</label>
+
+                                                <input type="radio" class="btn-check" name="attendance_${student.studentId}"
+                                                       id="notyet_${student.studentId}" value="notyet"
+                                                       <c:if test="${attendanceMap[student.studentId] == 'notyet'}">checked</c:if> required>
+                                                <label class="btn btn-outline-secondary" for="notyet_${student.studentId}">Chưa điểm danh</label>
+
                                             </div>
                                         </td>
                                     </tr>
@@ -110,23 +124,50 @@
                             </tbody>
                         </table>
                     </div>
-
+                    <div class="mb-3">
+                        <label for="note" class="form-label">Ghi chú buổi học:</label>
+                        <textarea name="note" id="note" class="form-control" rows="3" maxlength="500" placeholder="Nhập ghi chú cho buổi học (tối đa 500 ký tự)">${note}</textarea>
+                    </div>
                     <div class="text-end mt-3">
                         <button type="submit" class="btn btn-primary">Lưu điểm danh</button>
                     </div>
                 </form>
+
             </c:if>
             <c:if test="${empty students and not empty courseId and not empty sectionId}">
                 <div class="alert alert-info">Không có học sinh nào trong buổi học này.</div>
             </c:if>
         </div>
+        <c:if test="${not empty relatedRequests}">
+            <h5 class="mt-4">Các yêu cầu liên quan đến buổi học</h5>
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Người gửi</th>
+                        <th>Loại yêu cầu</th>
+                        <th>Nội dung</th>
+                        <th>Trạng thái</th>
+                        <th>Thời gian gửi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:forEach var="r" items="${relatedRequests}">
+                        <tr>
+                            <td>${r.requesterName}</td>
+                            <td>${r.type}</td>
+                            <td>${r.description}</td>
+                            <td>${r.status}</td>
+                            <td>${r.createdAt}</td>
+                        </tr>
+                    </c:forEach>
+                </tbody>
+            </table>
+        </c:if>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
-                    // Auto-clear success/error messages after 5 seconds
-                    setTimeout(() => {
-                        document.querySelectorAll('.alert').forEach(alert => alert.remove());
-                    }, 5000);
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => alert.remove());
+            }, 5000);
         </script>
     </body>
 </html>
