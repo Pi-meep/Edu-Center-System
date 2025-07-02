@@ -92,8 +92,8 @@ public class CourseDAO extends DBUtil {
                 dto.setCourseType(rs.getString("courseType"));
                 dto.setFeeCombo(rs.getBigDecimal("feeCombo"));
                 dto.setFeeDaily(rs.getBigDecimal("feeDaily"));
-                dto.setStartDate(rs.getDate("startDate"));
-                dto.setEndDate(rs.getDate("endDate"));
+                dto.setStartDate(rs.getTimestamp("startDate"));
+                dto.setEndDate(rs.getTimestamp("endDate"));
                 dto.setWeekAmount(rs.getInt("weekAmount"));
                 dto.setStudentEnrollment(rs.getInt("studentEnrollment"));
                 dto.setMaxStudents(rs.getInt("maxStudents"));

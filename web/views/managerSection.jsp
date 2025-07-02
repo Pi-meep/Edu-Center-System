@@ -65,7 +65,7 @@
                     <select class="form-select" name="status">
                         <option value="">-- Tất cả --</option>
                         <option value="active" ${param.status == 'active' ? 'selected' : ''}>Hoạt động</option>
-                        <option value="inactive" ${param.status == 'inactive' ? 'selected' : ''}>Tạm ngưng</option>
+                        <option value="inactive" ${param.status == 'inactive' ? 'selected' : ''}>Chưa diễn ra</option>
                         <option value="completed" ${param.status == 'completed' ? 'selected' : ''}>Hoàn tất</option>
                     </select>
                 </div>
@@ -126,7 +126,7 @@
                                     <span class="badge bg-success">Hoạt động</span>
                                 </c:when>
                                 <c:when test="${section.status.toString() == 'inactive'}">
-                                    <span class="badge bg-secondary">Tạm ngưng</span>
+                                    <span class="badge bg-secondary">Chưa diễn ra</span>
                                 </c:when>
                                 <c:when test="${section.status.toString() == 'completed'}">
                                     <span class="badge bg-info text-dark">Hoàn tất</span>

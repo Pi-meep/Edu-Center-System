@@ -438,11 +438,14 @@
                                         </c:otherwise>
                                     </c:choose>
                                     <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(103, 58, 183, 0.85); color: #fff; padding: 8px 12px; font-weight: bold; font-size: 1rem; text-align: center;">
-                                        ${account.name}
+                                        ${teacher.subject.displayName}
                                     </div>
                                 </div>
                                 <div style="padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1;">
-                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #673ab7; margin: 0 0 0.5rem 0;">${teacher.subject.displayName}</h3>
+                                    <h3 style="font-size: 1.2rem; font-weight: 700; color: #673ab7; margin: 0 0 0.5rem 0;">${account.name}</h3>
+                                    <p style="font-size: 0.9rem; color: #555; line-height: 1.4; margin-bottom: 1rem; flex-grow: 1;">
+                                        ${teacher.experience} năm kinh nghiệm giảng dạy
+                                    </p>
                                     <p style="font-size: 0.9rem; color: #555; line-height: 1.4; margin-bottom: 1rem; flex-grow: 1;">
                                         <c:choose>
                                             <c:when test="${not empty teacher.bio}">
@@ -450,7 +453,9 @@
                                                     <c:when test="${fn:length(teacher.bio) > 100}">
                                                         ${fn:substring(teacher.bio, 0, 100)}...
                                                     </c:when>
-                                                    <c:otherwise>${teacher.bio}</c:otherwise>
+                                                    <c:otherwise>
+                                                        ${teacher.bio}
+                                                    </c:otherwise>
                                                 </c:choose>
                                             </c:when>
                                             <c:otherwise>Giáo viên có kinh nghiệm giảng dạy lâu năm.</c:otherwise>
@@ -561,6 +566,7 @@
     </div>
 </section>
 
+<c:if test="${loggedInUserName == null}">
 <section class="homepage-cta">
     <div class="homepage-container">
         <h2>Bắt Đầu Hành Trình Học Tập Ngay Hôm Nay</h2>
@@ -571,6 +577,7 @@
         </div>
     </div>
 </section>
+</c:if>
 
 <script>
     const observerOptions = {

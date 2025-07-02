@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import modal.SectionModal;
 import modal.SectionModal.DayOfWeekEnum;
@@ -120,7 +121,10 @@ public class ManagerSectionServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String action = request.getParameter("action");
+
         if ("update".equals(action)) {
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
             try {
                 int id = Integer.parseInt(request.getParameter("id"));
                 int courseId = Integer.parseInt(request.getParameter("courseId"));
@@ -131,12 +135,12 @@ public class ManagerSectionServlet extends HttpServlet {
                 String dateStr = request.getParameter("dateTime");
                 String statusStr = request.getParameter("status");
 
+                // Parse thời gian và ngày học
                 LocalDate date = LocalDate.parse(dateStr);
-                LocalTime startTimeOnly = LocalTime.parse(startTimeStr);
-                LocalTime endTimeOnly = LocalTime.parse(endTimeStr);
+                LocalTime startTimeOnly = LocalTime.parse(startTimeStr, timeFormatter);
+                LocalTime endTimeOnly = LocalTime.parse(endTimeStr, timeFormatter);
                 LocalDateTime startTime = LocalDateTime.of(date, startTimeOnly);
                 LocalDateTime endTime = LocalDateTime.of(date, endTimeOnly);
-                LocalDateTime dateTime = startTime;
 
                 SectionDTO dto = new SectionDTO();
                 dto.setId(id);
@@ -144,19 +148,18 @@ public class ManagerSectionServlet extends HttpServlet {
                 dto.setDayOfWeek(DayOfWeekEnum.valueOf(dayOfWeekStr));
                 dto.setStartTime(startTime);
                 dto.setEndTime(endTime);
-                dto.setDateTime(dateTime);
+                dto.setDateTime(startTime); // Hoặc dùng riêng nếu khác
                 dto.setClassroom(classroom);
                 dto.setStatus(Status.valueOf(statusStr));
-
-                dto.setStartTimeFormatted(startTimeOnly.toString());  // "HH:mm"
-                dto.setEndTimeFormatted(endTimeOnly.toString());      // "HH:mm"
-                dto.setDateFormatted(date.toString());                // "yyyy-MM-dd"
+                dto.setStartTimeFormatted(startTimeOnly.format(timeFormatter));
+                dto.setEndTimeFormatted(endTimeOnly.format(timeFormatter));
+                dto.setDateFormatted(date.toString());
 
                 SectionDAO dao = new SectionDAO();
-                if (dao.isConflictSection(id, classroom, date, startTimeOnly, endTimeOnly)) {
-                    String courseName = dao.getCourseNameById(courseId);
-                    dto.setCourseName(courseName);
 
+                // Check trùng phòng
+                if (dao.isConflictSection(id, classroom, date, startTimeOnly, endTimeOnly)) {
+                    dto.setCourseName(dao.getCourseNameById(courseId));
                     request.setAttribute("section", dto);
                     request.setAttribute("error", "Đã có lớp học khác trong cùng phòng, cùng ngày và trùng thời gian.");
                     request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
@@ -169,28 +172,36 @@ public class ManagerSectionServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
 
-                // Gán lại DTO nếu có lỗi để hiển thị lại form
-                SectionDTO dto = new SectionDTO();
-                dto.setId(Integer.parseInt(request.getParameter("id")));
-                dto.setCourseId(Integer.parseInt(request.getParameter("courseId")));
-                dto.setClassroom(request.getParameter("classroom"));
-                dto.setStartTimeFormatted(request.getParameter("startTime"));
-                dto.setEndTimeFormatted(request.getParameter("endTime"));
-                dto.setDateFormatted(request.getParameter("dateTime"));
-                dto.setDayOfWeek(DayOfWeekEnum.valueOf(request.getParameter("dayOfWeek")));
-                dto.setStatus(Status.valueOf(request.getParameter("status")));
-
                 try {
+                    // Trả lại dữ liệu người dùng đã nhập
+                    SectionDTO dto = new SectionDTO();
+                    dto.setId(Integer.parseInt(request.getParameter("id")));
+                    dto.setCourseId(Integer.parseInt(request.getParameter("courseId")));
+                    dto.setClassroom(request.getParameter("classroom"));
+                    dto.setDateFormatted(request.getParameter("dateTime"));
+                    dto.setDayOfWeek(DayOfWeekEnum.valueOf(request.getParameter("dayOfWeek")));
+                    dto.setStatus(Status.valueOf(request.getParameter("status")));
+
+                    String startTimeStr = request.getParameter("startTime");
+                    String endTimeStr = request.getParameter("endTime");
+
+                    LocalTime start = LocalTime.parse(startTimeStr, timeFormatter);
+                    LocalTime end = LocalTime.parse(endTimeStr, timeFormatter);
+
+                    dto.setStartTimeFormatted(start.format(timeFormatter));
+                    dto.setEndTimeFormatted(end.format(timeFormatter));
+
                     SectionDAO dao = new SectionDAO();
-                    String courseName = dao.getCourseNameById(dto.getCourseId());
-                    dto.setCourseName(courseName);
+                    dto.setCourseName(dao.getCourseNameById(dto.getCourseId()));
+
+                    request.setAttribute("section", dto);
+                    request.setAttribute("error", "Đã xảy ra lỗi khi cập nhật lớp học.");
+                    request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
+
                 } catch (Exception ex) {
                     ex.printStackTrace();
+                    response.sendRedirect("quan-ly-lop-hoc");
                 }
-
-                request.setAttribute("section", dto);
-                request.setAttribute("error", "Đã xảy ra lỗi khi cập nhật lớp học.");
-                request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
             }
         }
     }

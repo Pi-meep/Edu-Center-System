@@ -152,7 +152,7 @@
                                 <div class="row">
                                     <div class="col-md-8">
                                         <h5>Thông tin trung tâm</h5>
-                                        <form action="cau-hinh-he-thong" method="post">
+                                        <form action="admin-cau-hinh-he-thong" method="post">
                                             <input type="hidden" name="action" value="update-center-info">
                                             
                                             <div class="row">
@@ -303,7 +303,7 @@
                     <h5 class="modal-title">Thêm Banner mới</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="cau-hinh-he-thong" method="post" enctype="multipart/form-data">
+                <form action="admin-cau-hinh-he-thong" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="add-banner">
                     <div class="modal-body">
                         <div class="row">
@@ -348,7 +348,7 @@
                     <h5 class="modal-title">Thêm tài khoản thanh toán</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="cau-hinh-he-thong" method="post" enctype="multipart/form-data">
+                <form action="admin-cau-hinh-he-thong" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="add-payment">
                     <div class="modal-body">
                         <div class="row">
@@ -401,39 +401,207 @@
         </div>
     </div>
 
+    <!-- Edit Banner Modal -->
+    <div class="modal fade" id="editBannerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chỉnh sửa Banner</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="admin-cau-hinh-he-thong" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="edit-banner">
+                    <input type="hidden" name="id" id="editBannerId">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tiêu đề</label>
+                                <input type="text" class="form-control" name="title" id="editBannerTitle" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Thứ tự hiển thị</label>
+                                <input type="number" class="form-control" name="orderIndex" id="editBannerOrder" min="1">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả</label>
+                            <textarea class="form-control" name="description" id="editBannerDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hình ảnh hiện tại</label>
+                            <img id="editBannerCurrentImage" src="" alt="Current Banner" class="img-fluid mb-2" style="max-width: 200px; max-height: 150px; object-fit: cover; border-radius: 8px;">
+                            <input type="file" class="form-control" name="image" accept="image/*">
+                            <small class="text-muted">Chỉ chọn file mới nếu muốn thay đổi hình ảnh</small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="isActive" id="editBannerActive">
+                            <label class="form-check-label" for="editBannerActive">
+                                Hiển thị
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Cập nhật Banner</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Payment Modal -->
+    <div class="modal fade" id="editPaymentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chỉnh sửa tài khoản thanh toán</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="admin-cau-hinh-he-thong" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="edit-payment">
+                    <input type="hidden" name="id" id="editPaymentId">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tên ngân hàng</label>
+                                <input type="text" class="form-control" name="bankName" id="editPaymentBankName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Số tài khoản</label>
+                                <input type="text" class="form-control" name="accountNumber" id="editPaymentAccountNumber" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Chủ tài khoản</label>
+                                <input type="text" class="form-control" name="accountName" id="editPaymentAccountName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Chi nhánh</label>
+                                <input type="text" class="form-control" name="branch" id="editPaymentBranch">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Swift Code</label>
+                                <input type="text" class="form-control" name="swiftCode" id="editPaymentSwiftCode">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Thứ tự hiển thị</label>
+                                <input type="number" class="form-control" name="orderIndex" id="editPaymentOrder" min="1">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mã QR hiện tại</label>
+                            <img id="editPaymentCurrentQr" src="" alt="Current QR Code" class="img-fluid mb-2" style="max-width: 100px; max-height: 100px;">
+                            <input type="file" class="form-control" name="qrCode" accept="image/*">
+                            <small class="text-muted">Chỉ chọn file mới nếu muốn thay đổi mã QR</small>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="isActive" id="editPaymentActive">
+                            <label class="form-check-label" for="editPaymentActive">
+                                Đặt làm tài khoản mặc định
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Cập nhật tài khoản</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const bannerData = {};
+        <c:forEach var="banner" items="${banners}">
+            bannerData[${banner.id}] = {
+                id: ${banner.id},
+                title: '${banner.title}',
+                description: '${banner.description}',
+                orderIndex: ${banner.orderIndex},
+                isActive: ${banner.isActive},
+                imageUrl: '${banner.imageUrl}'
+            };
+        </c:forEach>
+
+        const paymentData = {};
+        <c:forEach var="payment" items="${paymentInfos}">
+            paymentData[${payment.id}] = {
+                id: ${payment.id},
+                bankName: '${payment.bankName}',
+                accountNumber: '${payment.accountNumber}',
+                accountName: '${payment.accountName}',
+                branch: '${payment.branch}',
+                swiftCode: '${payment.swiftCode}',
+                orderIndex: ${payment.orderIndex},
+                isActive: ${payment.isActive},
+                qrCodeUrl: '${payment.qrCodeUrl}'
+            };
+        </c:forEach>
+
         function editBanner(id) {
-            // Implement edit banner functionality
-            alert('Chức năng chỉnh sửa banner sẽ được thêm sau');
+            const banner = bannerData[id];
+            if (banner) {
+                document.getElementById('editBannerId').value = banner.id;
+                document.getElementById('editBannerTitle').value = banner.title;
+                document.getElementById('editBannerDescription').value = banner.description;
+                document.getElementById('editBannerOrder').value = banner.orderIndex;
+                document.getElementById('editBannerActive').checked = banner.isActive;
+                document.getElementById('editBannerCurrentImage').src = '${pageContext.request.contextPath}/' + banner.imageUrl;
+                
+                const modal = new bootstrap.Modal(document.getElementById('editBannerModal'));
+                modal.show();
+            }
         }
         
         function toggleBanner(id, isActive) {
             if (confirm('Bạn có muốn thay đổi trạng thái hiển thị của banner này?')) {
-                window.location.href = 'cau-hinh-he-thong?action=toggle-banner&id=' + id + '&isActive=' + !isActive;
+                window.location.href = 'admin-cau-hinh-he-thong?action=toggle-banner&id=' + id + '&isActive=' + !isActive;
             }
         }
         
         function deleteBanner(id) {
             if (confirm('Bạn có chắc chắn muốn xóa banner này?')) {
-                window.location.href = 'cau-hinh-he-thong?action=delete-banner&id=' + id;
+                window.location.href = 'admin-cau-hinh-he-thong?action=delete-banner&id=' + id;
             }
         }
         
         function editPayment(id) {
-            // Implement edit payment functionality
-            alert('Chức năng chỉnh sửa tài khoản sẽ được thêm sau');
+            const payment = paymentData[id];
+            if (payment) {
+                document.getElementById('editPaymentId').value = payment.id;
+                document.getElementById('editPaymentBankName').value = payment.bankName;
+                document.getElementById('editPaymentAccountNumber').value = payment.accountNumber;
+                document.getElementById('editPaymentAccountName').value = payment.accountName;
+                document.getElementById('editPaymentBranch').value = payment.branch;
+                document.getElementById('editPaymentSwiftCode').value = payment.swiftCode;
+                document.getElementById('editPaymentOrder').value = payment.orderIndex;
+                document.getElementById('editPaymentActive').checked = payment.isActive;
+                
+                if (payment.qrCodeUrl) {
+                    document.getElementById('editPaymentCurrentQr').src = '${pageContext.request.contextPath}/' + payment.qrCodeUrl;
+                    document.getElementById('editPaymentCurrentQr').style.display = 'block';
+                } else {
+                    document.getElementById('editPaymentCurrentQr').style.display = 'none';
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('editPaymentModal'));
+                modal.show();
+            }
         }
         
         function setActivePayment(id) {
             if (confirm('Bạn có muốn đặt tài khoản này làm mặc định?')) {
-                window.location.href = 'cau-hinh-he-thong?action=set-active-payment&id=' + id;
+                window.location.href = 'admin-cau-hinh-he-thong?action=set-active-payment&id=' + id;
             }
         }
         
         function deletePayment(id) {
             if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
-                window.location.href = 'cau-hinh-he-thong?action=delete-payment&id=' + id;
+                window.location.href = 'admin-cau-hinh-he-thong?action=delete-payment&id=' + id;
             }
         }
     </script>

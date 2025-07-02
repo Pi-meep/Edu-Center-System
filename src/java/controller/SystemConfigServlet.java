@@ -8,7 +8,6 @@ import dao.BannerDAO;
 import dao.CenterInfoDAO;
 import dao.PaymentInfoDAO;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -94,9 +93,6 @@ public class SystemConfigServlet extends HttpServlet {
                     viewSystemConfig(request, response);
                     break;
             }
-        } catch (SQLException e) {
-            request.setAttribute("error", "Lỗi cơ sở dữ liệu: " + e.getMessage());
-            viewSystemConfig(request, response);
         } catch (Exception e) {
             request.setAttribute("error", "Lỗi hệ thống: " + e.getMessage());
             viewSystemConfig(request, response);
@@ -106,15 +102,12 @@ public class SystemConfigServlet extends HttpServlet {
     private void viewSystemConfig(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException, Exception {
         
-        // Load banners
         List<BannerModal> banners = bannerDAO.getAllBanners();
         request.setAttribute("banners", banners);
         
-        // Load center info
         CenterInfoModal centerInfo = centerInfoDAO.getCenterInfo();
         request.setAttribute("centerInfo", centerInfo);
         
-        // Load payment info
         List<PaymentInfoModal> paymentInfos = paymentInfoDAO.getAllPaymentInfo();
         PaymentInfoModal activePayment = paymentInfoDAO.getActivePaymentInfo();
         request.setAttribute("paymentInfos", paymentInfos);
@@ -279,8 +272,9 @@ public class SystemConfigServlet extends HttpServlet {
         paymentInfo.setOrderIndex(Integer.parseInt(orderIndexStr));
         paymentInfo.setIsActive("on".equals(isActiveStr));
         
+
+        
         if (paymentInfo.getIsActive()) {
-            // Nếu set active, deactivate tất cả trước
             paymentInfoDAO.setActivePaymentInfo(paymentInfoDAO.createPaymentInfo(paymentInfo));
         } else {
             paymentInfoDAO.createPaymentInfo(paymentInfo);
@@ -311,7 +305,6 @@ public class SystemConfigServlet extends HttpServlet {
             paymentInfo.setSwiftCode(swiftCode);
             paymentInfo.setOrderIndex(Integer.parseInt(orderIndexStr));
             paymentInfo.setIsActive("on".equals(isActiveStr));
-            
             Part filePart = request.getPart("qrCode");
             if (filePart != null && filePart.getSize() > 0) {
                 String qrCodeUrl = FileUploadUtils.uploadFile(filePart, "qr_codes", getServletContext().getRealPath("/"));
@@ -319,7 +312,7 @@ public class SystemConfigServlet extends HttpServlet {
             }
             
             if (paymentInfo.getIsActive()) {
-                // Nếu set active, deactivate tất cả trước
+                paymentInfoDAO.updatePaymentInfo(paymentInfo);
                 paymentInfoDAO.setActivePaymentInfo(id);
             } else {
                 paymentInfoDAO.updatePaymentInfo(paymentInfo);

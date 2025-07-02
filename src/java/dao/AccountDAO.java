@@ -5,12 +5,12 @@
 package dao;
 
 import java.sql.*;
-import modal.AccountModal;
-import utils.DBUtil;
-import utils.HashUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import modal.AccountModal;
+import utils.DBUtil;
+import utils.HashUtils;
 
 
 /**
@@ -247,7 +247,7 @@ public class AccountDAO {
     }
     
      public void updateAccount(AccountModal account) throws Exception {
-        String sql = "UPDATE account SET name = ?, address = ?, dob = ?, avatarURL = ? WHERE id = ?";
+        String sql = "UPDATE account SET name = ?,address = ?, dob = ?, avatarURL = ? , phone=? WHERE id = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, account.getName());
             ps.setString(2, account.getAddress());
@@ -257,7 +257,8 @@ public class AccountDAO {
                 ps.setNull(3, Types.TIMESTAMP);
             }
             ps.setString(4, account.getAvatarURL());
-            ps.setInt(5, account.getId());
+            ps.setString(5, account.getPhone());
+            ps.setInt(6, account.getId());
             ps.executeUpdate();
         }
     }

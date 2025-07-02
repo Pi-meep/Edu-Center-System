@@ -59,7 +59,6 @@ public class HomePageServlet extends HttpServlet {
         
         try (Connection conn = DBUtil.getConnection()) {
             
-            // Đếm số học sinh
             String studentQuery = "SELECT COUNT(*) as student_count FROM student";
             try (PreparedStatement ps = conn.prepareStatement(studentQuery);
                  ResultSet rs = ps.executeQuery()) {
@@ -68,7 +67,6 @@ public class HomePageServlet extends HttpServlet {
                 }
             }
             
-            // Đếm số giáo viên
             String teacherQuery = "SELECT COUNT(*) as teacher_count FROM teacher";
             try (PreparedStatement ps = conn.prepareStatement(teacherQuery);
                  ResultSet rs = ps.executeQuery()) {
@@ -77,7 +75,6 @@ public class HomePageServlet extends HttpServlet {
                 }
             }
             
-            // Đếm số khóa học
             String courseQuery = "SELECT COUNT(*) as course_count FROM course WHERE status = 'activated' or status = 'completed'";
             try (PreparedStatement ps = conn.prepareStatement(courseQuery);
                  ResultSet rs = ps.executeQuery()) {
@@ -86,7 +83,6 @@ public class HomePageServlet extends HttpServlet {
                 }
             }
             
-            // Đếm số phụ huynh
             String parentQuery = "SELECT COUNT(*) as parent_count FROM parent";
             try (PreparedStatement ps = conn.prepareStatement(parentQuery);
                  ResultSet rs = ps.executeQuery()) {
@@ -97,7 +93,6 @@ public class HomePageServlet extends HttpServlet {
             
         } catch (Exception e) {
             e.printStackTrace();
-            // Nếu có lỗi, trả về giá trị mặc định
             stats.put("studentCount", 500);
             stats.put("teacherCount", 50);
             stats.put("courseCount", 20);
@@ -113,34 +108,26 @@ public class HomePageServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         
         try {
-            // Lấy dữ liệu thống kê từ database
             Map<String, Integer> stats = getStatistics();
             
-            // Lấy banner active từ database
             List<BannerModal> banners = bannerDAO.getActiveBanners();
             
-            // Lấy thông tin trung tâm từ database
             CenterInfoModal centerInfo = centerInfoDAO.getCenterInfo();
             
-            // Lấy danh sách giáo viên nổi bật (top 6)
             List<Object[]> topTeachers = teacherDAO.getTopTeachersWithAccount(6);
             
-            // Lấy danh sách khóa học hot (top 6)
             List<CourseModal> hotCourses = courseDAO.getHotCourses(6);
             
-            // Đặt dữ liệu vào request attribute
             request.setAttribute("stats", stats);
             request.setAttribute("banners", banners);
             request.setAttribute("centerInfo", centerInfo);
             request.setAttribute("topTeachers", topTeachers);
             request.setAttribute("hotCourses", hotCourses);
             
-            // Forward đến trang JSP
             request.getRequestDispatcher("/views/homepage.jsp").forward(request, response);
             
         } catch (SQLException e) {
             e.printStackTrace();
-            // Nếu có lỗi database, vẫn hiển thị trang với dữ liệu mặc định
             Map<String, Integer> stats = new HashMap<>();
             stats.put("studentCount", 500);
             stats.put("teacherCount", 50);

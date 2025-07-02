@@ -258,7 +258,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="admin-quan-ly-khoa-hoc" class="ttr-material-button">
+                                    <a href="quan-ly-khoa-hoc" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-book"></i></span>
                                         <span class="ttr-label">Khóa học</span>
                                     </a>

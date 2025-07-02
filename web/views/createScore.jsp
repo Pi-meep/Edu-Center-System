@@ -4,102 +4,88 @@
     Author     : vankh
 --%>
 
-<%-- 
-    Document   : createScore
-    Created on : Jun 20, 2025, 9:06:50 PM
-    Author     : vankh
---%>
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 <!DOCTYPE html>
 <jsp:include page="layout/header.jsp" />
 <style>
+    .success-message {
+        color: #28a745;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+        animation: fadeIn 0.5s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .shake-animation {
+        animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+        20%, 40%, 60%, 80% {
+            transform: translateX(5px);
+        }
+    }
     .page-container {
         padding: 20px;
         max-width: 1200px;
         margin: 0 auto;
     }
 
-    .header-section {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-
-    .info-card {
+    /* Compact Course Info Section */
+    .course-info-card {
         background-color: white;
         border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        width: 100%;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
     }
 
-    .info-container {
+    .course-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .course-info-item {
         display: flex;
-        flex-direction: column;
-        gap: 16px; /* Khoảng cách đều giữa các dòng */
+        align-items: center;
     }
 
-    /* Các dòng đều sử dụng chung class */
-    .info-row {
-        display: flex;
-        width: 100%;
-    }
-
-    /* Dòng 1: Khối + Lớp + Môn */
-    .info-multi-items {
-        gap: 20px; /* Khoảng cách giữa các item trong cùng dòng */
-    }
-
-    /* Các item trong dòng */
-    .info-item {
-        flex: 1;
-        display: flex;
-        align-items: center; /* Căn giữa theo chiều dọc */
-        min-height: 24px; /* Đảm bảo chiều cao tối thiểu bằng nhau */
-    }
-
-    /* Label và value */
-    .info-label {
+    .course-info-label {
         font-weight: 600;
         color: #555;
-        width: 130px;
-        flex-shrink: 0; /* Không bị co lại */
+        min-width: 80px;
+        font-size: 13px;
+        margin-right: 8px;
     }
 
-    .info-value {
+    .course-info-value {
         color: #222;
-        font-weight: 500;
+        font-size: 13px;
         flex-grow: 1;
     }
 
-    /* Tên khóa học */
-    .course-name {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .info-multi-items {
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .info-item {
-            width: 100%;
-        }
-
-        .course-name {
-            white-space: normal;
-        }
-    }
-
+    /* Search Section */
     .search-container {
         margin: 20px 0;
     }
@@ -140,20 +126,19 @@
         outline: none;
     }
 
-    .search-button {
+    .search-button, .reset-button {
         border: none;
         background: none;
         color: #6c757d;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .reset-button {
-        border: none;
-        background: none;
         opacity: 0;
         visibility: hidden;
-        cursor: pointer;
-        color: #6c757d;
         transition: opacity 0.2s;
     }
 
@@ -162,32 +147,57 @@
         visibility: visible;
     }
 
+    /* Score Input Section */
+    .score-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: center;
+        margin: 20px 0;
+    }
+
+    .score-type-input, .session-date-select {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .score-type-input input, .session-date-select select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .session-date-select select {
+        cursor: pointer;
+    }
+
     .table-container {
         background: white;
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        padding: 20px;
-        margin-top: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        padding: 16px;
         overflow-x: auto;
     }
 
     .table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 14px;
+        font-size: 13px;
     }
 
     .table th {
         background-color: #f8f9fa;
         font-weight: 600;
         color: #495057;
-        padding: 12px 15px;
+        padding: 10px 12px;
         text-align: center;
         border-bottom: 2px solid #e9ecef;
     }
 
     .table td {
-        padding: 12px 15px;
+        padding: 10px 12px;
         text-align: center;
         border-bottom: 1px solid #e9ecef;
         vertical-align: middle;
@@ -198,13 +208,13 @@
     }
 
     .score-input {
-        width: 80px;
-        padding: 8px 12px;
+        width: 70px;
+        padding: 6px 8px;
         border: 1px solid #ddd;
         border-radius: 6px;
         text-align: center;
-        font-size: 14px;
-        transition: all 0.3s;
+        font-size: 13px;
+        transition: all 0.2s;
     }
 
     .score-input:focus {
@@ -213,16 +223,26 @@
         outline: none;
     }
 
+    .feedback-input {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 13px;
+        resize: vertical;
+        min-height: 36px;
+    }
+
     .submit-btn {
         background-color: #4285f4;
         color: white;
         border: none;
-        padding: 10px 25px;
+        padding: 8px 20px;
         border-radius: 6px;
         font-size: 14px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.2s;
         margin-top: 20px;
         float: right;
     }
@@ -236,29 +256,108 @@
     }
 
     @media (max-width: 768px) {
-        .info-grid {
+        .course-info-grid {
             grid-template-columns: 1fr;
         }
 
-        .table th, .table td {
-            padding: 10px 8px;
-            font-size: 13px;
+        .score-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
         }
 
-        .score-input {
-            width: 70px;
-            padding: 6px 8px;
+        .score-type-input, .session-date-select {
+            width: 100%;
+        }
+    }
+    .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .info-card {
+        background-color: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        width: 100%;
+    }
+
+    .info-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .info-row {
+        display: flex;
+        width: 100%;
+    }
+
+    .info-multi-items {
+        gap: 15px;
+    }
+
+    .info-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        min-height: 24px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #555;
+        width: 90px;
+        flex-shrink: 0;
+        font-size: 13px;
+    }
+
+    .info-value {
+        color: #222;
+        font-size: 13px;
+        flex-grow: 1;
+    }
+
+    .course-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    @media (max-width: 768px) {
+        .info-multi-items {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .info-item {
+            width: 100%;
+        }
+
+        .info-label {
+            width: 80px;
+        }
+
+        .course-name {
+            white-space: normal;
         }
     }
 </style>
 
 <div class="page-container">
+    <!-- Compact Course Information Section -->
     <div class="header-section">
         <div class="info-card">
             <div class="info-container">
+                <!-- Dòng 1: 3 thông tin Lớp, Cấp độ, Môn -->
                 <div class="info-row info-multi-items">
                     <div class="info-item">
-                        <span class="info-label">Lớp :</span>
+                        <span class="info-label">Lớp:</span>
                         <span class="info-value">${grade}</span>
                     </div>
                     <div class="info-item">
@@ -284,7 +383,7 @@
                                 <c:when test="${subject == 'Biology'}">Sinh học</c:when>
                                 <c:when test="${subject == 'History'}">Lịch sử</c:when>
                                 <c:when test="${subject == 'Geography'}">Địa lý</c:when>
-                                <c:when test="${subject == 'Civic Education'}">Giáo dục công dân</c:when>
+                                <c:when test="${subject == 'Civic Education'}">GDCD</c:when>
                                 <c:when test="${subject == 'Informatics'}">Tin học</c:when>
                                 <c:otherwise>${subject}</c:otherwise>
                             </c:choose>
@@ -292,6 +391,7 @@
                     </div>
                 </div>
 
+                <!-- Dòng 2: Tên khóa học -->
                 <div class="info-row">
                     <div class="info-item">
                         <span class="info-label">Tên khóa học:</span>
@@ -299,6 +399,7 @@
                     </div>
                 </div>
 
+                <!-- Dòng 3: Số học sinh -->
                 <div class="info-row">
                     <div class="info-item">
                         <span class="info-label">Số học sinh:</span>
@@ -309,6 +410,7 @@
         </div>
     </div>
 
+    <!-- Search Section -->
     <div class="search-container">
         <form class="search-form">
             <button type="button" class="search-button">
@@ -327,6 +429,7 @@
         </form>
     </div>
 
+    <!-- Score Input Section -->
     <div class="table-container">
         <form action="createScore" method="post" onsubmit="return validateScores(event)">
             <input type="hidden" name="courseId" value="${courseId}" />
@@ -335,22 +438,29 @@
             <input type="hidden" name="nameCourse" value="${nameCourse}" />
             <input type="hidden" name="currentEnrollment" value="${currentEnrollment}" />
             <input type="hidden" name="level" value="${level}" />
-            <table class="table">
-                <div style="margin: 30px 0;">
-                    <label style="font-weight: bold; margin-right: 10px;">Loại điểm:</label>
-                    <select name="typeScore" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; width: 200px; font-size: 14px;">
-                        <option value="">-- Chọn loại điểm --</option>
-                        <option value="Bài tập về nhà">Bài tập về nhà</option>
-                        <option value="Điểm miệng">Điểm miệng</option>
-                        <option value="Điểm 15 phút">Điểm 15 phút</option>
-                        <option value="Điểm 45 phút">Điểm 45 phút</option>
-                        <option value="Điểm giữa kỳ">Điểm giữa kỳ</option>
-                        <option value="Điểm cuối kỳ">Điểm cuối kỳ</option>
-                        <option value="Điểm thực hành">Điểm thực hành</option>
-                        <option value="Điểm dự án">Điểm dự án</option>
-                    </select>
+
+            <div class="score-header">
+                <div class="score-type-input">
+                    <label style="font-weight: 600; display: block; margin-bottom: 5px;">Loại điểm:</label>
+                    <input type="text" name="typeScore" required>
                 </div>
 
+                <c:if test="${sessionStatus != 'inactive'}">
+                    <div class="session-date-select">
+                        <label style="font-weight: 600; display: block; margin-bottom: 5px;">Ngày học:</label>
+                        <select name="sessionDate" required>
+                            <option value="">-- Chọn ngày học --</option>
+                            <c:forEach var="sessionItem" items="${formattedSessions}">
+                                <option value="${sessionItem.section.dateTime.toString()}">
+                                    ${sessionItem.formattedDate}
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </c:if>
+            </div>
+
+            <table class="table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -366,81 +476,144 @@
                             <td>${st.getName()}</td>
                             <td>
                                 <input type="hidden" name="studentIds" value="${st.getId()}" />
-                                <input class="score-input" name="score_${st.getId()}" type="number" min="0" max="10" step="0.1">
+                                <input class="score-input" name="score_${st.getId()}" type="number" min="0" max="10" step="0.1" required>
                             </td>
                             <td>
-                                <textarea name="feedback_${st.getId()}"></textarea>
+                                <textarea class="feedback-input" name="feedback_${st.getId()}"></textarea>
                             </td>
                         </tr>
                     </c:forEach>
                 </tbody>
             </table>
-            <button type="submit" class="submit-btn">Lưu điểm</button>
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <c:if test="${not empty message}">
+                    <div style="color: #28a745; display: flex; align-items: center; gap: 5px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="#28a745"/>
+                        </svg>
+                        ${message}
+                    </div>
+                </c:if>
+                <button type="submit" class="submit-btn">Lưu điểm</button>
+            </div>
         </form>
     </div>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Xử lý tìm kiếm học sinh
         const searchInput = document.getElementById("searchStudent");
         const rows = document.querySelectorAll("table tbody tr");
 
-        searchInput.addEventListener("input", function () {
-            const keyword = this.value.toLowerCase().trim();
+        if (searchInput && rows) {
+            searchInput.addEventListener("input", function () {
+                const keyword = this.value.toLowerCase().trim();
+                rows.forEach(row => {
+                    const idText = row.children[0].textContent.toLowerCase();
+                    const nameText = row.children[1].textContent.toLowerCase();
+                    const isMatch = idText.includes(keyword) || nameText.includes(keyword);
 
-            rows.forEach(row => {
-                const idText = row.children[0].textContent.toLowerCase();
-                const nameText = row.children[1].textContent.toLowerCase();
+                    if (keyword === "" || isMatch) {
+                        row.style.display = "";
+                        row.classList.add("highlight");
+                        setTimeout(() => row.classList.remove("highlight"), 1500);
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            });
+        }
 
-                const isMatch = idText.includes(keyword) || nameText.includes(keyword);
-
-                if (keyword === "" || isMatch) {
-                    row.style.display = "";
-                    row.classList.add("highlight");
-                    setTimeout(() => row.classList.remove("highlight"), 1500);
-                } else {
-                    row.style.display = "none";
+        // Validate form khi submit
+        const scoreForm = document.querySelector("form[onsubmit='return validateScores(event)']");
+        if (scoreForm) {
+            scoreForm.addEventListener("submit", function (event) {
+                if (!validateScores(event)) {
+                    event.preventDefault();
                 }
             });
-        });
+        }
     });
 
     function validateScores(event) {
-        const inputs = document.querySelectorAll('.score-input');
-        let firstInvalid = null;
-        let hasError = false;
+        let isValid = true;
+        let firstInvalidElement = null;
 
-        inputs.forEach(input => {
+        // 1. Validate loại điểm
+        const scoreTypeInput = document.querySelector("input[name='typeScore']");
+        if (scoreTypeInput && scoreTypeInput.value.trim() === "") {
+            highlightError(scoreTypeInput);
+            isValid = false;
+            firstInvalidElement = firstInvalidElement || scoreTypeInput;
+        } else if (scoreTypeInput) {
+            removeHighlight(scoreTypeInput);
+        }
+
+        // 2. Validate ngày học (nếu không phải inactive)
+        const sessionStatus = "${sessionStatus}";
+        if (sessionStatus !== 'inactive') {
+            const sessionDateSelect = document.querySelector("select[name='sessionDate']");
+            if (sessionDateSelect && sessionDateSelect.value === "") {
+                highlightError(sessionDateSelect);
+                isValid = false;
+                firstInvalidElement = firstInvalidElement || sessionDateSelect;
+            } else if (sessionDateSelect) {
+                removeHighlight(sessionDateSelect);
+            }
+        }
+
+        // 3. Validate điểm số
+        const scoreInputs = document.querySelectorAll('.score-input');
+        scoreInputs.forEach(input => {
             const value = input.value.trim();
-            input.style.border = '';
-            input.style.backgroundColor = '';
-
             if (value === "") {
-                hasError = true;
-                input.style.border = '1px solid #dc3545';
-                input.style.backgroundColor = '#fff5f5';
-                if (!firstInvalid)
-                    firstInvalid = input;
+                highlightError(input);
+                isValid = false;
+                firstInvalidElement = firstInvalidElement || input;
             } else {
                 const num = parseFloat(value);
                 if (isNaN(num) || num < 0 || num > 10) {
-                    hasError = true;
-                    input.style.border = '1px solid #dc3545';
-                    input.style.backgroundColor = '#fff5f5';
-                    if (!firstInvalid)
-                        firstInvalid = input;
+                    highlightError(input);
+                    isValid = false;
+                    firstInvalidElement = firstInvalidElement || input;
+                } else {
+                    removeHighlight(input);
                 }
             }
         });
 
-        if (hasError) {
+        if (!isValid) {
             event.preventDefault();
-            firstInvalid.scrollIntoView({behavior: 'smooth', block: 'center'});
-            firstInvalid.focus();
-            alert("Vui lòng nhập điểm hợp lệ từ 0 đến 10 (không để trống).");
+            if (firstInvalidElement) {
+                firstInvalidElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                firstInvalidElement.focus();
+            }
+            alert("Vui lòng điền đầy đủ thông tin bắt buộc:\n" +
+                    "- Loại điểm không được để trống\n" +
+                    (sessionStatus !== 'inactive' ? "- Ngày học phải được chọn\n" : "") +
+                    "- Tất cả điểm số phải từ 0 đến 10 và không để trống");
             return false;
         }
 
         return true;
+    }
+
+    function highlightError(element) {
+        element.style.border = '1px solid #dc3545';
+        element.style.backgroundColor = '#fff5f5';
+        // Thêm hiệu ứng shake nếu muốn
+        element.classList.add('shake-animation');
+        setTimeout(() => {
+            element.classList.remove('shake-animation');
+        }, 500);
+    }
+
+    function removeHighlight(element) {
+        element.style.border = '1px solid #ddd';
+        element.style.backgroundColor = '';
     }
 </script>

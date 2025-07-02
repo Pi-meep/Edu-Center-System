@@ -164,18 +164,15 @@ public class PaymentInfoDAO {
     }
     
     public boolean setActivePaymentInfo(int id) throws Exception {
-        // Đầu tiên set tất cả thành false
         String deactivateSql = "UPDATE payment_info SET is_active = false, updated_at = ?";
         String activateSql = "UPDATE payment_info SET is_active = true, updated_at = ? WHERE id = ?";
         
         try (Connection conn = DBUtil.getConnection()) {
-            // Deactivate tất cả
             try (PreparedStatement ps = conn.prepareStatement(deactivateSql)) {
                 ps.setTimestamp(1, java.sql.Timestamp.valueOf(LocalDateTime.now()));
                 ps.executeUpdate();
             }
             
-            // Activate tài khoản được chọn
             try (PreparedStatement ps = conn.prepareStatement(activateSql)) {
                 ps.setTimestamp(1, java.sql.Timestamp.valueOf(LocalDateTime.now()));
                 ps.setInt(2, id);

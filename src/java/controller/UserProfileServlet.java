@@ -94,6 +94,8 @@ public class UserProfileServlet extends HttpServlet {
 
         try {
             currentAccount = accountDao.getAccountByPhone(userName);
+            String avatarPath = currentAccount.getAvatarURL();
+            request.setAttribute("avatarPath", avatarPath);
             request.setAttribute("currentAccount", currentAccount);
         } catch (Exception ex) {
             Logger.getLogger(UserProfileServlet.class.getName()).log(Level.SEVERE, null, ex);
@@ -133,6 +135,8 @@ public class UserProfileServlet extends HttpServlet {
 
         if ("updateProfile".equals(action)) {
             String role = (String) request.getAttribute("loggedInUserRole");
+            String usname = (String) request.getAttribute("loggedInUserName");
+            AccountDAO acdao = new AccountDAO();
             String phone = request.getParameter("phone");
 
             AccountDAO accountDao = new AccountDAO();
@@ -141,9 +145,9 @@ public class UserProfileServlet extends HttpServlet {
 //            ParentDAO parentDao = new ParentDAO();
 
             try {
-                AccountModal account = accountDao.getAccountByPhone(phone);
+                AccountModal account = accountDao.getAccountByUsername(usname);
                 if (account == null) {
-                    response.sendRedirect("loi.jsp");
+                    response.sendRedirect("login.jsp");
                     return;
                 }
 
@@ -159,6 +163,7 @@ public class UserProfileServlet extends HttpServlet {
 
                 account.setName(fullName);
                 account.setAddress(address);
+                account.setPhone(phone);
                 if (dob != null) {
                     account.setDob(dob.atTime(12, 0));
                 }
@@ -191,16 +196,6 @@ public class UserProfileServlet extends HttpServlet {
                     }
 
                 }
-//                else if ("parent".equals(role)) {
-//                    String job = request.getParameter("job");
-//
-//                    ParentModal parent = parentDao.getParentByAccountId(account.getId());
-//                    if (parent != null) {
-//                        parent.setJob(job);
-//                        parentDao.updateParent(parent);
-//                    }
-//                }
-
                 response.sendRedirect("userProfile");
             } catch (Exception e) {
                 e.printStackTrace();

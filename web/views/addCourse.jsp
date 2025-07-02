@@ -31,7 +31,8 @@
 
         <div class="mb-3">
             <label class="form-label">Môn học</label>
-            <select name="subject" class="form-select form-select-sm" required>
+            <select name="subject" class="form-select form-select-sm" required readonly>
+                <option value="" selected>--</option>
                 <option value="Mathematics">Toán</option>
                 <option value="Literature">Ngữ văn</option>
                 <option value="English">Tiếng Anh</option>
@@ -43,6 +44,11 @@
                 <option value="Civic Education">GDCD</option>
                 <option value="Informatics">Tin học</option>
             </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Khối</label>
+            <input type="text" class="form-control form-control-sm" name="grade" required readonly>
         </div>
 
         <div class="mb-3">
@@ -102,7 +108,7 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label">Sĩ số tối đa</label>
-                <input type="number" class="form-control form-control-sm" name="maxStudents" id="maxStudents" min="1" required>
+                <input type="number" class="form-control form-control-sm" name="maxStudents" id="maxStudents" min="1" max="31" required>
             </div>
         </div>
 
@@ -126,11 +132,6 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Khối</label>
-            <input type="text" class="form-control form-control-sm" name="grade" required>
-        </div>
-
-        <div class="mb-3">
             <label class="form-label">Giảm giá (%)</label>
             <input type="number" class="form-control form-control-sm" name="discountPercentage" id="discountPercentage" min="0" max="100" step="0.01" placeholder="VD: 10" onblur="formatDiscount()">
         </div>
@@ -143,7 +144,7 @@
             </button>
         </h5>
 
-        <div id="scheduleForm" style="display: none;">
+        <div id="scheduleForm"">
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="form-label">Ngày học</label>
@@ -170,28 +171,55 @@
                 <label class="form-label">Phòng học</label>
                 <input type="text" class="form-control form-control-sm" name="classroom" required>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Trạng thái buổi học</label>
-                <select name="sectionStatus" class="form-select form-select-sm" required>
-                    <option value="active">Đang hoạt động</option>
-                    <option value="inactive">Tạm ngưng</option>
-                    <option value="completed">Đã hoàn thành</option>
-                </select>
-            </div>
-        </div>
 
-        <button type="submit" class="btn btn-success">Thêm khóa học</button>
-        <a href="quan-ly-khoa-hoc" class="btn btn-secondary">Hủy</a>
+            <button type="submit" class="btn btn-success">Thêm khóa học</button>
+            <a href="quan-ly-khoa-hoc" class="btn btn-secondary">Hủy</a>
     </form>
 </div>
+        
+<jsp:include page="layout/footer.jsp" /> 
+
 <script>
-    var tenBiTrung = false;
+    let tenBiTrung = false;
 
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('courseName').addEventListener('blur', kiemTraTrung);
+        document.getElementById('courseName').addEventListener('input', goiYNoiDung);
+        document.getElementById('startDate').addEventListener('change', calculateEndDate);
+        document.getElementById('weekAmount').addEventListener('input', calculateEndDate);
+        document.getElementById('maxStudents').addEventListener('input', function () {
+            const value = parseInt(this.value);
+            if (value > 31) {
+                alert('Sĩ số tối đa không được vượt quá 31 học sinh.');
+                this.value = 31;
+            }
+        });
+        //số học sinh hiện tại
+        document.getElementById('studentEnrollment').addEventListener('input', function () {
+            const value = parseInt(this.value);
+            if (value !== 0) {
+                alert('Sĩ số hiện tại chỉ được là 0.');
+                this.value = 0;
+            }
+        });
+        // phần trăm giảm giá
+        document.getElementById('discountPercentage').addEventListener('input', function () {
+            let val = parseFloat(this.value);
+            if (val > 100) {
+                alert('Giảm giá tối đa là 100%');
+                this.value = 100;
+            } else if (val < 0) {
+                alert('Giảm giá không thể nhỏ hơn 0%');
+                this.value = 0;
+            }
+        });
+
+        toggleFeeFields();
+    });
     function kiemTraTrung() {
-        var oTen = document.getElementById('courseName');
-        var canhBao = document.getElementById('dupMsg');
-        var ten = oTen.value.trim();
-
+        const oTen = document.getElementById('courseName');
+        const canhBao = document.getElementById('dupMsg');
+        const ten = oTen.value.trim();
         if (ten === '') {
             canhBao.style.display = 'none';
             tenBiTrung = false;
@@ -199,18 +227,13 @@
         }
 
         fetch('quan-ly-khoa-hoc?action=checkDuplicate&name=' + encodeURIComponent(ten))
-                .then(function (res) {
-                    return res.json();
-                })
-                .then(function (data) {
+                .then(res => res.json())
+                .then(data => {
                     tenBiTrung = data.exists;
                     canhBao.style.display = tenBiTrung ? 'block' : 'none';
                 });
     }
 
-    document.getElementById('courseName').addEventListener('blur', kiemTraTrung);
-
-    // validateForm thành 1 hàm duy nhất
     function validateForm() {
         if (tenBiTrung) {
             alert('Tên khóa học đã tồn tại, vui lòng nhập tên khác.');
@@ -218,23 +241,23 @@
         }
 
         const courseType = document.getElementById('courseType').value;
-        const feeCombo = document.getElementById('feeCombo');
-        const feeDaily = document.getElementById('feeDaily');
+        const feeCombo = parseFloat(document.getElementById('feeCombo').value) || 0;
+        const feeDaily = parseFloat(document.getElementById('feeDaily').value) || 0;
         const startDate = new Date(document.getElementById('startDate').value);
         const endDate = new Date(document.getElementById('endDate').value);
         const weekAmount = parseInt(document.getElementById('weekAmount').value);
         const studentEnrollment = parseInt(document.getElementById('studentEnrollment').value);
         const maxStudents = parseInt(document.getElementById('maxStudents').value);
         const discount = parseFloat(document.getElementById('discountPercentage').value);
-
-        if (courseType === 'combo' && (!feeCombo.value || parseFloat(feeCombo.value) <= 0)) {
+        if (courseType === 'combo' && feeCombo <= 0) {
             alert('Vui lòng nhập học phí trọn gói hợp lệ.');
-            feeCombo.focus();
+            document.getElementById('feeCombo').focus();
             return false;
         }
-        if (courseType === 'daily' && (!feeDaily.value || parseFloat(feeDaily.value) <= 0)) {
+
+        if (courseType === 'daily' && feeDaily <= 0) {
             alert('Vui lòng nhập học phí theo buổi hợp lệ.');
-            feeDaily.focus();
+            document.getElementById('feeDaily').focus();
             return false;
         }
 
@@ -243,10 +266,11 @@
             return false;
         }
 
-        if (studentEnrollment < 0 || maxStudents < 1 || weekAmount < 1) {
-            alert("Thông tin sĩ số hoặc số tuần không hợp lệ.");
+        if (isNaN(weekAmount) || weekAmount < 1 || isNaN(maxStudents) || maxStudents < 1 || maxStudents > 31 || studentEnrollment < 0) {
+            alert("Thông tin sĩ số hoặc số tuần không hợp lệ. (Tối đa 31 học sinh)");
             return false;
         }
+
         if (studentEnrollment > maxStudents) {
             alert("Sĩ số hiện tại không được vượt quá sĩ số tối đa.");
             return false;
@@ -256,6 +280,7 @@
             alert("Phần trăm giảm giá phải từ 0 đến 100.");
             return false;
         }
+
 
         return true;
     }
@@ -288,12 +313,36 @@
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
     }
 
-    // ✅ Đảm bảo mọi sự kiện được gắn đúng khi DOM sẵn sàng
-    document.addEventListener('DOMContentLoaded', () => {
-        toggleFeeFields();
-        document.getElementById('startDate').addEventListener('change', calculateEndDate);
-        document.getElementById('weekAmount').addEventListener('input', calculateEndDate);
-    });
+    function goiYNoiDung() {
+        const name = this.value.toLowerCase();
+        const subjectSelect = document.querySelector('select[name="subject"]');
+        const gradeInput = document.querySelector('input[name="grade"]');
+        const subjectMap = {
+            'toán': 'Mathematics',
+            'ngữ văn': 'Literature',
+            'văn': 'Literature',
+            'tiếng anh': 'English',
+            'anh': 'English',
+            'vật lý': 'Physics',
+            'lý': 'Physics',
+            'hóa': 'Chemistry',
+            'sinh': 'Biology',
+            'lịch sử': 'History',
+            'địa': 'Geography',
+            'gdcd': 'Civic Education',
+            'tin': 'Informatics'
+        };
+        for (const key in subjectMap) {
+            if (name.includes(key)) {
+                subjectSelect.value = subjectMap[key];
+                break;
+            }
+        }
+
+        const gradeMatch = name.match(/lớp\s*(\d{1,2})/);
+        if (gradeMatch) {
+            gradeInput.value = gradeMatch[1];
+        }
+    }
 </script>
 
-<jsp:include page="layout/footer.jsp" /> 

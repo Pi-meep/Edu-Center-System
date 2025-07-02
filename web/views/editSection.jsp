@@ -16,12 +16,11 @@
                     ${error}
                 </div>
             </c:if>
-
             <h4 class="mb-4 text-primary fw-bold">
                 <i class="fas fa-edit me-2"></i>Chỉnh sửa lớp học
             </h4>
 
-            <form method="post" action="quan-ly-lop-hoc">
+            <form method="post" action="quan-ly-lop-hoc"> 
                 <input type="hidden" name="action" value="update" />
                 <input type="hidden" name="id" value="${section.id}" />
                 <input type="hidden" name="courseId" value="${section.courseId}" />
@@ -32,11 +31,18 @@
                     <label class="form-label fw-semibold">Khóa học</label>
                     <input type="text" class="form-control-plaintext bg-light border rounded px-3 py-2" value="${section.courseName}" readonly>
                 </div>
-
+                
+                
+                <!-- Ngày học -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ngày học</label>
+                    <input type="date" name="dateTime" class="form-control" value="${section.dateFormatted}" required>
+                </div>
+                
                 <!-- Thứ -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Thứ</label>
-                    <select name="dayOfWeek" class="form-select" required>
+                    <select name="dayOfWeek" class="form-select" required >
                         <option value="Monday" ${section.dayOfWeek == 'Monday' ? 'selected' : ''}>Thứ 2</option>
                         <option value="Tuesday" ${section.dayOfWeek == 'Tuesday' ? 'selected' : ''}>Thứ 3</option>
                         <option value="Wednesday" ${section.dayOfWeek == 'Wednesday' ? 'selected' : ''}>Thứ 4</option>
@@ -65,18 +71,12 @@
                     <input type="text" name="classroom" class="form-control" value="${section.classroom}" required>
                 </div>
 
-                <!-- Ngày học -->
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Ngày học</label>
-                    <input type="date" name="dateTime" class="form-control" value="${section.dateFormatted}" required>
-                </div>
-
                 <!-- Trạng thái -->
                 <div class="mb-4">
                     <label class="form-label fw-semibold">Trạng thái</label>
                     <select name="status" class="form-select" required>
                         <option value="active" ${section.status == 'active' ? 'selected' : ''}>Hoạt động</option>
-                        <option value="inactive" ${section.status == 'inactive' ? 'selected' : ''}>Tạm ngưng</option>
+                        <option value="inactive" ${section.status == 'inactive' ? 'selected' : ''}>Chưa diễn ra</option>
                         <option value="completed" ${section.status == 'completed' ? 'selected' : ''}>Hoàn tất</option>
                     </select>
                 </div>
@@ -94,6 +94,8 @@
         </div>
     </div>
 </div>
+                    
+<jsp:include page="layout/footer.jsp" />
 
 <script>
     const weekdayMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -113,5 +115,3 @@
 
 </script>
 
-
-<jsp:include page="layout/footer.jsp" />

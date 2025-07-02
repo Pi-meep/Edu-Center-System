@@ -184,16 +184,18 @@ public class ManagerCourseServlet extends HttpServlet {
                 String startTimeStr = request.getParameter("startTime");
                 String endTimeStr = request.getParameter("endTime");
                 String classroom = request.getParameter("classroom");
-                String sectionStatus = request.getParameter("sectionStatus");
 
-                if (dayOfWeek != null && startTimeStr != null && endTimeStr != null && classroom != null && sectionStatus != null) {
+                if (dayOfWeek != null && !dayOfWeek.isEmpty()
+                        && startTimeStr != null && !startTimeStr.isEmpty()
+                        && endTimeStr != null && !endTimeStr.isEmpty()
+                        && classroom != null && !classroom.isEmpty()) {
                     LocalTime startTime = LocalTime.parse(startTimeStr);
                     LocalTime endTime = LocalTime.parse(endTimeStr);
 
                     LocalDate startDate = course.getStartDate().toLocalDate();
                     LocalDate endDate = course.getEndDate().toLocalDate();
 
-                    sectionDAO.addSections(courseId, dayOfWeek, startTime, endTime, classroom, startDate, endDate, sectionStatus);
+                    sectionDAO.addSections(courseId, dayOfWeek, startTime, endTime, classroom, startDate, endDate, course.getTeacherId());
                 }
                 response.sendRedirect("quan-ly-khoa-hoc?action=list");
                 return;

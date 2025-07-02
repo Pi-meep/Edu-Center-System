@@ -141,6 +141,14 @@
         <servlet-class>controller.SystemConfigServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>searchCourseBeingTaught</servlet-name>
+        <servlet-class>controller.searchCourseBeingTaught</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UploadAvatarServlet</servlet-name>
+        <servlet-class>controller.UploadAvatarServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>ErrorServlet</servlet-name>
         <servlet-class>controller.ErrorServlet</servlet-class>
     </servlet>
@@ -279,5 +287,13 @@
     <servlet-mapping>
         <servlet-name>ErrorServlet</servlet-name>
         <url-pattern>/error</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>searchCourseBeingTaught</servlet-name>
+        <url-pattern>/searchCourseBeingTaught</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UploadAvatarServlet</servlet-name>
+        <url-pattern>/upload-avatar</url-pattern>
     </servlet-mapping>
 </web-app>

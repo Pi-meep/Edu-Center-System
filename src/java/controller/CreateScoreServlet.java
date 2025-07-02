@@ -5,6 +5,7 @@
 package controller;
 
 import dao.AccountDAO;
+import dao.SectionDAO;
 import dao.StudentDAO;
 import dao.TeacherDAO;
 import dto.StudentBasicInfo;
@@ -18,12 +19,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import modal.AccountModal;
+import modal.SectionModal;
 import modal.StudentMarkFeedbackModal;
 import modal.StudentMarkFeedbackModal;
 import modal.TeacherModal;
@@ -73,11 +80,30 @@ public class CreateScoreServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        SectionDAO secDao = new SectionDAO();
         String grade = request.getParameter("grade");
         String courseId = request.getParameter("courseId");
         String nameCourse = request.getParameter("name");
         String level = request.getParameter("level");
         String subject = request.getParameter("subject");
+        List<SectionModal> listSec = secDao.getSectionsByCourseId(Integer.parseInt(courseId));
+        String resultMessage = request.getParameter("result");
+        if (resultMessage != null && !resultMessage.isBlank()) {
+            request.setAttribute("message", resultMessage);
+        }
+
+// Tạo danh sách mới chứa cả đối tượng SectionModal và chuỗi ngày đã định dạng
+        List<Map<String, Object>> formattedSessions = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd/MM/yyyy", new Locale("vi", "VN"));
+
+        for (SectionModal session : listSec) {
+            Map<String, Object> sessionMap = new HashMap<>();
+            sessionMap.put("section", session);
+            sessionMap.put("formattedDate", session.getDateTime().format(formatter));
+            formattedSessions.add(sessionMap);
+        }
+
+        request.setAttribute("formattedSessions", formattedSessions);
         try {
             String result = request.getParameter("result");
             if (result != null && !result.isBlank()) {
@@ -135,6 +161,14 @@ public class CreateScoreServlet extends HttpServlet {
             String subject = request.getParameter("subject");
             String studentEnrollment = request.getParameter("currentEnrollment");
             String courseIdParam = request.getParameter("courseId");
+            String sessionDate = request.getParameter("sessionDate");
+            LocalDateTime sessionLocalDate = null;
+            if (sessionDate == null || sessionDate.isEmpty()) {
+                sessionLocalDate = LocalDateTime.now();
+            } else {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                sessionLocalDate = LocalDateTime.parse(sessionDate, formatter);
+            }
 
             int courseId = 0;
             if (courseIdParam != null && !courseIdParam.isBlank()) {
@@ -172,7 +206,7 @@ public class CreateScoreServlet extends HttpServlet {
                         item.setTakeBy(teacherId);
                         item.setMark(mark);
                         item.setFeedback(feedback);
-                        item.setDate(now);
+                        item.setDate(sessionLocalDate);
                         item.setCreatedAt(now);
                         item.setType(typeScore);
                         feedbackList.add(item);

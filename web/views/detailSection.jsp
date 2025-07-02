@@ -73,10 +73,22 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge bg-${student.attendanceStatus ? 'info' : 'secondary'}">
-                            ${student.attendanceStatus ? 'Có mặt' : 'Vắng'}
-                        </span>
+                        <c:choose>
+                            <c:when test="${student.attendanceStatus == 'present'}">
+                                <span class="badge bg-info">Có mặt</span>
+                            </c:when>
+                            <c:when test="${student.attendanceStatus == 'absent'}">
+                                <span class="badge bg-danger">Vắng</span>
+                            </c:when>
+                            <c:when test="${student.attendanceStatus == 'excused'}">
+                                <span class="badge bg-warning text-dark">Có phép</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-secondary">Chưa diễn ra</span>
+                            </c:otherwise>
+                        </c:choose>
                     </td>
+
                 </tr>
             </c:forEach>
             <c:if test="${empty studentList}">

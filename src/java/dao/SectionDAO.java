@@ -104,12 +104,16 @@ public class SectionDAO extends DBUtil {
                 section.setDayOfWeek(SectionModal.DayOfWeekEnum.valueOf(rs.getString("dayOfWeek")));
 
                 // Các trường thời gian
-                LocalDateTime startTime = rs.getTimestamp("startTime").toLocalDateTime();
-                LocalDateTime endTime = rs.getTimestamp("endTime").toLocalDateTime();
+                LocalTime startTime = rs.getTime("startTime").toLocalTime();
+                LocalTime endTime = rs.getTime("endTime").toLocalTime();
                 LocalDateTime dateTime = rs.getTimestamp("dateTime").toLocalDateTime();
+                LocalDate date = dateTime.toLocalDate();
 
-                section.setStartTime(startTime);
-                section.setEndTime(endTime);
+                LocalDateTime startDateTime = LocalDateTime.of(date, startTime);
+                LocalDateTime endDateTime = LocalDateTime.of(date, endTime);
+
+                section.setStartTime(startDateTime);
+                section.setEndTime(endDateTime);
                 section.setDateTime(dateTime);
 
                 section.setClassroom(rs.getString("classroom"));
@@ -126,8 +130,7 @@ public class SectionDAO extends DBUtil {
 
                 dto.setStartTimeFormatted(startTime.format(timeFormatter));
                 dto.setEndTimeFormatted(endTime.format(timeFormatter));
-                dto.setDateFormatted(dateTime.toLocalDate().format(dateFormatter));
-
+                dto.setDateFormatted(date.format(dateFormatter));
 
                 sectionList.add(dto);
             }
@@ -218,7 +221,7 @@ public class SectionDAO extends DBUtil {
         return sections;
     }
 
-    public void updateSection(SectionModal section) {
+    public void updateSection(SectionDTO section) {
         String updateSQL = """
         UPDATE section 
         SET courseId = ?, 
@@ -235,8 +238,8 @@ public class SectionDAO extends DBUtil {
 
             stmt.setInt(1, section.getCourseId());
             stmt.setString(2, section.getDayOfWeek().toString());
-            stmt.setTimestamp(3, Timestamp.valueOf(section.getStartTime()));
-            stmt.setTimestamp(4, Timestamp.valueOf(section.getEndTime()));
+            stmt.setTime(3, Time.valueOf(section.getStartTime().toLocalTime()));
+            stmt.setTime(4, Time.valueOf(section.getEndTime().toLocalTime()));
             stmt.setString(5, section.getClassroom());
             stmt.setTimestamp(6, Timestamp.valueOf(section.getDateTime()));
             stmt.setString(7, section.getStatus().toString());
@@ -304,12 +307,15 @@ public class SectionDAO extends DBUtil {
                 SectionModal section = new SectionModal();
                 section.setId(rs.getInt("id"));
                 section.setDayOfWeek(SectionModal.DayOfWeekEnum.valueOf(rs.getString("dayOfWeek")));
-                LocalDateTime startTime = rs.getTimestamp("startTime").toLocalDateTime();
-                LocalDateTime endTime = rs.getTimestamp("endTime").toLocalDateTime();
-                LocalDateTime dateTime = rs.getTimestamp("dateTime").toLocalDateTime();
+                LocalTime startTimeOnly = rs.getTime("startTime").toLocalTime();
+                LocalTime endTimeOnly = rs.getTime("endTime").toLocalTime();
+                LocalDate date = rs.getTimestamp("dateTime").toLocalDateTime().toLocalDate();
+
+                LocalDateTime startTime = LocalDateTime.of(date, startTimeOnly);
+                LocalDateTime endTime = LocalDateTime.of(date, endTimeOnly);
                 section.setStartTime(startTime);
                 section.setEndTime(endTime);
-                section.setDateTime(dateTime);
+                section.setDateTime(LocalDateTime.of(date, startTimeOnly));
                 section.setClassroom(rs.getString("classroom"));
                 section.setStatus(SectionModal.Status.valueOf(rs.getString("status")));
 
@@ -323,10 +329,9 @@ public class SectionDAO extends DBUtil {
                 dto.setTeacherName(rs.getString("teacherName"));
                 dto.setSection(section);
 
-                dto.setStartTimeFormatted(startTime.format(timeFormatter));
-                dto.setEndTimeFormatted(endTime.format(timeFormatter));
-                dto.setDateFormatted(dateTime.toLocalDate().format(dateFormatter));
-
+                dto.setStartTimeFormatted(startTimeOnly.format(timeFormatter));
+                dto.setEndTimeFormatted(endTimeOnly.format(timeFormatter));
+                dto.setDateFormatted(date.format(dateFormatter));
                 return dto;
             }
         } catch (Exception e) {
@@ -362,7 +367,14 @@ public class SectionDAO extends DBUtil {
                 dto.setStudentId(rs.getInt("studentId"));
                 dto.setStudentName(rs.getString("studentName"));
                 dto.setIsPaid(rs.getBoolean("isPaid"));
-                dto.setAttendanceStatus(rs.getBoolean("attendanceStatus"));
+                String statusStr = rs.getString("attendanceStatus");
+                StudentSectionDTO.AttendanceStatus status;
+                try {
+                    status = StudentSectionDTO.AttendanceStatus.valueOf(statusStr);
+                } catch (IllegalArgumentException | NullPointerException e) {
+                    status = StudentSectionDTO.AttendanceStatus.notyet;
+                }
+                dto.setAttendanceStatus(status);
 
                 list.add(dto);
             }
@@ -389,9 +401,10 @@ public class SectionDAO extends DBUtil {
      * @param status Trạng thái của lớp học
      */
     public void addSections(int courseId, String dayOfWeek, LocalTime startTime, LocalTime endTime,
-            String classroom, LocalDate startDate, LocalDate endDate, String status) {
-        String sql = "INSERT INTO section (courseId, dayOfWeek, startTime, endTime, classroom, dateTime, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    String classroom, LocalDate startDate, LocalDate endDate, int teacherId) {
 
+        String sql = "INSERT INTO section (courseId, dayOfWeek, startTime, endTime, classroom, dateTime, status, teacherId) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             // Lấy enum DayOfWeek tương ứng với tham số truyền vào (VD: "MONDAY")
@@ -404,26 +417,35 @@ public class SectionDAO extends DBUtil {
             while (date.getDayOfWeek() != targetDay) {
                 date = date.plusDays(1); // tăng dần đến đúng thứ cần tìm
             }
-
+            LocalDateTime now = LocalDateTime.now();
+            int count = 0;
             // Duyệt theo từng tuần cho đến endDate
             while (!date.isAfter(endDate)) {
                 // Gộp ngày và giờ bắt đầu/kết thúc thành LocalDateTime
                 LocalDateTime startDateTime = date.atTime(startTime);
-                LocalDateTime endDateTime = date.atTime(endTime);
-
+                String sectionStatus;
+                if (startDateTime.toLocalDate().isBefore(now.toLocalDate())) {
+                    sectionStatus = "completed";
+                } else if (startDateTime.toLocalDate().isEqual(now.toLocalDate())) {
+                    sectionStatus = "active";
+                } else {
+                    sectionStatus = "inactive";
+                }
                 // Gán các giá trị vào PreparedStatement
                 ps.setInt(1, courseId);
                 ps.setString(2, dayOfWeek);
-                ps.setTimestamp(3, Timestamp.valueOf(startDateTime)); // startTime
-                ps.setTimestamp(4, Timestamp.valueOf(endDateTime));   // endTime
+                ps.setTime(3, Time.valueOf(startTime));
+                ps.setTime(4, Time.valueOf(endTime));
                 ps.setString(5, classroom);
-                ps.setTimestamp(6, Timestamp.valueOf(startDateTime)); // dateTime = thời điểm bắt đầu học
-                ps.setString(7, status);
+                ps.setTimestamp(6, Timestamp.valueOf(startDateTime));
+                ps.setString(7, sectionStatus);
+                ps.setInt(8, teacherId);
 
                 // Thêm vào batch để thực hiện nhiều insert 1 lúc(batch là để thu thập dữ liệu )
                 ps.addBatch();
 
                 // Tăng ngày thêm 1 tuần để tạo buổi học tiếp theo
+                count++;
                 date = date.plusWeeks(1);
             }
 
@@ -604,5 +626,25 @@ public class SectionDAO extends DBUtil {
         return null; 
     }
 
+
+    public List<SectionModal> getSectionsByCourseId(int courseId) {
+        List<SectionModal> sectionList = new ArrayList<>();
+        String sql = "SELECT * FROM section WHERE courseId = ? ORDER BY dateTime";
+
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setInt(1, courseId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                sectionList.add(mapResultSet(rs)); // dùng lại hàm ánh xạ có sẵn
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return sectionList;
+    }
 
 }
