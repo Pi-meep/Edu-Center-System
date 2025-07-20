@@ -58,25 +58,6 @@ public class AccountDAO {
 
         return acc;
     }
-    
-        private AccountModal mapResultSet(ResultSet rs) throws SQLException {
-        AccountModal account = new AccountModal();
-        account.setId(rs.getInt("id"));
-        account.setName(rs.getString("name"));
-        account.setUsername(rs.getString("username"));
-        account.setPhone(rs.getString("phone"));
-        account.setDob(rs.getObject("dob", LocalDateTime.class));
-        account.setRole(AccountModal.Role.valueOf(rs.getString("role")));
-        account.setAddress(rs.getString("address"));
-        account.setPassword(rs.getString("password"));
-        account.setAvatarURL(rs.getString("avatarURL"));
-        account.setStatus(AccountModal.Status.valueOf(rs.getString("status")));
-        account.setCreatedAt(rs.getObject("created_at", LocalDateTime.class));
-        account.setUpdatedAt(rs.getObject("updated_at", LocalDateTime.class));
-
-        return account;
-    }
-
 
  public List<AccountModal> getAllAccounts() throws Exception {
         List<AccountModal> list = new ArrayList<>();
@@ -209,7 +190,7 @@ public class AccountDAO {
             pre.setString(1, role);
             try (ResultSet rs = pre.executeQuery()) {
                 while (rs.next()) {
-                    accountList.add(mapResultSet(rs));
+                    accountList.add(mapResultSetToAccount(rs));
                 }
             }
         } catch (Exception e) {
@@ -308,11 +289,9 @@ public class AccountDAO {
         return false;
     }
 
-    public void insert(AccountModal acc) throws Exception {
-        String sql = "INSERT INTO account (name, username, phone, password, dob, address, avatarUrl, status, role, created_at, updated_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+    public int insertAccount(AccountModal acc) {
+        String sql = "INSERT INTO account (name, username, phone, password, dob, address, avatarURL, status, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, acc.getName());
             ps.setString(2, acc.getUsername());
@@ -327,6 +306,14 @@ public class AccountDAO {
             ps.setTimestamp(11, Timestamp.valueOf(acc.getUpdatedAt()));
 
             ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi khi insert account: " + e.getMessage(), e);
         }
+        return -1;
     }
 }

@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import modal.SectionModal;
 import modal.SectionModal.DayOfWeekEnum;
 import modal.SectionModal.Status;
 
@@ -135,7 +134,6 @@ public class ManagerSectionServlet extends HttpServlet {
                 String dateStr = request.getParameter("dateTime");
                 String statusStr = request.getParameter("status");
 
-                // Parse thời gian và ngày học
                 LocalDate date = LocalDate.parse(dateStr);
                 LocalTime startTimeOnly = LocalTime.parse(startTimeStr, timeFormatter);
                 LocalTime endTimeOnly = LocalTime.parse(endTimeStr, timeFormatter);
@@ -148,7 +146,7 @@ public class ManagerSectionServlet extends HttpServlet {
                 dto.setDayOfWeek(DayOfWeekEnum.valueOf(dayOfWeekStr));
                 dto.setStartTime(startTime);
                 dto.setEndTime(endTime);
-                dto.setDateTime(startTime); // Hoặc dùng riêng nếu khác
+                dto.setDateTime(startTime); 
                 dto.setClassroom(classroom);
                 dto.setStatus(Status.valueOf(statusStr));
                 dto.setStartTimeFormatted(startTimeOnly.format(timeFormatter));

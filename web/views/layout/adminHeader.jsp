@@ -49,6 +49,14 @@
                 border-radius: 50%;
             }
 
+            .ttr-sidebar-navi li ul {
+                display: none;
+            }
+
+            .ttr-sidebar-navi li.open > ul {
+                display: block;
+            } 
+
             /* Dropdown */
             .notification-dropdown {
                 display: none;
@@ -264,6 +272,33 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="quan-ly-lich-hoc" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fas fa-calendar-alt"></i></span>
+                                        <span class="ttr-label">Quản lý lịch học </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0);" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fa fa-clipboard-check"></i></span>
+                                        <span class="ttr-label">Xử lý yêu cầu</span>
+                                        <span class="ttr-arrow-icon"><i class="fa fa-angle-down"></i></span>
+                                    </a>
+                                    <ul>
+                                        <li>
+                                            <a href="quan-ly-tham-gia-lop-hoc" class="ttr-material-button">
+                                                <span class="ttr-icon"><i class="fa fa-user-plus"></i></span>
+                                                <span class="ttr-label">Tham gia lớp học</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="ttr-material-button">
+                                                <span class="ttr-icon"><i class="fa fa-envelope-open-text"></i></span>
+                                                <span class="ttr-label">Yêu cầu khác</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
                                     <a href="admin-ca-nhan" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-address-card"></i></span>
                                         <span class="ttr-label">Hồ sơ</span>
@@ -384,6 +419,15 @@
                                 body.classList.add('ttr-pinned-sidebar');
                             }
                         }, 250);
+                    });
+                });
+                document.querySelectorAll('.ttr-sidebar-navi > ul > li > a.ttr-material-button').forEach(function (button) {
+                    button.addEventListener('click', function (e) {
+                        const parentLi = this.parentElement;
+                        if (parentLi.querySelector('ul')) {
+                            e.preventDefault();
+                            parentLi.classList.toggle('open');
+                        }
                     });
                 });
             </script>

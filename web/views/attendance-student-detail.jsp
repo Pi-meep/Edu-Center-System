@@ -26,9 +26,26 @@
             .card-hover:hover {
                 background-color: #f8f9fa;
             }
+            .status-present {
+                color: #28a745;
+                font-weight: bold;
+            }
+            .status-absent {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .status-excused {
+                color: #ffc107;
+                font-weight: bold;
+            }
+            .status-pending {
+                color: #6c757d;
+                font-weight: bold;
+                font-style: italic;
+            }
         </style>
     </head>
-            <jsp:include page="layout/header.jsp" />
+    <jsp:include page="layout/header.jsp" />
     <body class="bg-light">
         <div class="container py-4">
             <!-- Header -->
@@ -76,9 +93,21 @@
                                                 <td>${section.formattedStartTime} - ${section.formattedEndTime}</td>
                                                 <td>${section.classroom}</td>
                                                 <td>
-                                                    <span class="${record.attendanceStatus ? 'status-present' : 'status-absent'}">
-                                                        ${record.attendanceStatus ? 'Có mặt' : 'Vắng mặt'}
-                                                    </span>
+                                                    <c:choose>
+                                                        <c:when test="${record.attendanceStatus == 'present'}">
+                                                            <span class="status-present">Có mặt</span>
+                                                        </c:when>
+                                                        <c:when test="${record.attendanceStatus == 'absent'}">
+                                                            <span class="status-absent">Vắng mặt</span>
+                                                        </c:when>
+                                                        <c:when test="${record.attendanceStatus == 'excused'}">
+                                                            <span class="status-excused">Có phép</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="status-pending">Chưa điểm danh</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+
                                                 </td>
                                             </tr>
                                         </c:forEach>

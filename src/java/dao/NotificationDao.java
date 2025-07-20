@@ -5,10 +5,9 @@
 
 package dao;
 
-import java.sql.*;
-
-import java.util.*;
 import java.lang.*;
+import java.sql.*;
+import java.util.*;
 import modal.NotificationModal;
 import utils.DBUtil;
 
@@ -17,22 +16,24 @@ import utils.DBUtil;
  * @author Minh Thu
  */
 public class NotificationDao {
-     // Thêm 1 thông báo cho 1 người
-     // ✅ Gửi thông báo cho 1 người
-    public boolean addNotification(int accountId, String description) {
-        String sql = "INSERT INTO notifications (account_id, description, is_read, created_at) VALUES (?, ?, false, NOW())";
+
+    public void addNotification(int accountId, String description) {
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement("INSERT INTO notification (accountId, description, is_read, created_at) VALUES (?, ?, 0, NOW())")) {
             ps.setInt(1, accountId);
             ps.setString(2, description);
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
     }
 
-    // ✅ Gửi thông báo cho nhiều người
+    public void addNotification(List<Integer> accountIds, String description) {
+        for (int accountId : accountIds) {
+            this.addNotification(accountId, description);
+        }
+    }
+
     public boolean addNotificationToMultipleUsers(List<Integer> accountIds, String description) {
         String sql = "INSERT INTO notifications (account_id, description, is_read, created_at) VALUES (?, ?, false, NOW())";
         try (Connection conn = DBUtil.getConnection();
@@ -50,23 +51,21 @@ public class NotificationDao {
         }
     }
 
-    // ✅ Lấy toàn bộ thông báo theo accountId
-    public List<NotificationModal> getNotificationsByAccountId(int accountId) {
+    public static List<NotificationModal> getNotificationsByAccountId(int accountId) {
         List<NotificationModal> list = new ArrayList<>();
-        String sql = "SELECT id, account_id, description, is_read, created_at FROM notifications WHERE account_id = ? ORDER BY created_at DESC";
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM notification WHERE account_id = ? ORDER BY created_at DESC")) {
             ps.setInt(1, accountId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(new NotificationModal(
-                        rs.getInt("id"),
-                        rs.getInt("account_id"),
-                        rs.getString("description"),
-                        rs.getBoolean("is_read"),
-                        rs.getTimestamp("created_at").toLocalDateTime()
-                    ));
-                }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                NotificationModal n = new NotificationModal(
+                    rs.getInt("id"),
+                    rs.getInt("account_id"),
+                    rs.getString("description"),
+                    rs.getBoolean("is_read"),
+                    rs.getTimestamp("created_at").toLocalDateTime()
+                );
+                list.add(n);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,7 +73,6 @@ public class NotificationDao {
         return list;
     }
 
-    // ✅ Lấy thông báo chưa đọc
     public List<NotificationModal> getUnreadNotificationsByAccountId(int accountId) {
         List<NotificationModal> list = new ArrayList<>();
         String sql = "SELECT id, account_id, description, is_read, created_at FROM notifications WHERE account_id = ? AND is_read = false ORDER BY created_at DESC";
@@ -98,7 +96,6 @@ public class NotificationDao {
         return list;
     }
 
-    // ✅ Đánh dấu 1 thông báo đã đọc
     public boolean markAsRead(int notificationId) {
         String sql = "UPDATE notifications SET is_read = true WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -111,7 +108,6 @@ public class NotificationDao {
         }
     }
 
-    // ✅ Đánh dấu tất cả đã đọc
     public boolean markAllAsReadByAccountId(int accountId) {
         String sql = "UPDATE notifications SET is_read = true WHERE account_id = ? AND is_read = false";
         try (Connection conn = DBUtil.getConnection();
@@ -124,7 +120,6 @@ public class NotificationDao {
         }
     }
 
-    // ✅ Xoá 1 thông báo
     public boolean deleteNotification(int id) {
         String sql = "DELETE FROM notifications WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -137,7 +132,6 @@ public class NotificationDao {
         }
     }
 
-    // ✅ Đếm thông báo chưa đọc
     public int countUnreadNotifications(int accountId) {
         String sql = "SELECT COUNT(*) FROM notifications WHERE account_id = ? AND is_read = false";
         try (Connection conn = DBUtil.getConnection();
@@ -152,7 +146,6 @@ public class NotificationDao {
         }
     }
 
-    // ✅ Lấy 1 thông báo theo ID
     public NotificationModal getNotificationById(int id) {
         String sql = "SELECT id, account_id, description, is_read, created_at FROM notifications WHERE id = ?";
         try (Connection conn = DBUtil.getConnection();
@@ -175,4 +168,17 @@ public class NotificationDao {
         return null;
     }
 
+    public List<Integer> getStaffAccountIds() {
+        List<Integer> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT id FROM account WHERE role = 'staff' AND status = 'active'")) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getInt("id"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

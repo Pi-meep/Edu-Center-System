@@ -4,6 +4,8 @@
  */
 package dao;
 
+
+import dto.CourseDTO;
 import dto.StudentBasicInfo;
 import dto.StudentProfile;
 import dto.StudentScoreView;
@@ -399,6 +401,107 @@ public class StudentDAO extends DBUtil {
 
     return null;
 }
+
+    public static String getNameById(int studentId) {
+        String name = "";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT a.name FROM student s JOIN account a ON s.accountId = a.id WHERE s.id = ?")) {
+            ps.setInt(1, studentId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                name = rs.getString("name");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return name;
+    }
+
+    public List<CourseDTO> getCoursesByStudentId(int studentId) {
+        List<CourseDTO> list = new ArrayList<>();
+        String sql = "SELECT c.id, c.name FROM course c \n"
+                + "                JOIN student_course sc ON c.id = sc.courseid \n"
+                + "               WHERE sc.studentid = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                CourseDTO course = new CourseDTO();
+                course.setId(rs.getInt("id"));
+                course.setName(rs.getString("name"));
+                list.add(course);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public void insertStudent(StudentModal student) throws Exception {
+        String sql = "INSERT INTO student (accountId, parentId, schoolId, schoolClassId, currentGrade, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, student.getAccountId());
+            ps.setInt(2, student.getParentId());
+            ps.setObject(3, student.getSchoolId());
+            ps.setObject(4, student.getSchoolClassId());
+            ps.setString(5, student.getCurrentGrade());
+            ps.setObject(6, student.getCreatedAt());
+            ps.setObject(7, student.getUpdatedAt());
+            ps.executeUpdate();
+        }
+    }
+
+    public List<StudentProfile> getChildrenProfilesByParentPhone(String parentPhone) throws Exception {
+        List<StudentProfile> children = new ArrayList<>();
+
+        String sql = """
+        SELECT s.id, a.name, a.phone, a.dob, a.address, a.avatarURL, 
+               s.currentGrade, s.schoolId, sc.name AS schoolName
+        FROM student s
+        JOIN account a ON s.accountId = a.id
+        JOIN parent p ON s.parentId = p.id
+        JOIN account pa ON p.accountId = pa.id
+        LEFT JOIN school sc ON s.schoolId = sc.id
+        WHERE pa.phone = ?
+        ORDER BY a.name
+    """;
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, parentPhone);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    StudentProfile profile = new StudentProfile();
+                    profile.setId(rs.getInt("id"));
+                    profile.setName(rs.getString("name"));
+                    profile.setPhone(rs.getString("phone"));
+
+                    // Xử lý ngày sinh
+                    java.sql.Date dob = rs.getDate("dob");
+                    if (dob != null) {
+                        profile.setDob(dob.toLocalDate());
+                    }
+
+                    profile.setAddress(rs.getString("address"));
+                    profile.setAvatarUrl(rs.getString("avatarURL"));
+                    profile.setCurrentGrade(rs.getString("currentGrade"));
+                    profile.setSchoolId(rs.getInt("schoolId"));
+                    profile.setSchoolName(rs.getString("schoolName"));
+
+                    children.add(profile);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi lấy danh sách profile con của phụ huynh", e);
+        }
+
+        return children;
+    }
 
 
 }

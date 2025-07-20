@@ -7,7 +7,6 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -48,30 +47,30 @@ public class PaymentInfoDAO {
         return paymentInfos;
     }
     
-    public PaymentInfoModal getActivePaymentInfo() throws Exception {
-        String sql = "SELECT * FROM payment_info WHERE is_active = true LIMIT 1";
-        
+    public PaymentInfoModal getActivePaymentInfo() {
+        PaymentInfoModal info = null;
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM payment_info WHERE is_active = 1 LIMIT 1")) {
+            ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                PaymentInfoModal paymentInfo = new PaymentInfoModal();
-                paymentInfo.setId(rs.getInt("id"));
-                paymentInfo.setBankName(rs.getString("bank_name"));
-                paymentInfo.setAccountNumber(rs.getString("account_number"));
-                paymentInfo.setAccountName(rs.getString("account_name"));
-                paymentInfo.setBranch(rs.getString("branch"));
-                paymentInfo.setSwiftCode(rs.getString("swift_code"));
-                paymentInfo.setQrCodeUrl(rs.getString("qr_code_url"));
-                paymentInfo.setIsActive(rs.getBoolean("is_active"));
-                paymentInfo.setOrderIndex(rs.getInt("order_index"));
-                paymentInfo.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-                paymentInfo.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
-                return paymentInfo;
+                info = new PaymentInfoModal(
+                    rs.getInt("id"),
+                    rs.getString("bank_name"),
+                    rs.getString("account_number"),
+                    rs.getString("account_name"),
+                    rs.getString("branch"),
+                    rs.getString("swift_code"),
+                    rs.getString("qr_code_url"),
+                    rs.getBoolean("is_active"),
+                    rs.getInt("order_index"),
+                    rs.getTimestamp("created_at").toLocalDateTime(),
+                    rs.getTimestamp("updated_at").toLocalDateTime()
+                );
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return null;
+        return info;
     }
     
     public PaymentInfoModal getPaymentInfoById(int id) throws Exception {

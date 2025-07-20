@@ -37,7 +37,20 @@ public class CourseModal {
     private LocalDateTime updatedAt;
 
     public enum Status {
-        activated, pending, upcoming, rejected, inactivated
+        activated("Đã đi vào hoạt động"),
+        pending("Đang xét duyệt"),
+        upcoming("Sắp tới"),
+        rejected("Bị loại bỏ"),
+        inactivated("Chưa kích hoạt");
+        private final String displayName;
+
+        Status(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
      public enum CourseType {

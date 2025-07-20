@@ -29,6 +29,16 @@ public class SectionDTO {
     private String startTimeFormatted;
     private String endTimeFormatted;
     private String dateFormatted;
+    private int teacherId;
+
+    public int getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(int teacherId) {
+        this.teacherId = teacherId;
+    }
+
 
     private SectionModal section;
 

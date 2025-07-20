@@ -545,7 +545,7 @@
                                             ${course.studentEnrollment}/${course.maxStudents} học sinh
                                         </span>
                                     </div>
-                                    <a href="chi-tiet-khoa-hoc?courseId=${course.id}" style="text-decoration: none; color: #673ab7; font-weight: 600; display: inline-block; width: 100%; text-align: center; padding: 0.5rem; border: 2px solid #673ab7; border-radius: 8px; transition: all 0.3s ease; margin-top: auto;">
+                                    <a href="thong-tin-lop-hoc?courseId=${course.id}" style="text-decoration: none; color: #673ab7; font-weight: 600; display: inline-block; width: 100%; text-align: center; padding: 0.5rem; border: 2px solid #673ab7; border-radius: 8px; transition: all 0.3s ease; margin-top: auto;">
                                         Xem chi tiết
                                     </a>
                                 </div>

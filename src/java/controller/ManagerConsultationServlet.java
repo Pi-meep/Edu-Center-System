@@ -67,7 +67,7 @@ public class ManagerConsultationServlet extends HttpServlet {
 
             case "create":
                 int createId = Integer.parseInt(request.getParameter("id"));
-                response.sendRedirect("create-account?consultationId=" + createId);
+                response.sendRedirect("tao-tai-khoan?consultationId=" + createId);
                 return;
             case "list":
             default:
@@ -79,6 +79,11 @@ public class ManagerConsultationServlet extends HttpServlet {
                 request.setAttribute("consultations", consultations);
                 request.setAttribute("name", name != null ? name : "");
                 request.setAttribute("status", status != null ? status : "");
+
+                String msg = request.getParameter("message");
+                if ("success".equals(msg)) {
+                    request.setAttribute("message", "Tạo tài khoản thành công.");
+                }
 
                 request.getRequestDispatcher("views/managerConsultation.jsp").forward(request, response);
                 return;

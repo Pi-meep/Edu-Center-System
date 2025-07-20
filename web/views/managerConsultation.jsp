@@ -92,8 +92,9 @@
         <div class="col-md-4">
             <select name="status" class="form-select">
                 <option value="">-- Tất cả trạng thái --</option>
-                <option value="pending" ${param.statusFilter == 'pending' ? 'selected' : ''}>Chờ xử lý</option>
-                <option value="accepted" ${param.statusFilter == 'accepted' ? 'selected' : ''}>Đã duyệt</option>
+                <option value="pending" ${param.status == 'pending' ? 'selected' : ''}>Chờ xử lý</option>
+                <option value="accepted" ${param.status == 'accepted' ? 'selected' : ''}>Đã duyệt</option>
+
             </select>
         </div>
         <div class="col-md-4">
@@ -136,6 +137,7 @@
                             </c:otherwise>
                         </c:choose>
                     </td>
+
                     <td>
                         <div class="btn-group" role="group" aria-label="Actions">
                             <a href="quan-ly-tu-van?action=detail&id=${consult.id}" class="btn btn-info btn-sm" title="Xem chi tiết">
@@ -153,7 +155,6 @@
                     </td>
                 </tr>
             </c:forEach>
-
             <c:if test="${empty consultations}">
                 <tr>
                     <td colspan="6" class="text-center text-danger">Không có kết quả phù hợp</td>
@@ -162,6 +163,10 @@
 
         </tbody>
     </table>
+    <c:if test="${not empty message}">
+        <div class="alert alert-success text-center">${message}</div>
+    </c:if>
+
 </div>
 
 <jsp:include page="layout/footer.jsp" />

@@ -4,10 +4,6 @@
     Author     : ASUS
 --%>
 
-<%@page import="modal.SchoolModal"%>
-<%@page import="modal.SchoolClass"%>
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.time.LocalDate"%>
 <%

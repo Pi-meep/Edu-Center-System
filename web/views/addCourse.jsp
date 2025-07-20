@@ -24,7 +24,24 @@
             <label class="form-label">Giáo viên phụ trách</label>
             <select name="teacherId" class="form-select form-select-sm" required>
                 <c:forEach var="t" items="${teacherList}">
-                    <option value="${t.id}">${t.name}</option>
+                    <option value="${t.id}">
+                        ${t.name}
+                        (
+                        <c:choose>
+                            <c:when test="${t.subject == 'Mathematics'}">Toán</c:when>
+                            <c:when test="${t.subject == 'Literature'}">Ngữ văn</c:when>
+                            <c:when test="${t.subject == 'English'}">Tiếng Anh</c:when>
+                            <c:when test="${t.subject == 'Physics'}">Vật lý</c:when>
+                            <c:when test="${t.subject == 'Chemistry'}">Hóa học</c:when>
+                            <c:when test="${t.subject == 'Biology'}">Sinh học</c:when>
+                            <c:when test="${t.subject == 'History'}">Lịch sử</c:when>
+                            <c:when test="${t.subject == 'Geography'}">Địa lý</c:when>
+                            <c:when test="${t.subject == 'Civic Education'}">GDCD</c:when>
+                            <c:when test="${t.subject == 'Informatics'}">Tin học</c:when>
+                            <c:otherwise>Khác</c:otherwise>
+                        </c:choose>
+                        )
+                    </option>
                 </c:forEach>
             </select>
         </div>
@@ -144,7 +161,7 @@
             </button>
         </h5>
 
-        <div id="scheduleForm"">
+        <div id="scheduleForm">
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label class="form-label">Ngày học</label>

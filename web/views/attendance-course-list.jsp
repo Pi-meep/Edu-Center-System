@@ -83,7 +83,7 @@
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <div>
                                             <span class="badge bg-success status-badge">
-                                                <i class="fas fa-check-circle me-1"></i>${course.status}
+                                                <i class="fas fa-check-circle me-1"></i>${course.status.displayName}
                                             </span>
                                             <span class="badge bg-info course-type-badge ms-1">
                                                 ${course.courseType.displayName}

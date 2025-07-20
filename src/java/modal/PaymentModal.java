@@ -17,6 +17,7 @@ public class PaymentModal {
     private LocalDateTime paymentDate;
     private Integer studentId;
     private Integer courseId;
+    private Integer sectionId;
     private PaymentType paymentType;
     private String description;
     private LocalDateTime createdAt;
@@ -28,12 +29,13 @@ public class PaymentModal {
     public PaymentModal() {
     }
 
-    public PaymentModal(Integer id, BigDecimal amount, LocalDateTime paymentDate, Integer studentId, Integer courseId, PaymentType paymentType, String description, LocalDateTime createdAt) {
+    public PaymentModal(Integer id, BigDecimal amount, LocalDateTime paymentDate, Integer studentId, Integer courseId, Integer sectionId, PaymentType paymentType, String description, LocalDateTime createdAt) {
         this.id = id;
         this.amount = amount;
         this.paymentDate = paymentDate;
         this.studentId = studentId;
         this.courseId = courseId;
+        this.sectionId = sectionId;
         this.paymentType = paymentType;
         this.description = description;
         this.createdAt = createdAt;
@@ -77,6 +79,13 @@ public class PaymentModal {
 
     public void setCourseId(Integer courseId) {
         this.courseId = courseId;
+    }
+
+    public Integer getSectionId() {
+        return sectionId;
+    }
+    public void setSectionId(Integer sectionId) {
+        this.sectionId = sectionId;
     }
 
     public PaymentType getPaymentType() {

@@ -6,7 +6,10 @@ package controller;
 
 import dao.AccountDAO;
 import dao.CourseDAO;
+import dao.ParentDAO;
 import dao.SectionDAO;
+import dao.StudentCourseDAO;
+import dao.StudentDAO;
 import dao.TeacherDAO;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
@@ -24,9 +27,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import modal.AccountModal;
 import modal.CourseModal;
 import modal.SectionModal;
+import modal.StudentModal;
+import modal.TeacherAchivementModal;
 import modal.TeacherCertificateModal;
 import modal.TeacherModal;
 import utils.CurrencyFormatter;
@@ -44,8 +51,11 @@ public class CourseDetailsServlet extends HttpServlet {
 
     private final CourseDAO courseDao = new CourseDAO();
     private final TeacherDAO teacherDao = new TeacherDAO();
+    private final StudentDAO studentDao = new StudentDAO();
     private final SectionDAO sectionDao = new SectionDAO();
+    private final ParentDAO parentDao = new ParentDAO();
     private final AccountDAO accountDao = new AccountDAO();
+    private final static StudentCourseDAO studentCourseDao = new StudentCourseDAO();
 
     /**
      * Xử lý yêu cầu GET để hiển thị chi tiết khóa học. Lấy courseId từ URL,
@@ -56,9 +66,13 @@ public class CourseDetailsServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession();
-        String courseIdStr = request.getParameter("courseId");
 
-        // Kiểm tra tính hợp lệ của courseId
+        // ===== Lấy loggedInUserId và Role từ Filter =====
+        Integer loggedInUserId = (Integer) request.getAttribute("loggedInUserId");
+        String loggedInUserRole = (String) request.getAttribute("loggedInUserRole");
+
+        // ===== Lấy courseId =====
+        String courseIdStr = request.getParameter("courseId");
         if (courseIdStr == null || courseIdStr.trim().isEmpty()) {
             session.setAttribute("errorMessage", "Mã khóa học không hợp lệ.");
             response.sendRedirect("danh-sach-lop");
@@ -66,8 +80,6 @@ public class CourseDetailsServlet extends HttpServlet {
         }
 
         int courseId;
-        String priceLabel = "Học trọn gói chỉ với"; // Gán nhãn mặc định cho học phí
-
         try {
             courseId = Integer.parseInt(courseIdStr);
         } catch (NumberFormatException e) {
@@ -76,7 +88,7 @@ public class CourseDetailsServlet extends HttpServlet {
             return;
         }
 
-        // Lấy thông tin khóa học
+        // ===== Lấy Course =====
         CourseModal course = courseDao.getCourseById(courseId);
         if (course == null) {
             session.setAttribute("errorMessage", "Không tìm thấy khóa học yêu cầu.");
@@ -84,14 +96,32 @@ public class CourseDetailsServlet extends HttpServlet {
             return;
         }
 
-        // === Xử lý học phí ===
+        // ===== Kiểm tra đã tham gia (chỉ Student) =====
+        boolean hasJoined = false;
+        if ("student".equalsIgnoreCase(loggedInUserRole) && loggedInUserId != null) {
+            try {
+                hasJoined = studentCourseDao.hasStudentJoinedCourse(loggedInUserId, courseId);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // ===== Nếu là Phụ huynh → Lấy danh sách con =====
+        if ("parent".equalsIgnoreCase(loggedInUserRole) && loggedInUserId != null) {
+            try {
+                List<StudentModal> childrenList = studentDao.getChildrenOfParent(parentDao.getParentByAccountID(loggedInUserId).getId());
+                session.setAttribute("childrenList", childrenList);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // ===== Xử lý giá =====
         BigDecimal discount = course.getDiscountPercentage() != null ? course.getDiscountPercentage() : BigDecimal.ZERO;
         BigDecimal originalPrice;
         BigDecimal finalPrice;
-        String originalPriceStr;
-        String finalPriceStr;
+        String priceLabel;
 
-        // Xác định loại học phí (combo hay daily)
         switch (course.getCourseType()) {
             case combo:
                 originalPrice = course.getFeeCombo();
@@ -103,40 +133,40 @@ public class CourseDetailsServlet extends HttpServlet {
                 break;
             default:
                 originalPrice = BigDecimal.ZERO;
+                priceLabel = "";
         }
 
-        // Tính giá sau khi áp dụng giảm giá (nếu có)
         BigDecimal discountAmount = originalPrice.multiply(discount).divide(BigDecimal.valueOf(100));
         finalPrice = originalPrice.subtract(discountAmount);
 
-        originalPriceStr = CurrencyFormatter.formatCurrency(originalPrice);
-        finalPriceStr = CurrencyFormatter.formatCurrency(finalPrice);
+        String originalPriceStr = CurrencyFormatter.formatCurrency(originalPrice);
+        String finalPriceStr = CurrencyFormatter.formatCurrency(finalPrice);
 
-        // Format ngày bắt đầu và kết thúc
+        // ===== Format ngày bắt đầu/kết thúc =====
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         String startFormatted = course.getStartDate().format(formatter);
         String endFormatted = course.getEndDate().format(formatter);
 
-        // Lấy thông tin giáo viên và chứng chỉ
+        // ===== Lấy giáo viên, chứng chỉ, lịch học, tuần, khoá học liên quan =====
         TeacherModal teacher = teacherDao.getTeacherById(course.getTeacherId());
-        List<TeacherCertificateModal> certOfTeacher = teacherDao.getCertOfTeacher(teacher.getId());
-
-        // Lấy lịch học tuần hiện tại (thứ 2 → CN)
+        List<TeacherAchivementModal> achiveOfTeacher = teacherDao.getAchiveOfTeacher(teacher.getId());
         LocalDate[] weekRange = getCurrentWeekRange();
         LocalDate startDate = weekRange[0];
         LocalDate endDate = weekRange[1];
         List<SectionModal> schedules = sectionDao.getSectionsByCourseIdAndDateRange(courseId, startDate, endDate);
-
-        // Tạo danh sách các tuần để chọn (tuần hiện tại ± vài tuần)
         List<String[]> weekOptions = generateWeekRanges(startDate);
-
-        // Lấy danh sách khóa học liên quan
         List<CourseModal> relatedCourses = courseDao.getRelatedCourses(courseId, course.getSubject().name(), course.getGrade());
 
-        // === Lưu thông tin vào session để sử dụng trong doPost ===
+        // ===== Lưu session =====
         session.setAttribute("course", course);
         session.setAttribute("teacher", teacher);
         session.setAttribute("teacherMap", buildTeacherAccountMapFromCourses(courseDao.getAllCourse()));
+        try {
+            session.setAttribute("childrenMap", buildChildrenMap(studentDao.getAllStudents()));
+            session.setAttribute("hasJoinedMap", hasJoinedMap(studentDao.getAllStudents(), courseId));
+        } catch (Exception ex) {
+            Logger.getLogger(CourseDetailsServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
         session.setAttribute("relatedCourses", relatedCourses);
         session.setAttribute("originalPriceStr", originalPriceStr);
         session.setAttribute("finalPriceStr", finalPriceStr);
@@ -144,15 +174,20 @@ public class CourseDetailsServlet extends HttpServlet {
         session.setAttribute("startFormatted", startFormatted);
         session.setAttribute("endFormatted", endFormatted);
         session.setAttribute("priceLabel", priceLabel);
-        session.setAttribute("certOfTeacher", certOfTeacher);
-        session.setAttribute("certYearMap", getCertYearMap(certOfTeacher));
+        session.setAttribute("achiveOfTeacher", achiveOfTeacher);
+        session.setAttribute("achiveYearMap", getAchiveYearMap(achiveOfTeacher));
+        session.setAttribute("hasJoined", hasJoined);
 
-        // Riêng dữ liệu tuần hiện tại, vì thay đổi theo chọn, chỉ để ở request
-        session.setAttribute("schedules", schedules);
-        session.setAttribute("weekOptions", weekOptions);
-        session.setAttribute("startDate", startDate);
-        session.setAttribute("endDate", endDate);
+        // ===== Thuộc request =====
+        request.setAttribute("schedules", schedules);
+        request.setAttribute("weekOptions", weekOptions);
+        request.setAttribute("startDate", startDate);
+        request.setAttribute("endDate", endDate);
 
+        // Luôn set role → JSP dùng cho c:choose
+        request.setAttribute("loggedInUserRole", loggedInUserRole);
+
+        // ===== Forward =====
         request.getRequestDispatcher("views/course-details.jsp").forward(request, response);
     }
 
@@ -231,17 +266,54 @@ public class CourseDetailsServlet extends HttpServlet {
         return teacherAccountMap;
     }
 
+    private Map<Integer, String> buildChildrenMap(List<StudentModal> childrenList) {
+        // Lấy danh sách account của các con (role = "student")
+        List<AccountModal> accounts = accountDao.getAllAccountByRole("student");
+
+        // Tạo map accountId -> AccountModal
+        Map<Integer, AccountModal> accountMap = new HashMap<>();
+        for (AccountModal acc : accounts) {
+            accountMap.put(acc.getId(), acc);
+        }
+
+        Map<Integer, String> childrenMap = new HashMap<>();
+
+        for (StudentModal child : childrenList) {
+            AccountModal acc = accountMap.get(child.getAccountId()); // giả sử ChildModal có accountId
+            if (acc != null) {
+                childrenMap.put(child.getId(), acc.getName()); // hoặc acc.getUsername(), tùy bạn muốn lấy gì làm tên
+            }
+        }
+
+        return childrenMap;
+    }
+
+    public static Map<Integer, Boolean> hasJoinedMap(List<StudentModal> childrenList, int courseId) {
+        Map<Integer, Boolean> hasJoinedMap = new HashMap<>();
+        for (StudentModal child : childrenList) {
+            boolean joined = false;
+            try {
+                joined = studentCourseDao.hasStudentJoinedCourse(child.getId(), courseId);
+            } catch (Exception e) {
+                e.printStackTrace();
+                joined = false;
+            }
+            hasJoinedMap.put(child.getId(), joined);
+        }
+        return hasJoinedMap;
+    }
+
     /**
-     * Tạo map từ id chứng chỉ ➝ năm cấp chứng chỉ. Dùng trong JSP để hiển thị
+     * Tạo map từ id thành tích ➝ năm đat thành tích. Dùng trong JSP để hiển thị
      * năm nhanh chóng.
      */
-    public static Map<Integer, String> getCertYearMap(List<TeacherCertificateModal> certs) {
+    public static Map<Integer, String> getAchiveYearMap(List<TeacherAchivementModal> achives) {
         Map<Integer, String> certYearMap = new HashMap<>();
-        for (TeacherCertificateModal cert : certs) {
-            String year = (cert.getIssuedDate() != null)
-                    ? String.valueOf(cert.getIssuedDate().getYear())
+        for (TeacherAchivementModal achive : achives) {
+            String year = (achive.getIssuedDate() != null)
+                    ? String.valueOf(achive.getIssuedDate().getYear())
                     : "N/A";
-            certYearMap.put(cert.getId(), year);
+            certYearMap.put(achive.getId(), year);
         }
         return certYearMap;
     }
@@ -287,4 +359,3 @@ public class CourseDetailsServlet extends HttpServlet {
         return start.format(formatter) + " - " + end.format(formatter);
     }
 }
-

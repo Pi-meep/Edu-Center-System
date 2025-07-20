@@ -74,6 +74,15 @@
         margin-bottom: 4rem;
     }
 
+    .highlight-criteria {
+        font-size: 14px;
+        font-style: italic;
+        color: #666;
+        margin-top: -10px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
     .teacher-highlights-container {
         display: grid;
         grid-template-columns: repeat(5, 1fr);
@@ -371,6 +380,7 @@
     <!-- 🔥 GIÁO VIÊN NỔI BẬT -->
     <section class="highlight-section">
         <h2 class="section-title">Giáo viên nổi bật</h2>
+        <p class="highlight-criteria">* Dựa trên số lượng khóa học, thành tích đạt được và đánh giá từ học sinh *</p>
         <div class="teacher-highlights-container">
             <c:forEach var="pair" items="${sessionScope.topTeachers}">
                 <c:set var="acc" value="${pair[0]}" />
@@ -402,10 +412,21 @@
                                 </c:choose>
                             </li>
 
+                            <c:if test="${not empty achivementList}">
+                                <li><strong>Thành tích nổi bật:</strong> ${achivementList[0].achivementName}</li>
+                                </c:if>
+
                             <li><strong>Mô tả:</strong>
                                 <c:choose>
                                     <c:when test="${not empty teacher.bio}">
-                                        ${teacher.bio}
+                                        <c:choose>
+                                            <c:when test="${fn:length(teacher.bio) > 80}">
+                                                ${fn:substring(teacher.bio, 0, 80)}...
+                                            </c:when>
+                                            <c:otherwise>
+                                                ${teacher.bio}
+                                            </c:otherwise>
+                                        </c:choose>
                                     </c:when>
                                     <c:otherwise>Chưa có mô tả.</c:otherwise>
                                 </c:choose>

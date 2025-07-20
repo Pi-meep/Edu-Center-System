@@ -215,6 +215,8 @@
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="viewScore">Xem điểm</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="studentAssignmentServlet">Bài tập</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="diem-chuyen-can">Điểm danh</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="thoi-gian-bieu-hoc-sinh">Thời gian biểu</a></li>

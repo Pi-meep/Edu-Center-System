@@ -7,6 +7,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ page import="java.time.LocalDateTime, utils.DateFormat, modal.CourseModal" %>
+
+
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap" rel="stylesheet">
 
 <!DOCTYPE html>
@@ -63,7 +67,7 @@
     }
 
     .banner-content {
-        max-width: 70%; /* tuỳ bạn điều chỉnh */
+        max-width: 70%;
         text-align: center;
     }
 
@@ -80,52 +84,7 @@
         font-weight: 400;
         font-style: italic;
         margin-top: -10px;
-        color: #374151; /* Màu xám đậm */
-    }
-
-
-    @media (max-width: 992px) {
-        .featured-banner {
-            flex-direction: column;
-            text-align: center;
-            padding: 40px 30px;
-            background-position: center center;
-            min-height: 300px;
-            border-bottom-left-radius: 40px;
-            border-bottom-right-radius: 40px;
-        }
-
-        .banner-content {
-            max-width: 100%;
-            margin-bottom: 30px;
-        }
-
-        .banner-content h1 {
-            font-size: 2.5em;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .featured-banner {
-            min-height: 250px;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-        }
-        .banner-content h1 {
-            font-size: 2em;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .featured-banner {
-            min-height: 200px;
-            padding: 30px 20px;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-        }
-        .banner-content h1 {
-            font-size: 1.8em;
-        }
+        color: #374151;
     }
 
     /* ======== Main Container ======== */
@@ -215,41 +174,78 @@
 
     .grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 24px;
     }
 
     .course-card {
+        position: relative;
+        height: 560px; /* cố định chiều cao */
         background: white;
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         transition: transform 0.2s ease;
-        cursor: pointer;
-        padding: 0;
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        position: relative;
+        cursor: pointer;
     }
 
     .course-card:hover {
         transform: translateY(-5px);
     }
 
-    .course-tags {
+    .card-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4/3.4;
+        background: #f3f4f6;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-top-left-radius: var(--radius);
+        border-top-right-radius: var(--radius);
+    }
+
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 8px;
+        transition: transform 0.3s ease;
+        border-top-left-radius: var(--radius);
+        border-top-right-radius: var(--radius);
+    }
+
+    .card-image img:hover {
+        transform: scale(1.02);
+    }
+
+    .hot-badge {
         position: absolute;
-        top: 10px;
-        left: 10px;
+        top: 8px;
+        left: 8px;
+        background-color: #f97316;
+        color: #fff;
+        font-weight: bold;
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 4px;
         z-index: 2;
     }
 
-    .tag-discount {
-        background-color: #f43f5e;
-        color: white;
-        padding: 4px 8px;
+    .discount-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: #ef4444;
+        color: #fff;
+        font-weight: bold;
         font-size: 0.75rem;
-        border-radius: 6px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        z-index: 2;
     }
+
 
     .course-content {
         padding: 16px;
@@ -259,6 +255,7 @@
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 8px;
+        color: var(--text-color);
     }
 
     .course-content p {
@@ -267,93 +264,73 @@
         color: #374151;
     }
 
-    .teacher-link {
-        color: var(--primary-color);
-        text-decoration: underline;
-    }
-
-    .card-image {
-        width: 100%;
-        aspect-ratio: 4 / 3.4;
-        overflow: hidden;
-        border-top-left-radius: var(--radius);
-        border-top-right-radius: var(--radius);
-        position: relative;
-        background: #f3f4f6;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .card-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        display: block;
-        transition: 0.3s;
-        padding: 8px;
-    }
-
-    .card-image img:hover {
-        transform: scale(1.02);
-    }
-
-    /* Badge HOT ở bên trái */
-    .hot-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background-color: #f97316; /* màu cam */
-        color: white;
-        padding: 4px 8px;
-        font-size: 0.75rem;
-        border-radius: 6px;
-        font-weight: bold;
-        z-index: 2;
-    }
-
-    /* Badge Giảm giá ở bên phải */
-    .discount-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #ef4444;
-        color: white;
-        font-size: 0.75rem;
-        padding: 4px 8px;
-        border-radius: 8px;
-        font-weight: bold;
-        z-index: 2;
-    }
-
-    .course-content {
-        padding: 16px;
-        margin-top: auto;
-    }
-
-    .course-content h5 {
-        font-size: 1rem;
-        font-weight: bold;
-        margin-bottom: 8px;
-        color: var(--text-color);
-    }
-
-    .course-content p {
-        font-size: 0.9rem;
-        margin: 4px 0;
-    }
-
     .course-content p a {
-        color: #007bff;
+        color: var(--primary-color);
         text-decoration: none;
         font-weight: 500;
-        transition: color 0.3s ease;
+        transition: 0.3s;
     }
 
-    .course-content p a:hover {
-        color: #0056b3;
-        text-decoration: underline;
+    .course-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid #e5e7eb;
+        background: white;
     }
+
+    .slots-left {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #dc2626;  /* Màu đỏ cảnh báo */
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .slots-left .slots-number {
+        background: #fee2e2;  /* Nền đỏ nhẹ */
+        color: #b91c1c;       /* Số đỏ đậm */
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 6px;
+    }
+
+    .slots-left i {
+        color: #dc2626;
+        font-size: 1rem;
+    }
+
+    .detail-link {
+        position: relative;
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: var(--primary-color);
+        text-decoration: none;
+        padding-bottom: 2px;
+    }
+
+    .detail-link::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 0%;
+        height: 2px;
+        background-color: var(--primary-color);
+        transition: width 0.3s ease;
+        transform-origin: right;
+    }
+
+    .detail-link:hover::after {
+        width: 100%;
+    }
+
 
     /* ======== Pagination ======== */
     .pagination-container {
@@ -362,7 +339,6 @@
         align-items: center;
         gap: 8px;
         margin-top: 30px;
-        font-family: 'Segoe UI', sans-serif;
         font-size: 1rem;
     }
 
@@ -373,7 +349,7 @@
         color: #1f2937;
         cursor: pointer;
         padding: 6px 12px;
-        transition: background 0.2s ease;
+        transition: 0.2s;
     }
 
     .pagination-container button:hover {
@@ -385,7 +361,7 @@
         padding: 6px 12px;
         cursor: pointer;
         border-radius: 8px;
-        transition: background 0.2s ease;
+        transition: 0.2s;
     }
 
     .page-number:hover {
@@ -421,6 +397,27 @@
     }
 
     /* ======== Responsive ======== */
+    @media (max-width: 992px) {
+        .featured-banner {
+            flex-direction: column;
+            text-align: center;
+            padding: 40px 30px;
+            background-position: center;
+            min-height: 300px;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+        }
+
+        .banner-content {
+            max-width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .banner-content h1 {
+            font-size: 2.5em;
+        }
+    }
+
     @media (max-width: 768px) {
         .main-container {
             flex-direction: column;
@@ -432,14 +429,33 @@
         }
 
         .featured-banner {
-            font-size: 1.4rem;
-            padding-bottom: 120px;
+            min-height: 250px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        .banner-content h1 {
+            font-size: 2em;
         }
 
         .review-section {
             padding: 40px 20px;
         }
     }
+
+    @media (max-width: 480px) {
+        .featured-banner {
+            min-height: 200px;
+            padding: 30px 20px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .banner-content h1 {
+            font-size: 1.8em;
+        }
+    }
+
 </style>
 
 
@@ -534,16 +550,19 @@
             <c:if test="${not empty sessionScope.courseList}">
                 <div class="grid" id="courseGrid">
                     <c:forEach var="course" items="${sessionScope.courseList}" varStatus="status">
-                        <div class="course-card page-item" data-page="${(status.index div 12) + 1}" onclick="goToCourseDetail('${course.id}')">
+                        <div class="course-card page-item"
+                             data-page="${(status.index div 12) + 1}"
+                             onclick="goToCourseDetail('${course.id}')">
+
                             <div class="card-image">
                                 <img src="${pageContext.request.contextPath}/assets/banners_course/${course.course_img}" alt="Hình khóa học" />
 
-                                <!-- Discount badge: bên trái -->
+                                <!-- Discount badge -->
                                 <c:if test="${course.discountPercentage > 0}">
                                     <div class="discount-badge">-${course.discountPercentage}%</div>
                                 </c:if>
 
-                                <!-- Hot badge: bên phải -->
+                                <!-- Hot badge -->
                                 <c:if test="${course.isHot}">
                                     <div class="hot-badge">HOT</div>
                                 </c:if>
@@ -551,15 +570,63 @@
 
                             <div class="course-content">
                                 <h5>${course.name}</h5>
+
+                                <!-- Mô tả rút gọn -->
+                                <p class="course-description">
+                                    <c:choose>
+                                        <c:when test="${fn:length(course.description) > 80}">
+                                            ${fn:substring(course.description, 0, 80)}...
+                                        </c:when>
+                                        <c:otherwise>
+                                            ${course.description}
+                                        </c:otherwise>
+                                    </c:choose>
+                                </p>
+
+                                <!-- Giáo viên -->
                                 <p><strong>Giáo viên :</strong>
                                     <a href="thong-tin-giao-vien?teacherId=${course.teacherId}" onclick="event.stopPropagation();">
                                         <c:out value="${sessionScope.teacherMap[course.teacherId].name}" />
                                     </a>
                                 </p>
-                                <p><strong>Thời lượng :</strong> ${course.weekAmount} tuần</p>
-                            </div>
 
-                        </div>                    
+                                <!-- Thời lượng -->
+                                <p><strong>Thời lượng :</strong> ${course.weekAmount} tuần</p>
+
+                                <!-- Ngày khai giảng -->
+                                <%
+                                    modal.CourseModal courseObj = (modal.CourseModal) pageContext.findAttribute("course");
+                                %>
+                                <p><strong>Khai giảng :</strong>
+                                    <%= DateFormat.formatDate(courseObj.getStartDate())%>
+                                </p>
+
+                                <!-- Tính số suất trống -->
+                                <c:set var="slotsLeft" value="${course.maxStudents - course.studentEnrollment}" />
+
+                                <!-- Footer chứa chỗ trống + CTA -->
+                                <div class="course-footer">
+                                    <!-- Slots left -->
+                                    <p class="slots-left">
+                                        <span class="slots-number">${slotsLeft}</span> suất đăng ký còn lại
+                                    </p>
+
+                                    <!-- CTA dạng link bên phải -->
+                                    <a href="javascript:void(0);" class="detail-link"
+                                       onclick="goToCourseDetail('${course.id}'); event.stopPropagation();">
+                                        Chi tiết
+                                    </a>
+                                </div>
+
+                                <!-- Thanh progress -->
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill"
+                                         style="width: calc(${course.studentEnrollment * 100 / course.maxStudents}%);"></div>
+                                </div>
+
+                            </div>
+                        </div>
+
                     </c:forEach>
                 </div>
 

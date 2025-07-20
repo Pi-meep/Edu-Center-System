@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import modal.ConsultationCertificateModal;
 import modal.ConsultationModal;
 import utils.DBUtil;
 
@@ -18,6 +19,14 @@ import utils.DBUtil;
  * @author ASUS
  */
 public class ConsultationDAO {
+    private ConsultationCertificateModal mapResultSetToConsultationCertificate(ResultSet rs) throws SQLException {
+        ConsultationCertificateModal certificate = new ConsultationCertificateModal();
+        certificate.setId(rs.getInt("id"));
+        certificate.setConsultationId(rs.getInt("consultationId"));
+        certificate.setImageURL(rs.getString("imageURL"));
+        certificate.setCreatedAt(rs.getObject("created_at", LocalDateTime.class));
+        return certificate;
+    }
 
     public int insertConsultation(ConsultationModal c) throws Exception {
         String sql = "INSERT INTO consultation (name, dob, phone, status, address, subject, experience, schoolId, schoolClassId, created_at, updated_at) "
@@ -163,6 +172,51 @@ public class ConsultationDAO {
     }
 
     
+    public List<ConsultationCertificateModal> getConsultationCertificates(int consultationId) throws Exception {
+        List<ConsultationCertificateModal> certificates = new ArrayList<>();
+        String sql = "SELECT * FROM consultation_certificate WHERE consultationId = ? ORDER BY created_at";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, consultationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    certificates.add(mapResultSetToConsultationCertificate(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi lấy danh sách chứng chỉ consultation", e);
+        }
+        return certificates;
+    }
+
+    public ConsultationCertificateModal getConsultationCertificateById(int id) throws Exception {
+        String sql = "SELECT * FROM consultation_certificate WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return mapResultSetToConsultationCertificate(rs);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi lấy thông tin chứng chỉ consultation theo ID", e);
+        }
+        return null;
+    }
+    
+    public boolean insertConsultationCertificate(ConsultationCertificateModal certificate) throws Exception {
+        String sql = "INSERT INTO consultation_certificate (consultationId, imageURL, created_at) VALUES (?, ?, ?)";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, certificate.getConsultationId());
+            ps.setString(2, certificate.getImageURL());
+            ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("Lỗi khi thêm chứng chỉ consultation", e);
+        }
+    }
+
+
     public void insertCertificate(int consultationId, String imageURL) throws Exception {
         String sql = "INSERT INTO consultation_certificate (consultationId, imageURL, created_at) VALUES (?, ?, NOW())";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import modal.TeacherAchivementModal;
 import modal.TeacherCertificateModal;
 import modal.TeacherModal;
 import utils.DBUtil;
@@ -52,6 +53,19 @@ public class TeacherDAO extends DBUtil {
         return certificate;
     }
 
+    private TeacherAchivementModal mapResultSetToAchivement(ResultSet rs) throws SQLException {
+        TeacherAchivementModal achivement = new TeacherAchivementModal();
+        achivement.setId(rs.getInt("id"));
+        achivement.setTeacherId(rs.getInt("teacherId"));
+        achivement.setAchivementName(rs.getString("achivement_name"));
+        achivement.setImageURL(rs.getString("imageURL"));
+        achivement.setIssuedDate(rs.getObject("issued_date", LocalDateTime.class));
+        achivement.setCreatedAt(rs.getObject("created_at", LocalDateTime.class));
+
+        return achivement;
+    }
+
+
     public List<TeacherCertificateModal> getCertOfTeacher(int teacherId) {
         List<TeacherCertificateModal> certificateList = new ArrayList<>();
 
@@ -75,6 +89,31 @@ public class TeacherDAO extends DBUtil {
         }
 
         return certificateList;
+    }
+
+    public List<TeacherAchivementModal> getAchiveOfTeacher(int teacherId) {
+        List<TeacherAchivementModal> achivementList = new ArrayList<>();
+
+        String sql = "SELECT tc.* "
+                + "FROM teacher t "
+                + "LEFT JOIN teacher_achivement tc ON t.id = tc.teacherId "
+                + "WHERE t.id = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, teacherId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    achivementList.add(mapResultSetToAchivement(rs));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return achivementList;
     }
 
     /**
@@ -500,6 +539,33 @@ public class TeacherDAO extends DBUtil {
         }
 
         return list;
+    }
+
+    public void insertTeacher(TeacherModal t) {
+        String sql = "INSERT INTO teacher (accountId, experience, created_at, updated_at) VALUES (?, ?, ?, ?)";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, t.getAccountId());
+            ps.setString(2, t.getExperience());
+            ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertCertificate(TeacherCertificateModal c) {
+        String sql = "INSERT INTO teacher_certificate (teacherId, imageUrl, certificate_name, issued_date, created_at) VALUES (?, ?, ?, ?, ?)";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, c.getTeacherId());
+            ps.setString(2, c.getCertificateName());
+            ps.setString(3, c.getImageURL());
+            ps.setTimestamp(4, c.getIssuedDate() != null ? Timestamp.valueOf(c.getIssuedDate()) : null);
+            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -4,10 +4,7 @@
  */
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalDateTime;
 import modal.ParentModal;
 import utils.DBUtil;
@@ -33,6 +30,20 @@ public class ParentDAO extends DBUtil {
         parent.setUpdatedAt(rs.getObject("updated_at", LocalDateTime.class));
 
         return parent;
+    }
+
+    public void insertParent(ParentModal p) {
+        String sql = "INSERT INTO parent (accountId, relationship, job, created_at, updated_at) VALUES (?, ?, ?, ?, ?)";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, p.getAccountId());
+            ps.setString(2, p.getRelationship().name());
+            ps.setString(3, p.getJob());
+            ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

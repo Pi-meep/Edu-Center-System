@@ -20,6 +20,7 @@ public class StudentPaymentScheduleModal {
     private LocalDateTime paidDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer courseId;
 
     public StudentPaymentScheduleModal() {
     }
@@ -99,4 +100,10 @@ public class StudentPaymentScheduleModal {
         this.updatedAt = updatedAt;
     }
     
+    public Integer getCourseId() {
+        return courseId;
+    }
+    public void setCourseId(Integer courseId) {
+        this.courseId = courseId;
+    }
 }

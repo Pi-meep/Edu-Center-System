@@ -152,6 +152,50 @@
         <servlet-name>ErrorServlet</servlet-name>
         <servlet-class>controller.ErrorServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>PaymentServlet</servlet-name>
+        <servlet-class>controller.PaymentServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PaymentApprovalServlet</servlet-name>
+        <servlet-class>controller.PaymentApprovalServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CourseRegistrationDetails</servlet-name>
+        <servlet-class>controller.CourseRegistrationDetails</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ManagerCourseRegistration</servlet-name>
+        <servlet-class>controller.ManagerCourseRegistration</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RegisterCourseServlet</servlet-name>
+        <servlet-class>controller.RegisterCourseServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ScheduleManagementServlet</servlet-name>
+        <servlet-class>controller.ScheduleManagementServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StudentAssignmentServlet</servlet-name>
+        <servlet-class>controller.StudentAssignmentServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>UploadAssignmentServlet</servlet-name>
+        <servlet-class>controller.UploadAssignmentServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateAccountServlet</servlet-name>
+        <servlet-class>controller.CreateAccountServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateStaffAndManagerAccountServlet</servlet-name>
+        <servlet-class>controller.CreateStaffAndManagerAccountServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CreateStudentAccountServlet</servlet-name>
+        <servlet-class>controller.CreateStudentAccountServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>HomePageServlet</servlet-name>
         <url-pattern>/trang-chu</url-pattern>
@@ -295,5 +339,49 @@
     <servlet-mapping>
         <servlet-name>UploadAvatarServlet</servlet-name>
         <url-pattern>/upload-avatar</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PaymentServlet</servlet-name>
+        <url-pattern>/trang-thanh-toan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PaymentApprovalServlet</servlet-name>
+        <url-pattern>/trang-xac-nhan-thanh-toan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CourseRegistrationDetails</servlet-name>
+        <url-pattern>/chi-tiet-yeu-cau</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ManagerCourseRegistration</servlet-name>
+        <url-pattern>/quan-ly-tham-gia-lop-hoc</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RegisterCourseServlet</servlet-name>
+        <url-pattern>/dang-ky-lop-hoc</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ScheduleManagementServlet</servlet-name>
+        <url-pattern>/quan-ly-lich-hoc</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>StudentAssignmentServlet</servlet-name>
+        <url-pattern>/StudentAssignmentServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>UploadAssignmentServlet</servlet-name>
+        <url-pattern>/UploadAssignmentServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateAccountServlet</servlet-name>
+        <url-pattern>/tao-tai-khoan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateStaffAndManagerAccountServlet</servlet-name>
+        <url-pattern>/tao-tai-khoan-nhan-su</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CreateStudentAccountServlet</servlet-name>
+        <url-pattern>/tao-tai-khoan-hoc-sinh</url-pattern>
     </servlet-mapping>
 </web-app>

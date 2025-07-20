@@ -46,15 +46,27 @@
 </style>
 <!-- PHẦN BỘ LỌC -->
 <form method="get" action="quan-ly-khoa-hoc" class="mb-4">
-     <input type="hidden" name="action" value="list" />
+    <input type="hidden" name="action" value="list" />
     <div class="card border-0 shadow-sm">
         <div class="card-body bg-light">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <!-- Hàng 1: Tên + Giáo viên + Môn -->
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">Tên khóa học</label>
                     <input type="text" class="form-control" name="name" value="${param.name}" placeholder="VD: Toán nâng cao" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Giáo viên phụ trách</label>
+                    <select name="teacherId" class="form-select">
+                        <option value="">-- Tất cả --</option>
+                        <c:forEach var="t" items="${teacherList}">
+                            <option value="${t.id}" ${param.teacherId == t.id.toString() ? 'selected' : ''}>
+                                ${t.name}
+                            </option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="col-md-4">
                     <label class="form-label fw-semibold">Môn học</label>
                     <select class="form-select" name="subject">
                         <option value="">-- Tất cả --</option>
@@ -70,7 +82,9 @@
                         <option value="IT" ${param.subject == 'IT' ? 'selected' : ''}>Tin học</option>
                     </select>
                 </div>
-                <div class="col-md-1">
+
+                <!-- Hàng 2: Khối + Trình độ + Trạng thái + Nút -->
+                <div class="col-md-2">
                     <label class="form-label fw-semibold">Khối</label>
                     <select class="form-select" name="grade">
                         <option value="">-- Tất cả --</option>
@@ -79,7 +93,7 @@
                         </c:forEach>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">Trình độ</label>
                     <select class="form-select" name="level">
                         <option value="">-- Tất cả --</option>
@@ -90,7 +104,7 @@
                         <option value="Topics_Exam" ${param.level == 'Topics_Exam' ? 'selected' : ''}>Chuyên đề / Luyện thi</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold">Trạng thái</label>
                     <select class="form-select" name="status">
                         <option value="">-- Tất cả --</option>
@@ -111,6 +125,7 @@
         </div>
     </div>
 </form>
+
 <!-- Danh sach khoa hoc -->
 <div class="card shadow-sm border-0 mt-4">
     <div class="card-header d-flex justify-content-between align-items-center bg-white">
@@ -220,6 +235,9 @@
                         </td>
                         <td>
                             <div class="d-flex justify-content-center gap-2">
+                                <a href="quan-ly-khoa-hoc?action=detail&id=${course.id}" class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i>
+                                </a>
                                 <a href="quan-ly-khoa-hoc?action=edit&id=${course.id}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-edit"></i>
                                 </a>

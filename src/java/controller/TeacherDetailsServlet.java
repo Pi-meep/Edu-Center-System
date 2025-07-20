@@ -4,7 +4,6 @@
  */
 package controller;
 
-import static controller.CourseDetailsServlet.getCertYearMap;
 import dao.AccountDAO;
 import dao.CourseDAO;
 import dao.TeacherDAO;
@@ -21,6 +20,8 @@ import modal.AccountModal;
 import modal.CourseModal;
 import modal.TeacherCertificateModal;
 import modal.TeacherModal;
+import static controller.CourseDetailsServlet.getAchiveYearMap;
+import modal.TeacherAchivementModal;
 
 /**
  * Servlet xử lý hiển thị thông tin chi tiết của một giáo viên. Nhận `teacherId`
@@ -69,6 +70,7 @@ public class TeacherDetailsServlet extends HttpServlet {
             // Bước 3: Truy vấn giáo viên theo ID
             TeacherModal teacher = teacherDao.getTeacherById(teacherId);
             List<TeacherCertificateModal> certOfTeacher = teacherDao.getCertOfTeacher(teacherId);
+            List<TeacherAchivementModal> achiveOfTeacher = teacherDao.getAchiveOfTeacher(teacherId);
 
             // Nếu không tìm thấy giáo viên
             if (teacher == null) {
@@ -103,7 +105,9 @@ public class TeacherDetailsServlet extends HttpServlet {
             request.setAttribute("courseOfTeacher", courseOfTeacher); // Danh sách khóa học
             request.setAttribute("followers", teacherDao.countStudentsFollowByTeacherId(teacherId));// Số học sinh theo dõi
             request.setAttribute("certOfTeacher", certOfTeacher);// Lấy chứng chỉ của giáo viên
+            request.setAttribute("achiveOfTeacher", achiveOfTeacher);// Lấy thành tích của giáo viên
             request.setAttribute("certYearMap", getCertYearMap(certOfTeacher)); // Map chứng chỉ với năm
+            request.setAttribute("achiveYearMap", getAchiveYearMap(achiveOfTeacher)); // Map bằng cấp với năm
 
             // Ghi log số lượng khóa học (debug)
             System.out.println(courseOfTeacher.size());
@@ -144,6 +148,17 @@ public class TeacherDetailsServlet extends HttpServlet {
                     ? String.valueOf(cert.getIssuedDate().getYear())
                     : "N/A";
             certYearMap.put(cert.getId(), year);
+        }
+        return certYearMap;
+    }
+
+    public static Map<Integer, String> getAchiveYearMap(List<TeacherAchivementModal> achives) {
+        Map<Integer, String> certYearMap = new HashMap<>();
+        for (TeacherAchivementModal achive : achives) {
+            String year = (achive.getIssuedDate() != null)
+                    ? String.valueOf(achive.getIssuedDate().getYear())
+                    : "N/A";
+            certYearMap.put(achive.getId(), year);
         }
         return certYearMap;
     }

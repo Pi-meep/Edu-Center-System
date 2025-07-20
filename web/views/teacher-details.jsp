@@ -342,9 +342,6 @@
                 <li><strong>Nơi công tác:</strong> ${sessionScope.schoolMap[teacher.schoolId].name}</li>
                 <li><strong>Môn dạy:</strong> ${teacher.subject.displayName}</li>
                 <li><strong>Liên hệ:</strong> ${info.phone}</li>
-                <li><strong>Facebook:</strong> 
-                    <a href="#" target="_blank">facebook</a>
-                </li>
             </ul>
         </div>
     </section>
@@ -355,9 +352,21 @@
             <img src="${pageContext.request.contextPath}/assets/avatars/${info.avatarURL}" class="avatar" alt="Avatar giáo viên">
             <div class="story-text">
                 <p>${teacher.bio}</p>
-                <c:if test="${not empty certOfTeacher}">
+
+                <c:if test="${not empty achiveOfTeacher}">
                     <div class="teacher-awards">
                         <p><strong>Thành tích nổi bật:</strong></p>
+                        <ul>
+                            <c:forEach var="ach" items="${achiveOfTeacher}">
+                                <li>${ach.achivementName} (${achiveYearMap[ach.id]})</li>
+                                </c:forEach>
+                        </ul>
+                    </div>
+                </c:if>
+
+                <c:if test="${not empty certOfTeacher}">
+                    <div class="teacher-certificates">
+                        <p><strong>Chứng chỉ đạt được:</strong></p>
                         <ul>
                             <c:forEach var="cert" items="${certOfTeacher}">
                                 <li>${cert.certificateName} (${certYearMap[cert.id]})</li>
@@ -371,7 +380,7 @@
     </section>
     <!-- PHẦN 5: Khóa học -->
     <section class="teacher-course-section">
-        <h2>KHÓA HỌC</h2>
+        <h2>LỚP HỌC GIẢNG DẠY</h2>
         <div class="teacher-carousel-wrapper">
             <div class="teacher-carousel" id="teacherCourseCarousel">
                 <c:forEach var="course" items="${courseOfTeacher}" varStatus="status">
@@ -384,6 +393,17 @@
                         </div>
                         <div class="teacher-course-content">
                             <h5>${course.name}</h5>
+                            <!-- Mô tả rút gọn -->
+                            <p class="course-description">
+                                <c:choose>
+                                    <c:when test="${fn:length(course.description) > 80}">
+                                        ${fn:substring(course.description, 0, 80)}...
+                                    </c:when>
+                                    <c:otherwise>
+                                        ${course.description}
+                                    </c:otherwise>
+                                </c:choose>
+                            </p>
                             <p><strong>Môn:</strong> ${course.subject.displayName}</p>
                             <p><strong>Thời lượng:</strong> ${course.weekAmount} tuần</p>
                         </div>

@@ -59,31 +59,39 @@ public class ManagerCourseServlet extends HttpServlet {
         TeacherDAO teacherDAO = new TeacherDAO();
         switch (action) {
             case "list" -> {
-                // Lấy tham số tìm kiếm (filter) từ request
                 String name = request.getParameter("name");
                 String subject = request.getParameter("subject");
                 String level = request.getParameter("level");
                 String status = request.getParameter("status");
                 String gradeStr = request.getParameter("grade");
+                String teacherIdStr = request.getParameter("teacherId");
 
                 Integer grade = null;
                 if (gradeStr != null && !gradeStr.trim().isEmpty()) {
                     grade = Integer.parseInt(gradeStr.trim());
                 }
+
+                Integer teacherId = null;
+                if (teacherIdStr != null && !teacherIdStr.trim().isEmpty()) {
+                    teacherId = Integer.parseInt(teacherIdStr.trim());
+                }
+
                 List<CourseDTO> courseList;
-                // Kiểm tra nếu có ít nhất 1 tham số lọc thì gọi searchCourses, nếu không thì getAllCourses
                 if ((name != null && !name.trim().isEmpty())
                         || (subject != null && !subject.trim().isEmpty())
                         || (level != null && !level.trim().isEmpty())
                         || (status != null && !status.trim().isEmpty())
-                        || grade != null) {
+                        || grade != null
+                        || teacherId != null) {
 
-                    courseList = courseDAO.searchCourses(name, subject, level, status, grade);
+                    courseList = courseDAO.searchCourses(name, subject, level, status, grade, teacherId);
                 } else {
                     courseList = courseDAO.getAllCourses();
                 }
 
+                List<TeacherDTO> teacherList = teacherDAO.getAllTeachers();
                 request.setAttribute("courseList", courseList);
+                request.setAttribute("teacherList", teacherList);
                 request.getRequestDispatcher("views/managerCourse.jsp").forward(request, response);
             }
             case "edit" -> {
@@ -189,17 +197,19 @@ public class ManagerCourseServlet extends HttpServlet {
                         && startTimeStr != null && !startTimeStr.isEmpty()
                         && endTimeStr != null && !endTimeStr.isEmpty()
                         && classroom != null && !classroom.isEmpty()) {
+
                     LocalTime startTime = LocalTime.parse(startTimeStr);
                     LocalTime endTime = LocalTime.parse(endTimeStr);
-
                     LocalDate startDate = course.getStartDate().toLocalDate();
                     LocalDate endDate = course.getEndDate().toLocalDate();
 
                     sectionDAO.addSections(courseId, dayOfWeek, startTime, endTime, classroom, startDate, endDate, course.getTeacherId());
                 }
+
                 response.sendRedirect("quan-ly-khoa-hoc?action=list");
                 return;
             }
+
             if ("update".equals(action)) {
                 CourseModal course = new CourseModal();
                 course.setId(Integer.parseInt(request.getParameter("id")));

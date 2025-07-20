@@ -11,7 +11,7 @@ package dto;
 import java.time.LocalDate;
 
 public class StudentProfile {
-
+    private int id;
     private String name;
     private String phone;
     private LocalDate dob;
@@ -33,6 +33,26 @@ public class StudentProfile {
         this.currentGrade = currentGrade;
         this.schoolName = schoolName;
         this.schoolId = schoolId;
+    }
+
+    public StudentProfile(int id, String name, String phone, LocalDate dob, String address, String avatarUrl, String currentGrade, String schoolName, int schoolId) {
+        this.id = id;
+        this.name = name;
+        this.phone = phone;
+        this.dob = dob;
+        this.address = address;
+        this.avatarUrl = avatarUrl;
+        this.currentGrade = currentGrade;
+        this.schoolName = schoolName;
+        this.schoolId = schoolId;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getSchoolId() {

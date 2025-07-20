@@ -136,7 +136,7 @@
         border-left: 4px solid #3498db;
         padding: 12px 16px;
         margin-top: 16px;
-border-radius: 6px;
+        border-radius: 6px;
     }
 
     .course-description h5 {
@@ -192,9 +192,9 @@ border-radius: 6px;
         line-height: 1.5;
     }
 
-    /* Bảng giá */
+    /* === Khối giá === */
     .price-block {
-        background: #fff5e6; /* màu nền nhẹ nổi bật */
+        background: #fff5e6;
         border: 2px solid #f39c12;
         border-radius: 10px;
         padding: 20px 24px;
@@ -232,6 +232,7 @@ border-radius: 6px;
         margin-bottom: 16px;
     }
 
+    /* === Nút đăng ký === */
     .register-btn {
         display: inline-block;
         background: #e74c3c;
@@ -241,18 +242,228 @@ border-radius: 6px;
         font-weight: bold;
         text-decoration: none;
         border-radius: 6px;
-        transition: background 0.3s ease;
-        margin-top: 8px;
+        transition: background 0.3s ease, transform 0.2s ease;
+        margin-top: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     .register-btn:hover {
         background: #c0392b;
+        transform: translateY(-2px);
+    }
+
+    /* === Thông báo trạng thái đã tham gia/quyền hạn === */
+    .joined-note {
+        display: inline-block;
+        margin-top: 16px;
+        padding: 10px 18px;
+        background-color: #e0f7fa;  /* Xanh ngọc nhẹ */
+        color: #00796b;             /* Xanh đậm */
+        border: 1px solid #26a69a;  /* Viền xanh teal */
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .joined-note::before {
+        content: "✔ ";
+        color: #26a69a;
+        font-weight: bold;
+    }
+
+    .parent-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4); /* Overlay mờ */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        transition: opacity 0.3s ease;
+    }
+
+    .parent-modal.hidden {
+        display: none; /* Ẩn hoàn toàn */
+    }
+
+    .parent-modal-content {
+        background: #fff;
+        padding: 30px 40px;
+        border-radius: 10px;
+        max-width: 420px;
+        width: 90%;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    .parent-modal-content h3 {
+        margin-bottom: 20px;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .child-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .child-list li {
+        margin-bottom: 12px;
+    }
+
+    .child-list button {
+        background: #3498db;
+        color: #fff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .child-list button:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+    }
+
+    .parent-modal-content button:last-child {
+        background: #ccc;
+        color: #333;
+        margin-top: 10px;
+    }
+
+    .parent-modal-content button:last-child:hover {
+        background: #bbb;
+    }
+
+    /* Container chọn con */
+    .child-selector {
+        margin-top: 16px;
+        padding: 16px 20px;
+        background-color: #fdfdfd;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        text-align: left;
+        max-width: 100%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Tiêu đề chọn con */
+    .child-selector h4 {
+        font-size: 18px;
+        margin-bottom: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        letter-spacing: 0.5px;
+    }
+
+    /* Danh sách con */
+    .child-selector ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .child-selector li {
+        position: relative;
+    }
+
+    .child-selector button.disabled-child {
+        background: #ccc !important;
+        color: #666 !important;
+        cursor: not-allowed;
+        position: relative;
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .child-selector .joined-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(255, 0, 0, 0.65);
+        color: white;
+        padding: 4px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 4px;
+        pointer-events: none;
+        white-space: nowrap;
+        user-select: none;
+        z-index: 10;
+    }
+
+    /* Nút chọn con */
+    .child-selector button {
+        background: #3498db;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .child-selector button:hover {
+        background: #2980b9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Hiệu ứng nút đang chọn */
+    .child-selector button.selected {
+        background: #2ecc71; /* Xanh lá */
+        box-shadow: 0 0 0 2px #2ecc71 inset;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .child-selector button.selected-child {
+        background-color: orange !important;
+        color: white !important;
     }
 
     .tab-content .section {
         padding-top: 40px;
         margin-top: 40px;
         border-top: 2px dashed #ccc; /* Thanh ngăn cách */
+    }
+
+    .alert {
+        padding: 12px 20px;
+        margin: 15px 0;
+        border-radius: 6px;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
     }
 
     /* Container chung */
@@ -281,7 +492,7 @@ border-radius: 6px;
         outline: none;
         background-color: #fff;
     }
-/* Mỗi thẻ lịch học */
+    /* Mỗi thẻ lịch học */
     .schedule-item {
         background-color: #eef6fb; /* Nền xanh nhạt */
         border-left: 5px solid #007bff; /* Viền màu nổi bật */
@@ -419,7 +630,7 @@ border-radius: 6px;
     }
 
     .show-more-btn {
-background-color: #007bff;
+        background-color: #007bff;
         color: white;
         border: none;
         padding: 6px 16px;
@@ -446,14 +657,14 @@ background-color: #007bff;
 
 </style>
 
-
+<c:set var="course" value="${sessionScope.course}" />
+<c:set var="teacher" value="${sessionScope.teacher}" />
 
 <div class="container">
-    <c:choose>
-        <c:when test="${not empty sessionScope.course}">
-            <c:set var="course" value="${sessionScope.course}" />
-            <c:set var="teacher" value="${sessionScope.teacher}" />
 
+    <c:choose>
+        <c:when test="${not empty course}"> 
+            <div id="courseData" data-course-id="${course.id}"></div>
             <!-- PHẦN 1: Breadcrumb -->
             <div class="breadcrumb">
                 <a href="trang-chu">Trang chủ </a> &gt;
@@ -492,7 +703,7 @@ background-color: #007bff;
                     </div>
                     <div class="info-course">
                         <p><strong>Số học sinh tham gia:</strong> ${course.studentEnrollment}/${course.maxStudents}</p>
-<p><strong>Khai giảng:</strong> ${sessionScope.startFormatted}</p>
+                        <p><strong>Khai giảng:</strong> ${sessionScope.startFormatted}</p>
                         <p><strong>Bế giảng:</strong> ${sessionScope.endFormatted}</p>
                     </div>
 
@@ -539,7 +750,7 @@ background-color: #007bff;
                                     <li>Phù hợp cả với học sinh trung bình – khá – giỏi</li>
                                 </ul>
                             </div>
-<div class="info-box">
+                            <div class="info-box">
                                 <h4>Đối tượng phù hợp</h4>
                                 <ul>
                                     <li>Học sinh lớp ${course.grade} cần củng cố và nâng cao môn ${course.subject.displayName}</li>
@@ -583,15 +794,15 @@ background-color: #007bff;
                                     <p><strong>Họ và tên:</strong> ${sessionScope.teacherMap[course.teacherId].name}</p>
 
                                     <c:if test="${not empty teacher.bio}">
-<p><strong>Giới thiệu:</strong> ${teacher.bio}</p>
+                                        <p><strong>Giới thiệu:</strong> ${teacher.bio}</p>
                                     </c:if>
 
-                                    <c:if test="${not empty sessionScope.certOfTeacher}">
+                                    <c:if test="${not empty sessionScope.achiveOfTeacher}">
                                         <div class="teacher-awards">
                                             <p><strong>Thành tích nổi bật:</strong></p>
                                             <ul>
-                                                <c:forEach var="cert" items="${sessionScope.certOfTeacher}">
-                                                    <li>${cert.certificateName} (${sessionScope.certYearMap[cert.id]})</li>
+                                                <c:forEach var="achive" items="${sessionScope.achiveOfTeacher}">
+                                                    <li>${achive.achivementName} (${sessionScope.achiveYearMap[achive.id]})</li>
                                                     </c:forEach>
                                             </ul>
                                         </div>
@@ -610,6 +821,7 @@ background-color: #007bff;
                 <div class="course-right">
                     <div class="price-block">
                         <span class="label">${sessionScope.priceLabel}</span>
+
                         <c:choose>
                             <c:when test="${sessionScope.hasDiscount}">
                                 <div class="price-original">${sessionScope.originalPriceStr}</div>
@@ -621,7 +833,78 @@ background-color: #007bff;
                             </c:otherwise>
                         </c:choose>
 
-                        <a href="#" class="register-btn">Đăng ký học ngay</a>
+                        <c:if test="${not empty sessionScope.successMessage}">
+                            <div class="alert alert-success auto-hide" role="alert" id="successAlert">
+                                ${sessionScope.successMessage}
+                            </div>
+                            <c:remove var="successMessage" scope="session"/>
+                        </c:if>
+
+                        <c:if test="${not empty sessionScope.errorMessage}">
+                            <div class="alert alert-error auto-hide" role="alert" id="errorAlert">
+                                ${sessionScope.errorMessage}
+                            </div>
+                            <c:remove var="errorMessage" scope="session"/>
+                        </c:if>
+
+                        <c:choose>
+                            <c:when test="${requestScope.loggedInUserRole eq 'student'}">
+                                <input type="hidden" id="hiddenStudentId" value="${requestScope.loggedInUserId}" />
+                                <c:choose>
+                                    <c:when test="${not sessionScope.hasJoined}">                                       
+                                        <a href="#" id="registerBtn" class="register-btn" onclick="handleRegisterClick(event)">
+                                            Đăng ký học ngay
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p class="joined-note">Bạn đã tham gia khóa học này.</p>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:when>
+
+                            <c:when test="${requestScope.loggedInUserRole eq 'parent'}">
+                                <div id="childSelector" class="child-selector hidden">
+                                    <h4>Chọn con muốn đăng ký:</h4>
+                                    <ul>
+                                        <c:forEach var="child" items="${sessionScope.childrenList}">
+                                            <c:set var="joined" value="${sessionScope.hasJoinedMap[child.id]}" />
+                                            <li style="position: relative;">
+                                                <button
+                                                    type="button"
+                                                    data-student-id="${child.id}"
+                                                    onclick="selectStudent(${child.id}, '${sessionScope.childrenMap[child.id]}')"
+                                                    class="${joined ? 'disabled-child' : ''}"
+                                                    ${joined ? 'disabled' : ''}>
+                                                    ${sessionScope.childrenMap[child.id]}
+                                                </button>
+
+                                                <c:if test="${joined}">
+                                                    <span class="joined-overlay">Đã tham gia</span>
+                                                </c:if>
+                                            </li>
+                                        </c:forEach>
+                                    </ul>                          
+                                </div>
+                                <a href="#" id="registerBtn" class="register-btn" onclick="handleRegisterClick(event)">
+                                    Đăng ký học ngay
+                                </a>
+                            </c:when>
+
+                            <c:when test="${requestScope.loggedInUserRole eq 'teacher'}">
+                                <p class="joined-note">Bạn đang xem với quyền giáo viên.</p>
+                            </c:when>
+
+                            <c:when test="${requestScope.loggedInUserRole eq 'manager' || requestScope.loggedInUserRole eq 'admin' || requestScope.loggedInUserRole eq 'staff'}">
+                                <p class="joined-note">Quản lý chỉ xem thông tin khóa học.</p>
+                            </c:when>
+
+                            <c:otherwise>
+                                <a href="#" class="register-btn" onclick="notifyAndRedirect(event, '${course.id}')">
+                                    Đăng ký học ngay
+                                </a>
+                            </c:otherwise>
+                        </c:choose>
+
                     </div>
 
                     <div class="info-box related-wrapper">
@@ -631,7 +914,7 @@ background-color: #007bff;
                                 <a href="thong-tin-lop-hoc?courseId=${related.id}" class="related-course-link ${status.index >= 5 ? 'hidden' : ''}">
                                     <div class="related-course-item">
                                         <img src="${pageContext.request.contextPath}/assets/banners_course/${related.course_img}" alt="${related.name}" class="related-img" />
-<span class="related-name">${related.name}</span>
+                                        <span class="related-name">${related.name}</span>
                                     </div>
                                 </a>
                             </c:forEach>
@@ -653,11 +936,15 @@ background-color: #007bff;
 
 <script>
     let isExpanded = false;
+    let selectedStudentId = null;
+    let isChildSelectorVisible = false;
+    const isParent = '${requestScope.loggedInUserRole}' === 'parent';
+    const courseId = document.getElementById("courseData")?.dataset.courseId;
+
 
     function toggleRelated() {
         const hiddenItems = document.querySelectorAll(".related-course-link.hidden");
         const btn = document.querySelector(".show-more-btn");
-
         if (!isExpanded) {
             hiddenItems.forEach(item => item.classList.remove("hidden"));
             btn.innerText = "Ẩn bớt";
@@ -671,7 +958,75 @@ background-color: #007bff;
 
         isExpanded = !isExpanded;
     }
-</script>
 
+    function handleRegisterClick(e) {
+        e.preventDefault();
+        let studentId = null;
+        let message = '';
+
+        if (!courseId) {
+            alert("Course ID đang rỗng!");
+            return;
+        }
+
+        if (isParent) {
+            if (!isChildSelectorVisible) {
+                document.getElementById("childSelector").classList.remove("hidden");
+                isChildSelectorVisible = true;
+                document.getElementById("registerBtn").innerText = "Xác nhận đăng ký";
+                return;
+            }
+            if (!selectedStudentId) {
+                alert("Vui lòng chọn con để đăng ký!");
+                return;
+            }
+            studentId = selectedStudentId;
+            message = "Bạn có chắc chắn muốn đăng ký khóa học này cho con?";
+        } else {
+            // Lấy từ hidden input (đã có sẵn nếu là student)
+            studentId = document.getElementById('hiddenStudentId')?.value;
+            if (!studentId) {
+                alert("Vui lòng chọn con bạn muốn đăng ký!");
+                return;
+            }
+            message = "Bạn có chắc chắn muốn đăng ký khóa học này?";
+        }
+
+        if (confirm(message)) {
+            window.location.href = 'dang-ky-lop-hoc?courseId=' + courseId + '&studentId=' + studentId;
+        }
+    }
+
+    function selectStudent(id, name) {
+        selectedStudentId = id;
+        const buttons = document.querySelectorAll('#childSelector button');
+        buttons.forEach(btn => {
+            const btnId = btn.getAttribute('data-student-id');
+            if (btnId === String(id)) {
+                btn.classList.add('selected-child');
+            } else {
+                btn.classList.remove('selected-child');
+            }
+        });
+    }
+    function notifyAndRedirect(event) {
+        event.preventDefault();
+        alert("Bạn cần đăng nhập để tiếp tục.");
+        const redirectUrl = `dang-nhap?redirect=thong-tin-lop-hoc?courseId=` + courseId;
+        window.location.href = redirectUrl;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+            const successAlert = document.getElementById("successAlert");
+            const errorAlert = document.getElementById("errorAlert");
+
+            if (successAlert)
+                successAlert.style.display = "none";
+            if (errorAlert)
+                errorAlert.style.display = "none";
+        }, 5000);
+    });
+</script>
 
 <jsp:include page="layout/footer.jsp" />

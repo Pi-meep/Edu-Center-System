@@ -194,6 +194,43 @@
             width: 100%;
         }
     }
+    .action-buttons {
+        margin-bottom: 10px;
+        display: flex;
+        gap: 35px; 
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .action-buttons form {
+        flex: 0 0 auto;
+    }
+
+    .action-buttons button {
+        background-color: #4299e1;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 5px;
+        font-size: 12px;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .action-buttons button:hover {
+        background-color: #2b6cb0;
+    }
+
+    .action-buttons form:nth-child(2) button {
+        background-color: #48bb78;
+    }
+
+    .action-buttons form:nth-child(2) button:hover {
+        background-color: #2f855a;
+    }
+
 </style>
 
 <div class="filter-container">
@@ -263,56 +300,56 @@
                             </c:if>
 
                             <c:forEach var="c" items="${listClass}">
-                                <form action="createScore" method="get" class="class-card" 
-                                      data-grade="${c.grade}" 
-                                      data-subject="${c.subject}" 
-                                      data-level="${c.level}" 
-                                      data-name="${c.name.toLowerCase()}">
-                                    <input type="hidden" name="courseId" value="${c.getCourseId()}">
-                                    <input type="hidden" name="grade" value="${c.grade}">
-                                    <input type="hidden" name="name" value="${c.name}">
-                                    <input type="hidden" name="level" value="${c.level}">
-                                    <input type="hidden" name="subject" value="${c.subject}">
-                                    <input type="hidden" name="studentEnrollment" value="${c.studentEnrollment}">
-                                    <button type="submit">
-                                        <div class="info-card">
-                                            <div class="info-item"><span class="info-label">Lớp:</span><span class="info-value">${c.grade}</span></div>
-                                            <div class="info-item"><span class="info-label">Tên khóa học:</span><span class="info-value">${c.name}</span></div>
-                                            <div class="info-item">
-                                                <span class="info-label">Cấp độ:</span>
-                                                <span class="info-value">
-                                                    <c:choose>
-                                                        <c:when test="${c.level == 'Foundation'}">Nhập môn</c:when>
-                                                        <c:when test="${c.level == 'Basic'}">Cơ bản</c:when>
-                                                        <c:when test="${c.level == 'Advanced'}">Nâng cao</c:when>
-                                                        <c:when test="${c.level == 'Excellent'}">Xuất sắc</c:when>
-                                                        <c:when test="${c.level == 'Topics_Exam'}">Luyện thi</c:when>
-                                                        <c:otherwise>${c.level}</c:otherwise>
-                                                    </c:choose>
-                                                </span>
-                                            </div>
-                                            <div class="info-item">
-                                                <span class="info-label">Môn:</span>
-                                                <span class="info-value">
-                                                    <c:choose>
-                                                        <c:when test="${c.subject == 'Mathematics'}">Toán</c:when>
-                                                        <c:when test="${c.subject == 'Literature'}">Ngữ văn</c:when>
-                                                        <c:when test="${c.subject == 'English'}">Tiếng Anh</c:when>
-                                                        <c:when test="${c.subject == 'Physics'}">Vật lý</c:when>
-                                                        <c:when test="${c.subject == 'Chemistry'}">Hóa học</c:when>
-                                                        <c:when test="${c.subject == 'Biology'}">Sinh học</c:when>
-                                                        <c:when test="${c.subject == 'History'}">Lịch sử</c:when>
-                                                        <c:when test="${c.subject == 'Geography'}">Địa lý</c:when>
-                                                        <c:when test="${c.subject == 'Civic Education'}">GDCD</c:when>
-                                                        <c:when test="${c.subject == 'Informatics'}">Tin học</c:when>
-                                                        <c:otherwise>${c.subject}</c:otherwise>
-                                                    </c:choose>
-                                                </span>
-                                            </div>
-                                            <div class="info-item"><span class="info-label">Số học sinh:</span><span class="info-value">${c.studentEnrollment}</span></div>
-                                        </div>
-                                    </button>
-                                </form>
+                                <div class="info-card">
+                                    <div class="action-buttons" style="margin-bottom: 12px; justify-content: flex-start;">
+                                        <form action="createScore" method="get">
+                                            <input type="hidden" name="courseId" value="${c.getCourseId()}">
+                                            <input type="hidden" name="grade" value="${c.grade}">
+                                            <input type="hidden" name="name" value="${c.name}">
+                                            <input type="hidden" name="level" value="${c.level}">
+                                            <input type="hidden" name="subject" value="${c.subject}">
+                                            <input type="hidden" name="studentEnrollment" value="${c.studentEnrollment}">
+                                            <button type="submit">📝 Chấm điểm</button>
+                                        </form>
+                                        <form action="uploadAssignmentServlet" method="get">
+                                            <input type="hidden" name="courseId" value="${c.getCourseId()}">
+                                            <button type="submit">📘 Bài tập</button>
+                                        </form>
+                                    </div>
+
+                                    <div class="info-item"><span class="info-label">Lớp:</span><span class="info-value">${c.grade}</span></div>
+                                    <div class="info-item"><span class="info-label">Tên khóa học:</span><span class="info-value">${c.name}</span></div>
+                                    <div class="info-item">
+                                        <span class="info-label">Cấp độ:</span>
+                                        <span class="info-value">
+                                            <c:choose>
+                                                <c:when test="${c.level == 'Advanced'}">Nâng cao</c:when>
+                                                <c:when test="${c.level == 'Basic'}">Cơ bản</c:when>
+                                                <c:when test="${c.level == 'Topics_Exam'}">Luyện thi</c:when>
+                                                <c:otherwise>${c.level}</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Môn:</span>
+                                        <span class="info-value">
+                                            <c:choose>
+                                                <c:when test="${c.subject == 'Mathematics'}">Toán</c:when>
+                                                <c:when test="${c.subject == 'Literature'}">Ngữ văn</c:when>
+                                                <c:when test="${c.subject == 'English'}">Tiếng Anh</c:when>
+                                                <c:when test="${c.subject == 'Physics'}">Vật lý</c:when>
+                                                <c:when test="${c.subject == 'Chemistry'}">Hóa học</c:when>
+                                                <c:when test="${c.subject == 'Biology'}">Sinh học</c:when>
+                                                <c:when test="${c.subject == 'History'}">Lịch sử</c:when>
+                                                <c:when test="${c.subject == 'Geography'}">Địa lý</c:when>
+                                                <c:when test="${c.subject == 'Civic Education'}">Giáo dục công dân</c:when>
+                                                <c:when test="${c.subject == 'Informatics'}">Tin học</c:when>
+                                                <c:otherwise>${c.subject}</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+                                    <div class="info-item"><span class="info-label">Số học sinh:</span><span class="info-value">${c.studentEnrollment}</span></div>
+                                </div>
                             </c:forEach>
                         </div>
                     </div>

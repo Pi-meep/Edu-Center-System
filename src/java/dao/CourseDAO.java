@@ -5,6 +5,7 @@
 package dao;
 
 import dto.CourseDTO;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -344,7 +345,7 @@ public class CourseDAO extends DBUtil {
     /* -------------------------------------------------
      * 5. Tìm kiếm 
      * ------------------------------------------------- */
-    public List<CourseDTO> searchCourses(String name, String subject, String level, String status, Integer grade) {
+    public List<CourseDTO> searchCourses(String name, String subject, String level, String status, Integer grade, Integer teacherId) {
         List<CourseDTO> list = new ArrayList<>();
 
         // Sử dụng alias 'c.' trước các cột từ bảng course 
@@ -373,6 +374,11 @@ public class CourseDAO extends DBUtil {
             sql += " AND c.grade = ?";
         }
 
+        if (teacherId != null) {
+            sql += " AND c.teacherId = ?";
+        }
+
+
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             int i = 1;
             if (name != null && !name.trim().isEmpty()) {
@@ -390,6 +396,10 @@ public class CourseDAO extends DBUtil {
             if (grade != null) {
                 ps.setInt(i++, grade);
             }
+            if (teacherId != null) {
+                ps.setInt(i++, teacherId);
+            }
+
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -404,8 +414,8 @@ public class CourseDAO extends DBUtil {
                 course.setStudentEnrollment(rs.getInt("studentEnrollment"));
                 course.setMaxStudents(rs.getInt("maxStudents"));
                 course.setStatus(rs.getString("status"));
-                course.setStartDate(rs.getDate("startDate"));
-                course.setEndDate(rs.getDate("endDate"));
+                course.setStartDate(rs.getTimestamp("startDate"));
+                course.setEndDate(rs.getTimestamp("endDate"));
                 course.setFeeCombo(rs.getBigDecimal("feeCombo"));
                 course.setFeeDaily(rs.getBigDecimal("feeDaily"));
 
@@ -592,4 +602,102 @@ public class CourseDAO extends DBUtil {
         return hotCourses;
     }
 
+    public List<CourseModal> getDailyCoursesByStudent(int studentId) {
+        List<CourseModal> list = new ArrayList<>();
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                "SELECT c.* FROM course c JOIN student_course sc ON c.id = sc.courseId WHERE sc.studentId = ? AND c.courseType = 'daily' AND sc.status = 'accepted'")) {
+            ps.setInt(1, studentId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                CourseModal c = new CourseModal(
+                    rs.getInt("id"),
+                    rs.getString("course_img"),
+                    rs.getInt("teacherId"),
+                    rs.getString("name"),
+                    rs.getString("description"),
+                    CourseModal.Status.valueOf(rs.getString("status")),
+                    CourseModal.CourseType.valueOf(rs.getString("courseType")),
+                    rs.getBigDecimal("feeCombo"),
+                    rs.getBigDecimal("feeDaily"),
+                    rs.getTimestamp("startDate").toLocalDateTime(),
+                    rs.getTimestamp("endDate").toLocalDateTime(),
+                    rs.getInt("weekAmount"),
+                    rs.getInt("studentEnrollment"),
+                    rs.getInt("maxStudents"),
+                    CourseModal.Level.valueOf(rs.getString("level")),
+                    rs.getBoolean("isHot"),
+                    CourseModal.Subject.valueOf(rs.getString("subject")),
+                    rs.getString("grade"),
+                    rs.getBigDecimal("discountPercentage"),
+                    rs.getTimestamp("created_at").toLocalDateTime(),
+                    rs.getTimestamp("updated_at").toLocalDateTime()
+                );
+                list.add(c);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public String getNameById(int courseId) {
+        String name = "";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT name FROM course WHERE id = ?")) {
+            ps.setInt(1, courseId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                name = rs.getString("name");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return name;
+    }
+
+    public String getCourseType(int courseId) {
+        String type = null;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT courseType FROM course WHERE id = ?")) {
+            ps.setInt(1, courseId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                type = rs.getString("courseType");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return type;
+    }
+
+    public BigDecimal getFeeDaily(int courseId) {
+        BigDecimal fee = null;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT feeDaily FROM course WHERE id = ?")) {
+            ps.setInt(1, courseId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                fee = rs.getBigDecimal("feeDaily");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return fee;
+    }
+
+    public BigDecimal getFeeCombo(int courseId) {
+        BigDecimal fee = null;
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT feeCombo FROM course WHERE id = ?")) {
+            ps.setInt(1, courseId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                fee = rs.getBigDecimal("feeCombo");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return fee;
+    }
 }

@@ -99,29 +99,6 @@
                 <li>🌐 ${centerInfo != null ? centerInfo.website : 'www.educenter.vn'}</li>
             </ul>
         </div>
-        <div class="footer-section">
-            <h3>Theo Dõi</h3>
-            <ul>
-                <c:if test="${centerInfo != null && not empty centerInfo.facebook}">
-                    <li><a href="${centerInfo.facebook}" target="_blank">Facebook</a></li>
-                </c:if>
-                <c:if test="${centerInfo != null && not empty centerInfo.youtube}">
-                    <li><a href="${centerInfo.youtube}" target="_blank">YouTube</a></li>
-                </c:if>
-                <c:if test="${centerInfo != null && not empty centerInfo.instagram}">
-                    <li><a href="${centerInfo.instagram}" target="_blank">Instagram</a></li>
-                </c:if>
-                <c:if test="${centerInfo == null || empty centerInfo.facebook}">
-                    <li><a href="#">Facebook</a></li>
-                </c:if>
-                <c:if test="${centerInfo == null || empty centerInfo.youtube}">
-                    <li><a href="#">YouTube</a></li>
-                </c:if>
-                <c:if test="${centerInfo == null || empty centerInfo.instagram}">
-                    <li><a href="#">Instagram</a></li>
-                </c:if>
-            </ul>
-        </div>
     </div>
     <div class="footer-bottom">
         <p>&copy; 2025 ${centerInfo != null ? centerInfo.centerName : 'EduCenter'}. Tất cả quyền được bảo lưu.</p>

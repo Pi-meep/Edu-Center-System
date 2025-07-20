@@ -7,6 +7,7 @@ package controller;
 import dao.AccountDAO;
 import dao.StudentDAO;
 import dto.StudentBasicInfo;
+import dto.StudentProfile;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -15,7 +16,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import modal.AccountModal;
 
 /**
@@ -24,61 +28,60 @@ import modal.AccountModal;
  */
 public class ViewChildServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet ViewChild</title>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet ViewChild at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         StudentDAO dao = new StudentDAO();
-        String usname = (String) request.getAttribute("loggedInUserName");
-        AccountDAO acdao = new AccountDAO();
-        AccountModal ac = null;
-        try {
-            ac = acdao.getAccountByUsername(usname);
-        } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ViewScoreServlet.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        String username = (String) request.getAttribute("loggedInUserName");
+
+        // Kiểm tra username
+        if (username == null || username.trim().isEmpty()) {
+            request.setAttribute("error", "Không tìm thấy thông tin đăng nhập");
+            request.getRequestDispatcher("/views/viewChild.jsp").forward(request, response);
+            return;
         }
-        String userName = ac.getPhone();
+
+        AccountDAO acDao = new AccountDAO();
+        AccountModal account = null;
+
         try {
-            List<StudentBasicInfo> children = dao.getChildrenByParentPhone(userName);
-            request.setAttribute("children", children);
+            account = acDao.getAccountByUsername(username);
+            if (account == null) {
+                request.setAttribute("error", "Không tìm thấy thông tin tài khoản");
+                request.getRequestDispatcher("/views/viewChild.jsp").forward(request, response);
+                return;
+            }
+        } catch (Exception ex) {
+            request.setAttribute("error", "Lỗi khi lấy thông tin tài khoản: " + ex.getMessage());
+            request.getRequestDispatcher("/views/viewChild.jsp").forward(request, response);
+            return;
+        }
+
+        String parentPhone = account.getPhone();
+
+        try {
+            List<StudentProfile> childrenProfiles = dao.getChildrenProfilesByParentPhone(parentPhone);
+            request.setAttribute("childrenProfiles", childrenProfiles);
+
+            // Tạo map chứa studentId -> dobFormatted
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            Map<Integer, String> dobMap = new HashMap<>();
+
+            for (StudentProfile child : childrenProfiles) {
+                if (child.getDob() != null) {
+                    dobMap.put(child.getId(), child.getDob().format(formatter));
+                }
+            }
+
+            request.setAttribute("dobMap", dobMap); // gửi sang JSP
+            request.setAttribute("parentName", account.getName());
+            request.setAttribute("parentPhone", parentPhone);
 
         } catch (Exception ex) {
-            request.setAttribute("error", "Lỗi khi tải dữ liệu con cái");
+            request.setAttribute("error", "Lỗi khi tải dữ liệu con: " + ex.getMessage());
+            ex.printStackTrace();
         }
+
         request.getRequestDispatcher("/views/viewChild.jsp").forward(request, response);
     }
 
@@ -93,7 +96,6 @@ public class ViewChildServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
     }
 
     /**
