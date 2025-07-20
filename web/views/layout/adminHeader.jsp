@@ -25,8 +25,8 @@
         <c:if test="${not empty pageCSS}">
             <link rel="stylesheet" href="${pageContext.request.contextPath}${pageCSS}">
         </c:if>
-            <style>
-             .notification-wrapper {
+        <style>
+            .notification-wrapper {
                 position: relative;
             }
 
@@ -55,7 +55,7 @@
 
             .ttr-sidebar-navi li.open > ul {
                 display: block;
-            } 
+            }
 
             /* Dropdown */
             .notification-dropdown {
@@ -268,7 +268,13 @@
                                 <li>
                                     <a href="quan-ly-khoa-hoc" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-book"></i></span>
-                                        <span class="ttr-label">Khóa học</span>
+                                        <span class="ttr-label">Quản lý khoá học </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="quan-ly-lop-hoc" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fa fa-chalkboard"></i></span>
+                                        <span class="ttr-label">Quản lý lớp học</span>
                                     </a>
                                 </li>
                                 <li>
