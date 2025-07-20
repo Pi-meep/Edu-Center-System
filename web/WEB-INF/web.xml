@@ -366,11 +366,11 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>StudentAssignmentServlet</servlet-name>
-        <url-pattern>/StudentAssignmentServlet</url-pattern>
+        <url-pattern>/studentAssignmentServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>UploadAssignmentServlet</servlet-name>
-        <url-pattern>/UploadAssignmentServlet</url-pattern>
+        <url-pattern>/uploadAssignmentServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>CreateAccountServlet</servlet-name>
