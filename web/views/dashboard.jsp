@@ -135,8 +135,39 @@
         font-size: 0.875rem;
     }
 
-    #revenueChart {
-        max-height: 300px;
+      .monthly-bar-list {
+        padding: 10px 0;
+    }
+
+    .month-bar {
+        background: #f8f9fa;
+        padding: 12px 16px;
+        border-radius: 6px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .progress {
+        height: 20px;
+        background-color: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        color: white;
+        text-align: right;
+        padding-right: 8px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        line-height: 20px;
+        transition: width 0.3s ease;
+    }
+
+    .text-muted {
+        font-size: 0.8rem;
+        display: inline-block;
+        margin-top: 4px;
     }
 </style>
 <div class="container-fluid">
@@ -156,22 +187,9 @@
                 </div>
                 <div class="d-flex flex-column align-items-center justify-content-center" style="flex:1;">
                     <span class="wc-stats d-block" style="font-size: 2.5rem; line-height: 1;">
-                        <fmt:formatNumber value="${revenue}" type="number" groupingUsed="true"/>
+                        <fmt:formatNumber value="${totalRevenue}" type="number" groupingUsed="true"/>
                     </span>
                     <span class="wc-des d-block mt-1">VNĐ</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 col-xl-3 col-sm-6 col-12">
-            <div class="widget-card widget-bg2 d-flex flex-column justify-content-between" style="height: 180px;">
-                <div>
-                    <h4 class="wc-title text-center">Tổng lớp học</h4>
-                </div>
-                <div class="d-flex flex-column align-items-center justify-content-center" style="flex:1;">
-                    <span class="wc-stats d-block" style="font-size: 2.5rem; line-height: 1;">
-                        ${totalClass}
-                    </span>
-                    <span class="wc-des d-block mt-1">Lớp</span>
                 </div>
             </div>
         </div>
@@ -201,316 +219,67 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-6 col-lg-3 col-xl-3 col-sm-6 col-12">
+            <div class="widget-card widget-bg4 d-flex flex-column justify-content-between" style="height: 180px;">
+                <div>
+                    <h4 class="wc-title text-center">Tổng học sinh</h4>
+                </div>
+                <div class="d-flex flex-column align-items-center justify-content-center" style="flex:1;">
+                    <span class="wc-stats d-block" style="font-size: 2.5rem; line-height: 1;">
+                        ${totalStudents}
+                    </span>
+<span class="wc-des d-block mt-1">Học Sinh</span>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- Charts and Tables Section -->
-    <div class="row mt-4">
-        <!-- Revenue Chart -->
-        <div class="col-lg-8 col-md-12">
-            <div class="chart-container">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="section-title mb-0">
-                        <i class="fa fa-pie-chart mr-2"></i>
-                        Biểu đồ doanh thu theo quý
-                    </h5>
-                    <div class="filter-controls">
-                        <select id="yearFilter" class="form-control form-control-sm d-inline-block" style="width: auto;">
-                            <option value="2025">2025</option>
-                            <option value="2024">2024</option>
-                            <option value="2023">2023</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-8">
-                        <canvas id="revenueChart" width="300" height="300"></canvas>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="quarterly-stats">
-                            <h6 class="mb-3">Thống kê so sánh</h6>
-                            <div id="quarterlyComparison">
-                                <c:forEach var="quarter" items="${quarterlyRevenue}" varStatus="status">
-                                    <div class="quarter-item mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="quarter-label">Quý ${quarter.quarter}</span>
-                                            <span class="quarter-value">
-                                                <fmt:formatNumber value="${quarter.revenue}" type="number" groupingUsed="true"/>
-                                            </span>
-                                        </div>
-                                        <div class="quarter-comparison mt-1">
-                                            <c:choose>
-                                                <c:when test="${quarter.growthRate > 0}">
-                                                    <small class="text-success">
-                                                        <i class="fa fa-arrow-up"></i>
-                                                        +<fmt:formatNumber value="${quarter.growthRate}" pattern="#.##"/>% so với quý trước
-                                                    </small>
-                                                </c:when>
-                                                <c:when test="${quarter.growthRate < 0}">
-                                                    <small class="text-danger">
-<i class="fa fa-arrow-down"></i>
-                                                        <fmt:formatNumber value="${quarter.growthRate}" pattern="#.##"/>% so với quý trước
-                                                    </small>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <small class="text-muted">
-                                                        <i class="fa fa-minus"></i>
-                                                        Không thay đổi
-                                                    </small>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
-                                    </div>
-                                </c:forEach>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="chart-container">
+    <h5 class="section-title mb-4">
+        <i class="fa fa-bar-chart mr-2"></i>
+        Doanh thu theo tháng (2025)
+    </h5>
 
-        <!-- Quarterly Revenue Summary -->
-        <div class="col-lg-4 col-md-12">
-            <div class="table-container">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="section-title mb-0">
-                        <i class="fa fa-calendar mr-2"></i>
-                        Doanh thu theo quý
-                    </h5>
-                    <div class="btn-group btn-group-sm" role="group">
-                        <button type="button" class="btn btn-outline-primary active" data-period="current">Năm hiện tại</button>
-                        <button type="button" class="btn btn-outline-primary" data-period="previous">Năm trước</button>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm" id="quarterlyTable">
-                        <thead>
-                            <tr>
-                                <th>Quý</th>
-                                <th class="text-right">Doanh thu</th>
-                                <th class="text-center">Tăng trưởng</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="quarter" items="${quarterlyRevenue}" varStatus="status">
-                                <tr>
-                                    <td>
-                                        <strong>Quý ${quarter.quarter}</strong>
-                                        <br>
-                                        <small class="text-muted">${quarter.year}</small>
-                                    </td>
-                                    <td class="text-right revenue-amount">
-                                        <fmt:formatNumber value="${quarter.revenue}" type="number" groupingUsed="true"/> VNĐ
-                                    </td>
-<td class="text-center">
-                                        <c:choose>
-                                            <c:when test="${quarter.growthRate > 0}">
-                                                <span class="badge badge-success">
-                                                    +<fmt:formatNumber value="${quarter.growthRate}" pattern="#.#"/>%
-                                                </span>
-                                            </c:when>
-                                            <c:when test="${quarter.growthRate < 0}">
-                                                <span class="badge badge-danger">
-                                                    <fmt:formatNumber value="${quarter.growthRate}" pattern="#.#"/>%
-                                                </span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge badge-secondary">0%</span>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
+    <div class="monthly-bar-list">
+    <c:forEach var="item" items="${monthlyRevenue}">
+        <c:if test="${item.year == 2025}">
+            <c:set var="percent" value="${item.revenue / 100000}" />
+            <c:choose>
+                <c:when test="${item.growthRate > 0}">
+                    <c:set var="color" value="#28a745" />
+                </c:when>
+                <c:when test="${item.growthRate < 0}">
+                    <c:set var="color" value="#dc3545" />
+                </c:when>
+                <c:otherwise>
+                    <c:set var="color" value="#6c757d" />
+                </c:otherwise>
+            </c:choose>
 
-                <!-- Summary Cards -->
-                <div class="mt-3">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="text-center p-2 bg-light rounded">
-                                <small class="text-muted">Tổng doanh thu năm</small>
-                                <div class="font-weight-bold text-primary">
-                                    <fmt:formatNumber value="${totalYearRevenue}" type="number" groupingUsed="true"/> VNĐ
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-center p-2 bg-light rounded">
-                                <small class="text-muted">Tăng trưởng TB</small>
-                                <div class="font-weight-bold ${averageGrowthRate >= 0 ? 'text-success' : 'text-danger'}">
-                                    <fmt:formatNumber value="${averageGrowthRate}" pattern="#.#"/>%
-                                </div>
-                            </div>
-                        </div>
+            <div class="month-bar mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Tháng ${item.month}/${item.year}</span>
+                    <span>
+                        <fmt:formatNumber value="${item.revenue}" type="number" groupingUsed="true"/> VNĐ
+                    </span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: ${growthRate}%; background-color: ${color};">
+                        <c:if test="${item.revenue > 0}">
+                            ${percent}%
+                        </c:if>
                     </div>
                 </div>
+                <small class="text-muted">Tăng trưởng: ${item.growthRate}%</small>
             </div>
-        </div>
-    </div>
-    <!-- Teacher Ranking Section -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="table-container">
-                <h5 class="section-title">
-                    <i class="fa fa-trophy mr-2"></i>
-                    Bảng xếp hạng giáo viên theo doanh thu
-                </h5>
-                <div class="table-responsive">
-<table class="teacher-rank-table">
-                        <thead>
-                            <tr>
-                                <th width="80">Hạng</th>
-                                <th>Tên giáo viên</th>
-                                <th>Email</th>
-                                <th>Số lớp dạy</th>
-                                <th>Số học viên</th>
-                                <th class="text-right">Doanh thu</th>
-                                <th class="text-center">Đánh giá TB</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="teacher" items="${topTeachers}" varStatus="status">
-                                <tr>
-                                    <td>
-                                        <span class="rank-badge ${status.index < 3 ? 'rank-'+(status.index+1) : 'rank-other'}">
-                                            ${status.index + 1}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <c:if test="${not empty teacher.avatar}">
-                                                <img src="${teacher.avatar}" alt="Avatar" class="rounded-circle mr-2" width="40" height="40">
-                                            </c:if>
-                                            <c:if test="${empty teacher.avatar}">
-                                                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mr-2" style="width: 40px; height: 40px;">
-                                                    <i class="fa fa-user text-white"></i>
-                                                </div>
-                                            </c:if>
-                                            <strong>${teacher.fullName}</strong>
-                                        </div>
-                                    </td>
-                                    <td>${teacher.email}</td>
-                                    <td>
-                                        <span class="badge badge-info">${teacher.totalClasses}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-success">${teacher.totalStudents}</span>
-                                    </td>
-                                    <td class="text-right revenue-amount">
-                                        <fmt:formatNumber value="${teacher.totalRevenue}" type="number" groupingUsed="true"/> VNĐ
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex align-items-center justify-content-center">
-<span class="mr-1">
-                                                <fmt:formatNumber value="${teacher.averageRating}" pattern="#.#"/>
-                                            </span>
-                                            <div class="text-warning">
-                                                <c:forEach begin="1" end="${teacher.averageRating >= i ? 1 : 0}" var="i">
-                                                    <i class="fa fa-star"></i>
-                                                </c:forEach>
-                                                <c:if test="${teacher.averageRating % 1 != 0}">
-                                                    <i class="fa fa-star-half-o"></i>
-                                                </c:if>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+        </c:if>
+    </c:forEach>
 </div>
-
+</div>
+</div>
 <!-- Chart.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Chart variables
-    let revenueChart;
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    
-    // Chart configuration
-    const chartColors = [
-        '#FF6B6B', // Q1 - Coral Red
-        '#4ECDC4', // Q2 - Turquoise  
-        '#45B7D1', // Q3 - Sky Blue
-        '#96CEB4'  // Q4 - Mint Green
-    ];
-    
-    // Initialize the chart
-    function initChart() {
-        const quarterlyData = [
-            <c:forEach var="quarter" items="${quarterlyRevenue}" varStatus="status">
-                {
-                    quarter: ${quarter.quarter},
-                    year: ${quarter.year},
-                    revenue: ${quarter.revenue},
-                    growthRate: ${quarter.growthRate}
-                }${!status.last ? ',' : ''}
-            </c:forEach>
-        ];
-        
-        const labels = quarterlyData.map(q => `Quý ${q.quarter}`);
-        const data = quarterlyData.map(q => q.revenue);
-        
-        revenueChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Doanh thu',
-                    data: data,
-                    backgroundColor: chartColors,
-                    borderColor: chartColors.map(color => color + '80'),
-                    borderWidth: 3,
-                    hoverOffset: 8,
-                    cutout: '60%'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-usePointStyle: true,
-                            pointStyle: 'circle',
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        borderColor: '#333',
-                        borderWidth: 1,
-                        callbacks: {
-                            label: function(context) {
-                                const value = context.parsed;
-                                const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
-                                const percentage = ((value / total) * 100).toFixed(1);
-                                return `${context.label}: <fmt:formatNumber value="${value}" type="number" groupingUsed="true" /> VNĐ (${percentage}%)`;
-                            }
-                        }
-                    }
-                },
-                animation: {
-                    animateScale: true,
-                    animateRotate: true,
-                    duration: 1000
-                }
-            }
-        });
-    }
-    
     // Format currency function
     function formatCurrency(amount) {
         return new Intl.NumberFormat('vi-VN').format(amount);

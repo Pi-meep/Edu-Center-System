@@ -308,7 +308,7 @@
                 <div class="form-group">
                     <label for="username">Tên đăng nhập (username): <span class="required">*</span></label>
                     <input type="text" id="username" name="username" required 
-                           placeholder="Nhập username (không chứa khoảng trắng)" />
+value="${consultation.email}"/>
                 </div>
 
                 <div class="form-group">

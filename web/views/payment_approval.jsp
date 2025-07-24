@@ -1,6 +1,6 @@
 <%@ page import="java.util.*, modal.*, java.text.SimpleDateFormat, java.text.NumberFormat, java.util.Locale, utils.CurrencyFormatter, utils.DateFormat, java.time.LocalDateTime" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<jsp:include page="layout/header.jsp" />
+<jsp:include page="layout/adminHeader.jsp" />
 <%
     List<Map<String, Object>> pendingSchedules = (List<Map<String, Object>>) request.getAttribute("pendingSchedules");
     int pageSize = 10;
@@ -37,6 +37,20 @@
     </style>
 </head>
 <body>
+<%
+    String msg = request.getParameter("msg");
+    String studentId = null, sectionId = null, alertCourseId = null;
+    if ("done".equals(msg)) {
+        studentId = request.getParameter("studentId");
+        sectionId = request.getParameter("sectionId");
+        alertCourseId = request.getParameter("courseId");
+    }
+%>
+<% if ("done".equals(msg) && studentId != null && sectionId != null && alertCourseId != null) { %>
+<script>
+    alert('Học sinh <%=studentId%> đã đóng học buổi <%=sectionId%> lớp <%=alertCourseId%>');
+</script>
+<% } %>
     <h2>Duyệt thanh toán học phí</h2>
     <table border="1">
         <tr>
@@ -51,7 +65,14 @@
             for (int i = startIdx; i < endIdx; i++) {
                 Map<String, Object> row = pendingSchedules.get(i); %>
             <tr>
-                <td><%=row.get("studentName")%></td>
+                <td>
+    <%=row.get("studentName")%>
+    <% if ((Boolean)row.get("markPaying")) { %>
+        <span class="payment-tag" style="background: #ffd700; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-left: 5px;">
+            Đã chuyển khoản
+        </span>
+    <% } %>
+</td>
                 <td><%=row.get("courseName")%></td>
                 <td>
                 <%
@@ -83,6 +104,7 @@
                         <form action="trang-xac-nhan-thanh-toan" method="post" style="display:inline;">
                             <input type="hidden" name="studentId" value="<%=row.get("studentId")%>"/>
                             <input type="hidden" name="sectionId" value="<%=row.get("sectionId")%>"/>
+                            <input type="hidden" name="courseId" value="<%=row.get("courseId")%>"/>
                             <button type="submit" name="action" value="approve">Xác nhận</button>
                         </form>
                     <% } else { %>
@@ -112,6 +134,5 @@
             <% } %>
         <% } %>
     </div>
-<jsp:include page="layout/footer.jsp" />
 </body>
 </html>

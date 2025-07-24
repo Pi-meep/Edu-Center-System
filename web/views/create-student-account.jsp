@@ -102,7 +102,7 @@
 
                 <div class="form-group">
                     <label>Tên đăng nhập:</label>
-                    <input type="text" name="username" required autocomplete="new-username"/>
+<input type="text" name="username" value="${generatedUsername}" readonly />
                 </div>
 
                 <div class="form-group">
@@ -117,7 +117,7 @@
 
                 <div class="form-group">
                     <label>Số điện thoại:</label>
-                    <input type="tel" name="phone"/>
+                    <input type="tel" name="phone" placeholder="Bỏ trống nếu không có"/>
                 </div>
 
                 <div class="form-group">
@@ -134,7 +134,7 @@
                 <!-- Thông tin trường lớp -->
                 <div class="form-group">
                     <label>Trường học:</label>
-                    <input type="text" id="schoolInput" name="schoolName" list="schoolList"/>
+                    <input type="text" id="schoolInput" name="schoolName" list="schoolList" placeholder="Tùy chọn"/>
                     <datalist id="schoolList">
                         <% if (schoolList != null) {
                                 for (SchoolModal school : schoolList) {

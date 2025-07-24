@@ -283,6 +283,28 @@
                                         <span class="ttr-label">Quản lý lịch học </span>
                                     </a>
                                 </li>
+                                 <li>
+                                    <a href="javascript:void(0);" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fas fa-users"></i></span>
+                                        <span class="ttr-label">Quản lý tài khoản </span>
+                                        <span class="ttr-arrow-icon"><i class="fa fa-angle-down"></i></span>
+                                    </a>
+                                    <ul>
+                                        <li>
+                                            <a href="quan-ly-tai-khoan" class="ttr-material-button">
+                                                <span class="ttr-icon"><i class="fas fa-users"></i></span>
+                                                <span class="ttr-label">Quản lý tài khoản </span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="#" class="ttr-material-button">
+                                                <span class="ttr-icon"><i class="fa fa-envelope-open-text"></i></span>
+                                                <span class="ttr-label">Yêu cầu mở tài khoản </span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+
                                 <li>
                                     <a href="javascript:void(0);" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-clipboard-check"></i></span>
@@ -356,6 +378,12 @@
                                         <span class="ttr-label">Hồ sơ</span>
                                     </a>
                                 </li>
+                                <li>
+                                    <a href="trang-xac-nhan-thanh-toan" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fa fa-credit-card-alt"></i></span>
+                                        <span class="ttr-label">Xác nhận thanh toán</span>
+                                    </a>
+                                </li>
                             </c:when>
                             <c:when test="${loggedInUserRole == null}">
                             </c:when>
@@ -366,6 +394,7 @@
             </div>
         </div>
         <main class="ttr-wrapper">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     // Get all necessary elements

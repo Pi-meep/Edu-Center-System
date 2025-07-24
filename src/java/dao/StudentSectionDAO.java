@@ -569,5 +569,35 @@ public class StudentSectionDAO {
             e.printStackTrace();
         }
     }
+         
+         public boolean addStudentToActiveSections(int studentId, int courseId) throws Exception {
+        String insertSql = """
+    INSERT INTO student_section (studentId, sectionId)
+    SELECT ?, s.id
+    FROM section s
+    WHERE s.courseId = ?
+      AND s.dateTime > NOW()
+      AND NOT EXISTS (
+          SELECT 1 FROM student_section ss
+          WHERE ss.studentId = ?
+            AND ss.sectionId = s.id
+      );
+    """;
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+
+            insertStmt.setInt(1, studentId);
+            insertStmt.setInt(2, courseId);
+            insertStmt.setInt(3, studentId);
+
+            int rowsInserted = insertStmt.executeUpdate();
+            return rowsInserted > 0;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
      
 }

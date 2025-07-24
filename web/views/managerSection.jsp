@@ -119,6 +119,13 @@
                         <td>${section.startTimeFormatted}</td>
                         <td>${section.endTimeFormatted}</td>
                         <td>${section.classroom}</td>
+                        <!--                       <td> <c:forEach var="room" items="${roomList}">
+                            <c:if test="${room.roomName == section.classroom}">
+                                ${room.roomName} - ${room.location}
+                            </c:if>
+                        </c:forEach>
+                                </td>-->
+
                         <td>${section.dateFormatted}</td>
                         <td>
                             <c:choose>

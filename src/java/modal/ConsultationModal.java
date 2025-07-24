@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 public class ConsultationModal {
     private Integer id;
     private String name;
+    private String email;
     private LocalDateTime dob;
     private String phone;
     private Status status;
@@ -46,6 +47,23 @@ public class ConsultationModal {
         this.updatedAt = updatedAt;
     }
 
+    public ConsultationModal(Integer id, String name, String email, LocalDateTime dob, String phone, Status status, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.dob = dob;
+        this.phone = phone;
+        this.status = status;
+        this.address = address;
+        this.subject = subject;
+        this.experience = experience;
+        this.schoolId = schoolId;
+        this.schoolClassId = schoolClassId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    
     public Integer getId() {
         return id;
     }
@@ -140,6 +158,14 @@ public class ConsultationModal {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
     
     

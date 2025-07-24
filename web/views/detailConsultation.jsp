@@ -28,6 +28,10 @@
                 <td>${consultation.phone}</td>
             </tr>
             <tr>
+                <th>Email</th>
+                <td>${consultation.email}</td>
+            </tr>
+            <tr>
                 <th>Trạng thái</th>
                 <td class="text-capitalize">
                     <c:choose>

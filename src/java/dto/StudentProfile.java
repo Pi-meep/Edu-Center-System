@@ -20,11 +20,29 @@ public class StudentProfile {
     private String currentGrade;
     private String schoolName;
     private int schoolId;
+    private Status status;
+
+     public enum Status {
+        inactive("Ngưng hoạt động"),
+        active("Hoạt động"),
+        pending("Đang chờ duyệt");
+
+        private final String displayName;
+
+        Status(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+
 
     public StudentProfile() {
     }
 
-    public StudentProfile(String name, String phone, LocalDate dob, String address, String avatarUrl, String currentGrade, String schoolName, int schoolId) {
+    public StudentProfile(String name, String phone, LocalDate dob, String address, String avatarUrl, String currentGrade, String schoolName, int schoolId, Status status) {
         this.name = name;
         this.phone = phone;
         this.dob = dob;
@@ -33,20 +51,15 @@ public class StudentProfile {
         this.currentGrade = currentGrade;
         this.schoolName = schoolName;
         this.schoolId = schoolId;
+        this.status = status;
     }
 
-    public StudentProfile(int id, String name, String phone, LocalDate dob, String address, String avatarUrl, String currentGrade, String schoolName, int schoolId) {
-        this.id = id;
-        this.name = name;
-        this.phone = phone;
-        this.dob = dob;
-        this.address = address;
-        this.avatarUrl = avatarUrl;
-        this.currentGrade = currentGrade;
-        this.schoolName = schoolName;
-        this.schoolId = schoolId;
+    public Status getStatus() {
+        return status;
     }
-
+    public void setStatus(Status status) {
+        this.status = status;
+    }
     public int getId() {
         return id;
     }

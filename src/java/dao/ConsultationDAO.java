@@ -29,22 +29,24 @@ public class ConsultationDAO {
     }
 
     public int insertConsultation(ConsultationModal c) throws Exception {
-        String sql = "INSERT INTO consultation (name, dob, phone, status, address, subject, experience, schoolId, schoolClassId, created_at, updated_at) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        String sql = "INSERT INTO consultation (name, email, dob, phone, status, address, subject, experience, schoolId, schoolClassId, created_at, updated_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, c.getName());
-            ps.setDate(2, java.sql.Date.valueOf(c.getDob().toLocalDate()));
-            ps.setString(3, c.getPhone());
-            ps.setString(4, c.getStatus().name());
-            ps.setString(5, c.getAddress());
-            ps.setString(6, c.getSubject()); // Có thể null nếu là phụ huynh
-            ps.setString(7, c.getExperience()); // Có thể null nếu là phụ huynh
-            ps.setInt(8, c.getSchoolId());
+            ps.setString(2, c.getEmail());
+            ps.setDate(3, java.sql.Date.valueOf(c.getDob().toLocalDate()));
+            ps.setString(4, c.getPhone());
+            ps.setString(5, c.getStatus().name());
+            ps.setString(6, c.getAddress());
+            ps.setString(7, c.getSubject()); // Có thể null nếu là phụ huynh
+            ps.setString(8, c.getExperience()); // Có thể null nếu là phụ huynh
+            ps.setInt(9, c.getSchoolId());
+
             if (c.getSchoolClassId() != null) {
-                ps.setInt(9, c.getSchoolClassId());
+                ps.setInt(10, c.getSchoolClassId());
             } else {
-                ps.setNull(9, Types.INTEGER);
+                ps.setNull(10, Types.INTEGER);
             }
 
             ps.executeUpdate();
@@ -58,7 +60,7 @@ public class ConsultationDAO {
 
     public List<ConsultationDTO> listAndSearchConsultations(String name, String status) {
         List<ConsultationDTO> list = new ArrayList<>();
-        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status, cc.imageURL as certificateImageUrl\n"
+        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status,c.email, cc.imageURL as certificateImageUrl\n"
         + "FROM consultation c\n"
         + "LEFT JOIN consultation_certificate cc ON c.id = cc.consultationId\n"
         + "WHERE 1=1 ";
@@ -100,6 +102,7 @@ public class ConsultationDAO {
                 c.setPhone(rs.getString("phone"));
                 c.setStatus(ConsultationDTO.Status.valueOf(rs.getString("status")));
                 c.setCertificateImageUrl(rs.getString("certificateImageUrl"));
+                c.setEmail(rs.getString("email"));
 
                 list.add(c);
             }
@@ -113,7 +116,7 @@ public class ConsultationDAO {
 
      
     public ConsultationDTO getConsultationById(int id) {
-         String sql = "SELECT c.*, s.name AS schoolName, sc.classname AS schoolClassName, cert.imageURL AS certificateImageUrl "
+         String sql = "SELECT c.*, s.name AS schoolName, sc.classname AS schoolClassName,email,cert.imageURL AS certificateImageUrl "
                 + "FROM consultation c "
                 + "LEFT JOIN school s ON c.schoolId = s.id "
                 + "LEFT JOIN school_class sc ON c.schoolClassId = sc.id "
@@ -148,6 +151,7 @@ public class ConsultationDAO {
                 c.setSchoolName(rs.getString("schoolName"));
                 c.setSchoolClassName(rs.getString("schoolClassName"));
                 c.setCertificateImageUrl(rs.getString("certificateImageUrl"));
+                c.setEmail(rs.getString("email"));
 
                 return c;
             }

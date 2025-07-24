@@ -1,15 +1,17 @@
 package dao;
 
+import java.math.BigDecimal;
 import modal.PaymentModal;
 import utils.DBUtil;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class PaymentDAO {
     public void addPayment(PaymentModal payment) {
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(
-                "INSERT INTO payments (amount, payment_date, student_id, course_id, section_id, payment_type, description, created_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), 'pending')")) {
+                "INSERT INTO payments (amount, payment_date, student_id, course_id, section_id, payment_type, description, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())")) {
             ps.setBigDecimal(1, payment.getAmount());
             ps.setTimestamp(2, Timestamp.valueOf(payment.getPaymentDate()));
             ps.setInt(3, payment.getStudentId());
@@ -87,4 +89,36 @@ public class PaymentDAO {
         }
         return p;
     }
+
+    public BigDecimal getRevenueByDateRange(LocalDateTime start, LocalDateTime end) {
+    String sql = "SELECT SUM(amount) FROM payments WHERE payment_date BETWEEN ? AND ?";
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setTimestamp(1, Timestamp.valueOf(start));
+        ps.setTimestamp(2, Timestamp.valueOf(end));
+        
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getBigDecimal(1);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return BigDecimal.ZERO;
+}
+
+public BigDecimal getTotalRevenue() {
+    String sql = "SELECT SUM(amount) FROM payments";
+    try (Connection conn = DBUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            BigDecimal total = rs.getBigDecimal(1);
+            return total != null ? total : BigDecimal.ZERO;
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return BigDecimal.ZERO;
+}
 } 

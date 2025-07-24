@@ -13,8 +13,29 @@
 <jsp:include page="layout/adminHeader.jsp" />
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+<c:set var="monthNumber" value="${fn:substring(dayLabel, 5, 7)}" />
+<c:set var="year" value="${fn:substring(dayLabel, 0, 4)}"/>
+<c:choose>
+    <c:when test="${monthNumber == '01'}"><c:set var="monthNumber" value="1"/></c:when>
+    <c:when test="${monthNumber == '02'}"><c:set var="monthNumber" value="2"/></c:when>
+    <c:when test="${monthNumber == '03'}"><c:set var="monthNumber" value="3"/></c:when>
+    <c:when test="${monthNumber == '04'}"><c:set var="monthNumber" value="4"/></c:when>
+    <c:when test="${monthNumber == '05'}"><c:set var="monthNumber" value="5"/></c:when>
+    <c:when test="${monthNumber == '06'}"><c:set var="monthNumber" value="6"/></c:when>
+    <c:when test="${monthNumber == '07'}"><c:set var="monthNumber" value="7"/></c:when>
+    <c:when test="${monthNumber == '08'}"><c:set var="monthNumber" value="8"/></c:when>
+    <c:when test="${monthNumber == '09'}"><c:set var="monthNumber" value="9"/></c:when>
+</c:choose>
 <style>
+    .calendar-day.today {
+        background-color: #f0f8ff;
+        border-color: #007bff;
+    }
+    .month-view-day.today {
+        background-color: #e3f2fd;
+        border-color: #2196f3;
+    }
+
     .bg-success {
         background-color: #248a27 !important;
     }
@@ -279,13 +300,13 @@
 </style>
 
 <div class="container-fluid">
-    <div class="db-breadcrumb">
-        <h4 class="breadcrumb-title">Quản lý Lịch học</h4>
-        <ul class="db-breadcrumb-list">
-            <li><a href="bang-dieu-khien"><i class="fa fa-home"></i>Bảng điều khiển</a></li>
-            <li>Quản lý Lịch học</li>
-        </ul>
-    </div>
+    <!--    <div class="db-breadcrumb">
+            <h4 class="breadcrumb-title">Quản lý Lịch học</h4>
+            <ul class="db-breadcrumb-list">
+                <li><a href="bang-dieu-khien"><i class="fa fa-home"></i>Bảng điều khiển</a></li>
+                <li>Quản lý Lịch học</li>
+            </ul>
+        </div>-->
 
     <!-- Calendar Container -->
     <div class="calendar-container">
@@ -389,6 +410,21 @@
 
         <!-- Lịch học -->
         <div class="calendar-body">
+            <!-- Ngày hiện trên bảng  -->
+            <c:choose>
+                <c:when test="${currentView == 'month'}">
+                    <div style="font-size: 24px; font-weight: bold; text-align: center; margin: 20px 0; color: #2c3e50;">
+                        Lịch học trong tháng ${monthNumber} năm ${year}
+                    </div>
+                </c:when>
+                <c:when test="${currentView == 'week'}">
+                    <div style="font-size: 24px; font-weight: bold; text-align: center; margin: 20px 0; color: #2c3e50;">
+                        Lịch học của tuần trong tháng ${monthNumber}
+                    </div>
+                </c:when>
+            </c:choose>
+
+
             <!-- Giao diện xem theo tuần -->
             <div id="weekView" class="calendar-view active">
                 <div class="calendar-grid">
@@ -404,7 +440,7 @@
                     <!-- Hiển thị từng ngày trong tuần -->
                     <c:forEach var="currentDate" items="${currentWeekDates}" varStatus="day">
                         <!-- Đánh dấu ngày hôm nay -->
-                        <div class="calendar-day ${currentDate == today ? 'today' : ''}">
+                        <div class="calendar-day ${currentDate == fn:substring(dayLabel, 0, 10) ? 'today' : ''}">
                             <!-- Hiển thị số ngày (2 chữ số cuối) -->
                             <div class="calendar-day-number">${fn:substring(currentDate, 8, 10)}</div>
 
@@ -551,61 +587,131 @@
                         <div class="modal-body">
 
                             <!-- Chọn loại đổi -->
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Loại thay đổi:</label>
-                                <select class="form-select" id="changeType" name="changeType">
-                                    <option value="schedule">Đổi lịch học</option>
-                                    <option value="teacher">Đổi giáo viên</option>
-                                </select>
-                            </div>
+                            <select class="form-select" id="changeType" name="changeType">
+                                <option value="schedule">Đổi lịch học</option>
+                                <option value="teacher">Đổi giáo viên</option>
+                                <option value="room">Đổi phòng học</option>
+                            </select>
+
 
                             <!-- === ĐỔI LỊCH HỌC === -->
-                            <div id="changeScheduleForm">
+                            <div id="changeScheduleForm" style="display: block;">
+                                <!-- Chọn kiểu đổi lịch -->
                                 <div class="mb-3">
-                                    <label class="form-label">Chọn giáo viên:</label>
-                                    <select class="form-select" name="teacherId">
-                                        <c:forEach items="${teachers}" var="teacher">
-                                            <option value="${teacher.id}">${teacher.name}</option>
-                                        </c:forEach>
+                                    <label class="form-label">Chọn cách đổi lịch:</label>
+                                    <select class="form-select" id="scheduleChangeMode" name="scheduleChangeMode">
+                                        <option value="by_teacher">Đổi theo giáo viên</option>
+                                        <option value="by_date">Đổi theo ngày</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Lịch muốn đổi:</label>
-                                    <select class="form-select" name="originalScheduleId">
-                                        <c:forEach items="${sections}" var="s">
-                                            <option value="${s.id}">${s.classroom} - ${s.dayOfWeek} (${s.startTime} - ${s.endTime})</option>
-                                        </c:forEach>
-                                    </select>
+
+                                <!-- Đổi theo giáo viên -->
+                                <div id="changeScheduleByTeacher" style="display: block;">
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn giáo viên:</label>
+                                        <select class="form-select" id="scheduleTeacherSelect" name="teacherId" onchange="filterScheduleOptions('schedule', this.value)">
+                                            <c:forEach items="${teachers}" var="t">
+                                                <option value="${t.id}">${t.name}</option>
+                                            </c:forEach>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn lịch cần đổi:</label>
+                                        <select class="form-select" name="scheduleId" id="scheduleOriginalSelect">
+                                            <c:forEach items="${sections}" var="s">
+                                                <option value="${s.id}" data-teacher="${s.teacherId}">
+                                                    ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted})
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Chọn thời gian mới:</label>
+                                        <input type="datetime-local" class="form-control" name="newTime" />
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Lịch sẽ đổi sang:</label>
-                                    <select class="form-select" name="targetScheduleId">
-                                        <c:forEach items="${sections}" var="s">
-                                            <option value="${s.id}">${s.classroom} - ${s.dayOfWeek} (${s.startTime} - ${s.endTime})</option>
-                                        </c:forEach>
-                                    </select>
+
+                                <!-- Đổi toàn bộ lịch theo ngày -->
+                                <div id="changeScheduleByDate" style="display: none;">
+                                    <div class="mb-3">
+                                        <label class="form-label">Ngày cần đổi:</label>
+                                        <input type="date" class="form-control" name="sourceDate" />
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Chuyển sang ngày:</label>
+                                        <input type="date" class="form-control" name="targetDate" />
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- === ĐỔI GIÁO VIÊN === -->
                             <div id="changeTeacherForm" style="display: none;">
                                 <div class="mb-3">
-                                    <label class="form-label">Chọn lịch học:</label>
-                                    <select class="form-select" name="scheduleId" id="teacherScheduleSelect" onchange="updateCurrentTeacher(this)">
-                                        <c:forEach items="${sections}" var="s">
-                                            <option value="${s.id}" data-teacher="${s.teacherId}">${s.classroom} - ${s.dayOfWeek} (${s.startTime} - ${s.endTime})</option>
+                                    <label class="form-label">Chọn giáo viên hiện tại:</label>
+                                    <select class="form-select" id="teacherSelect" name="teacherId" onchange="filterScheduleOptions('teacher', this.value)">
+                                        <c:forEach items="${teachers}" var="t">
+                                            <option value="${t.id}">${t.name}</option>
                                         </c:forEach>
                                     </select>
                                 </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn lịch cần đổi:</label>
+                                    <select class="form-select" name="scheduleId" id="teacherScheduleSelect">
+                                        <c:forEach items="${sections}" var="s">
+                                            <option value="${s.id}" data-teacher="${s.teacherId}">
+                                                ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted})
+                                            </option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+
                                 <div class="mb-3">
                                     <label class="form-label">Giáo viên hiện tại:</label>
-                                    <input type="text" class="form-control" id="currentTeacherDisplay" readonly>
+                                    <input type="text" class="form-control" id="currentTeacherDisplay" readonly />
                                 </div>
+
                                 <div class="mb-3">
-                                    <label class="form-label">Giáo viên thay thế:</label>
-                                    <select class="form-select" name="newTeacherId">
+                                    <label class="form-label">Chọn giáo viên thay thế:</label>
+                                    <select class="form-select" name="newTeacherId" id="newTeacherSelect">
                                         <c:forEach items="${teachers}" var="t">
                                             <option value="${t.id}">${t.name}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <!-- === ĐỔI PHÒNG HỌC === -->
+                            <div id="changeRoomForm" style="display: none;">
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn giáo viên:</label>
+                                    <select class="form-select" id="roomTeacherSelect" name="teacherId" onchange="filterScheduleOptions('room', this.value)">
+                                        <c:forEach items="${teachers}" var="t">
+                                            <option value="${t.id}">${t.name}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn lịch cần đổi:</label>
+                                    <select class="form-select" name="scheduleId" id="roomScheduleSelect">
+                                        <c:forEach items="${sections}" var="s">
+                                            <option value="${s.id}" data-teacher="${s.teacherId}">
+                                                ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || Ngày ${s.dateFormatted}
+                                            </option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Chọn phòng học mới:</label>
+                                    <select class="form-select" name="newRoomId">
+                                        <c:forEach items="${rooms}" var="room">
+                                            <option value="${room.id}">${room.roomName}</option>
                                         </c:forEach>
                                     </select>
                                 </div>
@@ -651,18 +757,35 @@
             // Gọi cập nhật sau khi load
             updateCalendarView();
 
-            // Xử lý hiển thị form khi chọn loại thay đổi
+            const scheduleOptions = document.querySelectorAll("#scheduleOriginalSelect option");
+            const teacherScheduleOptions = document.querySelectorAll("#teacherScheduleSelect option");
+            const roomScheduleOptions = document.querySelectorAll("#roomScheduleSelect option");
+
             document.getElementById("changeType").addEventListener("change", function () {
-                const type = this.value;
-                document.getElementById("changeScheduleForm").style.display = (type === "schedule") ? "block" : "none";
-                document.getElementById("changeTeacherForm").style.display = (type === "teacher") ? "block" : "none";
+                const val = this.value;
+                document.getElementById("changeScheduleForm").style.display = (val === "schedule") ? "block" : "none";
+                document.getElementById("changeTeacherForm").style.display = (val === "teacher") ? "block" : "none";
+                document.getElementById("changeRoomForm").style.display = (val === "room") ? "block" : "none";
             });
 
-            // Gán giáo viên hiện tại vào ô readonly khi chọn lịch
+            document.getElementById("scheduleChangeMode").addEventListener("change", function () {
+                const mode = this.value;
+                document.getElementById("changeScheduleByTeacher").style.display = (mode === "by_teacher") ? "block" : "none";
+                document.getElementById("changeScheduleByDate").style.display = (mode === "by_date") ? "block" : "none";
+            });
+
             window.updateCurrentTeacher = function (selectEl) {
                 const selectedOption = selectEl.options[selectEl.selectedIndex];
                 const teacherId = selectedOption.getAttribute("data-teacher");
-                document.getElementById("currentTeacherDisplay").value = teacherId;
+                const display = document.getElementById("currentTeacherDisplay");
+
+                const selectedTeacher = [...document.querySelectorAll("#newTeacherSelect option")]
+                        .find(opt => opt.value === teacherId);
+                display.value = selectedTeacher ? selectedTeacher.textContent : "Không xác định";
+
+                document.querySelectorAll("#newTeacherSelect option").forEach(opt => {
+                    opt.disabled = (opt.value === teacherId);
+                });
             };
         });
     </script>

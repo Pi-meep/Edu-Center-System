@@ -19,43 +19,18 @@ import jakarta.servlet.http.Part;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import modal.CourseModal;
 
 @MultipartConfig(fileSizeThreshold = 1024 * 1024, // 1MB
         maxFileSize = 1024 * 1024 * 10, // 10MB
         maxRequestSize = 1024 * 1024 * 50)              // 50MB
-/**
- * Servlet xử lý các chức năng liên quan đến bài tập của giáo viên trong một
- * khóa học:
- *
- * <ul>
- * <li><b>GET /uploadAssignment?courseId=...</b>: Hiển thị danh sách bài tập của
- * khóa học, cho phép tải lên/xóa.</li>
- * <li><b>GET /uploadAssignment?action=view&amp;filename=...</b>: Hiển thị trực
- * tiếp nội dung file bài tập trên trình duyệt.</li>
- * <li><b>POST /uploadAssignment</b>: Tải lên bài tập mới cho khóa học.</li>
- * <li><b>POST
- * /uploadAssignment?action=delete&amp;assignmentId=...&amp;courseId=...</b>:
- * Xóa một bài tập cụ thể.</li>
- * </ul>
- *
- * <p>
- * <b>Cấu hình upload file:</b></p>
- * <ul>
- * <li><code>fileSizeThreshold</code>: 1MB - kích thước tệp tối thiểu để lưu ra
- * file tạm.</li>
- * <li><code>maxFileSize</code>: 10MB - kích thước tối đa mỗi tệp.</li>
- * <li><code>maxRequestSize</code>: 50MB - tổng kích thước tối đa của toàn bộ
- * request.</li>
- * </ul>
- *
- * <p>
- * <p>
- * <b>Ghi chú:</b> Servlet này dành cho giáo viên sử dụng.</p>
- *
- * @author Admin
+/*
+ * @author HanND
  */
 
 public class UploadAssignmentServlet extends HttpServlet {
@@ -122,12 +97,22 @@ public class UploadAssignmentServlet extends HttpServlet {
         int courseId = Integer.parseInt(request.getParameter("courseId"));
         String title = request.getParameter("title");
         String description = request.getParameter("description");
+
+        String dueAtParam = request.getParameter("dueAt");
+        Timestamp dueAt = null;
+        if (dueAtParam != null && !dueAtParam.isBlank()) {
+            // Parse chuỗi theo chuẩn ISO_LOCAL_DATE_TIME (yyyy-MM-dd'T'HH:mm hoặc yyyy-MM-dd'T'HH:mm:ss)
+            LocalDateTime ldt = LocalDateTime.parse(dueAtParam, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            dueAt = Timestamp.valueOf(ldt);
+        }
+
         int teacherId = new CourseDAO().getCourseById(courseId).getTeacherId();
 
         Part filePart = request.getPart("fileUpload");
         String fileName = "";
 
         if (filePart != null && filePart.getSize() > 0) {
+            // Lấy tên file gốc từ phần file upload (loại bỏ đường dẫn, chỉ lấy tên)
             String originalName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
             String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
             fileName = timestamp + "_" + originalName;
@@ -140,10 +125,10 @@ public class UploadAssignmentServlet extends HttpServlet {
             }
 
             File fileToSave = new File(uploadDir, fileName);
+            // Ghi dữ liệu file upload vào file đích
             filePart.write(fileToSave.getAbsolutePath());
 
-            // ✅ In log để kiểm tra đường dẫn
-            System.out.println("📁 Đã lưu file: " + fileToSave.getAbsolutePath());
+            System.out.println("Đã lưu file: " + fileToSave.getAbsolutePath());
         }
 
         AssignmentModal assignment = new AssignmentModal();
@@ -152,6 +137,7 @@ public class UploadAssignmentServlet extends HttpServlet {
         assignment.setDescription(description);
         assignment.setFilePath(fileName);
         assignment.setTeacherId(teacherId);
+        assignment.setDueAt(dueAt);
 
         new AssignmentDAO().insertAssignment(assignment);
         response.sendRedirect("uploadAssignmentServlet?courseId=" + courseId);

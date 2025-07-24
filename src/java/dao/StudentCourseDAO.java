@@ -77,7 +77,7 @@ public class StudentCourseDAO extends DBUtil {
         JOIN student s ON sc.studentId = s.id
         JOIN account a ON s.accountId = a.id
         JOIN course c ON sc.courseId = c.id
-        WHERE sc.status = 'pending' AND sc.id = ?
+        WHERE sc.status = 'pending' AND sc.courseId = ?
         ORDER BY sc.id
     """;
 
@@ -93,13 +93,13 @@ public class StudentCourseDAO extends DBUtil {
                     dto.setStudentName(rs.getString("student_name"));
                     dto.setCourseId(rs.getInt("courseId"));
                     dto.setCourseName(rs.getString("course_name"));
-                    dto.setStatus(StudentCourseRequestDTO.Status.valueOf(rs.getString("status").toUpperCase()));
+                    dto.setStatus(StudentCourseRequestDTO.Status.valueOf(rs.getString("status").trim()));
                     dto.setIsPaid(rs.getBoolean("isPaid"));
                     dto.setEnrollmentDate(rs.getObject("enrollment_date", LocalDateTime.class));
 
                     // Kiểm tra hợp lệ
                     String validStatus = checkValidStatus(con, dto.getStudentId(), dto.getCourseId());
-                    dto.setValidStatus(StudentCourseRequestDTO.isValid.valueOf(validStatus.toUpperCase()));
+                    dto.setValidStatus(StudentCourseRequestDTO.isValid.valueOf(validStatus.trim()));
 
                     studentCourseRequests.add(dto);
                 }
@@ -166,7 +166,7 @@ public class StudentCourseDAO extends DBUtil {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     SectionTime st = new SectionTime();
-                    st.setDayOfWeek(DayOfWeek.valueOf(rs.getString("dayOfWeek")));
+                    st.setDayOfWeek(DayOfWeek.valueOf(rs.getString("dayOfWeek").toUpperCase()));
                     st.setStartTime(rs.getTime("startTime").toLocalTime());
                     st.setEndTime(rs.getTime("endTime").toLocalTime());
                     newSections.add(st);
@@ -198,7 +198,7 @@ public class StudentCourseDAO extends DBUtil {
                 stmt.setInt(1, courseId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
-                        DayOfWeek existingDay = DayOfWeek.valueOf(rs.getString("dayOfWeek"));
+                        DayOfWeek existingDay = DayOfWeek.valueOf(rs.getString("dayOfWeek").toUpperCase());
                         LocalTime existingStart = rs.getTime("startTime").toLocalTime();
                         LocalTime existingEnd = rs.getTime("endTime").toLocalTime();
 
@@ -244,5 +244,32 @@ public class StudentCourseDAO extends DBUtil {
             }
         }
         return false;
+    }
+    
+    public boolean updateStatus(int requestId, String status) throws Exception {
+        String sql = "UPDATE student_course SET status = ? WHERE id = ?";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+            stmt.setInt(2, requestId);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        }
+    }
+
+    public StudentCourseModal getStudentCourseById(int id) throws Exception {
+        String sql = "SELECT * FROM student_course WHERE id = ?";
+
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSet(rs);
+                }
+            }
+        }
+        return null;
     }
 }

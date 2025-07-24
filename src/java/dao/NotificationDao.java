@@ -54,13 +54,13 @@ public class NotificationDao {
     public static List<NotificationModal> getNotificationsByAccountId(int accountId) {
         List<NotificationModal> list = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM notification WHERE account_id = ? ORDER BY created_at DESC")) {
+             PreparedStatement ps = conn.prepareStatement("SELECT * FROM notification WHERE accountId = ? ORDER BY created_at DESC")) {
             ps.setInt(1, accountId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 NotificationModal n = new NotificationModal(
                     rs.getInt("id"),
-                    rs.getInt("account_id"),
+                    rs.getInt("accountId"),
                     rs.getString("description"),
                     rs.getBoolean("is_read"),
                     rs.getTimestamp("created_at").toLocalDateTime()

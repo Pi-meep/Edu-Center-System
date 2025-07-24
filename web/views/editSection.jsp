@@ -68,7 +68,13 @@
                 <!-- Phòng học -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Phòng học</label>
-                    <input type="text" name="classroom" class="form-control" value="${section.classroom}" required>
+                    <select name="classroom" class="form-select" required>
+                        <c:forEach var="room" items="${roomList}">
+                            <option value="${room.roomName}" ${room.roomName == section.classroom ? 'selected' : ''}>
+                                ${room.roomName} - ${room.location}
+                            </option>
+                        </c:forEach>
+                    </select>
                 </div>
 
                 <!-- Trạng thái -->

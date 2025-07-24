@@ -110,6 +110,7 @@
                 <th>Họ tên</th>
                 <th>Ngày sinh</th>
                 <th>Điện thoại</th>
+                 <th>Email</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
             </tr>
@@ -121,6 +122,7 @@
                     <td class="text-start">${consult.name}</td>
                     <td>${consult.dobString}</td>
                     <td>${consult.phone}</td>
+                    <td>${consult.email}</td>
                     <td class="text-capitalize">
                         <c:choose>
                             <c:when test="${consult.status == 'pending'}">

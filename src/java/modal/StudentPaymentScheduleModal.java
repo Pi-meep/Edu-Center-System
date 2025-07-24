@@ -16,6 +16,7 @@ public class StudentPaymentScheduleModal {
     private Integer studentSectionId;
     private BigDecimal amount;
     private LocalDateTime dueDate;
+    private Boolean markPaying; 
     private Boolean isPaid;
     private LocalDateTime paidDate;
     private LocalDateTime createdAt;
@@ -25,11 +26,12 @@ public class StudentPaymentScheduleModal {
     public StudentPaymentScheduleModal() {
     }
 
-    public StudentPaymentScheduleModal(Integer id, Integer studentSectionId, BigDecimal amount, LocalDateTime dueDate, Boolean isPaid, LocalDateTime paidDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public StudentPaymentScheduleModal(Integer id, Integer studentSectionId, BigDecimal amount, LocalDateTime dueDate, Boolean markPaying,Boolean isPaid, LocalDateTime paidDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.studentSectionId = studentSectionId;
         this.amount = amount;
         this.dueDate = dueDate;
+        this.markPaying = markPaying;
         this.isPaid = isPaid;
         this.paidDate = paidDate;
         this.createdAt = createdAt;
@@ -66,6 +68,14 @@ public class StudentPaymentScheduleModal {
 
     public void setDueDate(LocalDateTime dueDate) {
         this.dueDate = dueDate;
+    }
+
+    public Boolean getMarkPaying() {
+        return markPaying;
+    }
+
+    public void setMarkPaying(Boolean isPaid) {
+        this.markPaying = markPaying;
     }
 
     public Boolean getIsPaid() {

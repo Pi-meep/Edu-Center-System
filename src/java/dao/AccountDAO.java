@@ -316,4 +316,58 @@ public class AccountDAO {
         }
         return -1;
     }
+    
+        public List<AccountModal> getAllAccountByRoleNotFilter(String role) {
+        List<AccountModal> accountList = new ArrayList<>();
+        String sql = "SELECT * FROM account WHERE role = ?";
+
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) {
+
+            pre.setString(1, role);
+            try (ResultSet rs = pre.executeQuery()) {
+                while (rs.next()) {
+                    accountList.add(mapResultSetToAccount(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return accountList;
+    }
+
+            public boolean updatePasswordById(int id, String newHashedPassword) throws Exception {
+        String sql = "UPDATE account SET password = ?, updated_at = ? WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, newHashedPassword);
+            ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(3, id);
+
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+                public void updateStatusById(int id, String newStatus) throws Exception {
+        String sql = "UPDATE account SET status = ? WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newStatus);
+            ps.setInt(2, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public boolean deleteById(int id) {
+        String sql = "DELETE FROM account WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

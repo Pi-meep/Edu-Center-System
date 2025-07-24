@@ -196,6 +196,18 @@
         <servlet-name>CreateStudentAccountServlet</servlet-name>
         <servlet-class>controller.CreateStudentAccountServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AccountManagementServlet</servlet-name>
+        <servlet-class>controller.AccountManagementServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ViewSubmissionsServlet</servlet-name>
+        <servlet-class>controller.ViewSubmissionsServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ForgotPasswordServlet</servlet-name>
+        <servlet-class>controller.ForgotPasswordServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>HomePageServlet</servlet-name>
         <url-pattern>/trang-chu</url-pattern>
@@ -383,5 +395,17 @@
     <servlet-mapping>
         <servlet-name>CreateStudentAccountServlet</servlet-name>
         <url-pattern>/tao-tai-khoan-hoc-sinh</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AccountManagementServlet</servlet-name>
+        <url-pattern>/quan-ly-tai-khoan</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ViewSubmissionsServlet</servlet-name>
+        <url-pattern>/viewSubmissionsServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ForgotPasswordServlet</servlet-name>
+        <url-pattern>/quen-mat-khau</url-pattern>
     </servlet-mapping>
 </web-app>

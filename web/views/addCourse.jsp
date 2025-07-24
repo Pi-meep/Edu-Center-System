@@ -9,7 +9,6 @@
 
 <div class="container mt-4">
     <h4 class="mb-4"><i class="fas fa-plus-circle text-success me-2"></i>Thêm khóa học mới</h4>
-
     <form id="courseForm" action="quan-ly-khoa-hoc?action=add" method="post" onsubmit="return validateForm()">
 
         <div class="mb-3">
@@ -186,14 +185,19 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Phòng học</label>
-                <input type="text" class="form-control form-control-sm" name="classroom" required>
+                <select name="classroom" class="form-select form-select-sm" required>
+                    <c:forEach var="room" items="${roomList}">
+                        <option value="${room.roomName}">
+                            ${room.roomName} - ${room.location}
+                        </option>
+                    </c:forEach>
+                </select>
             </div>
-
             <button type="submit" class="btn btn-success">Thêm khóa học</button>
             <a href="quan-ly-khoa-hoc" class="btn btn-secondary">Hủy</a>
     </form>
 </div>
-        
+
 <jsp:include page="layout/footer.jsp" /> 
 
 <script>

@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 
 /**
  *
- * @author Admin
+ * @author HanND
  */
 public class AssignmentModal {
 
@@ -19,6 +19,7 @@ public class AssignmentModal {
     private String filePath;
     private int teacherId;
     private Timestamp uploadedAt;
+    private Timestamp dueAt;
 
     public Timestamp getUploadedAt() {
         return uploadedAt;
@@ -26,6 +27,14 @@ public class AssignmentModal {
 
     public void setUploadedAt(Timestamp uploadedAt) {
         this.uploadedAt = uploadedAt;
+    }
+
+    public Timestamp getDueAt() {
+        return dueAt;
+    }
+
+    public void setDueAt(Timestamp dueAt) {
+        this.dueAt = dueAt;
     }
 
     public int getTeacherId() {
@@ -43,7 +52,6 @@ public class AssignmentModal {
     public void setId(int id) {
         this.id = id;
     }
-
 
     public int getCourseId() {
         return courseId;

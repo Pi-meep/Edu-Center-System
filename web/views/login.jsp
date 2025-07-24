@@ -35,8 +35,8 @@
     .left-panel {
         width: 40%;
         background: linear-gradient(135deg, #6a11cb, #2575fc);
-/*        background: linear-gradient(rgba(90, 0, 130, 0.85), rgba(90, 0, 130, 0.85)),
-            url('your-background-image.jpg') center/cover no-repeat;*/
+        /*        background: linear-gradient(rgba(90, 0, 130, 0.85), rgba(90, 0, 130, 0.85)),
+                    url('your-background-image.jpg') center/cover no-repeat;*/
         color: white;
         display: flex;
         flex-direction: column;
@@ -148,9 +148,15 @@
         font-weight: bold;
         color: red;
     }
+    .success{
+        margin-top: 10px;
+        text-align: center;
+        font-weight: bold;
+        color: green;
+    }
     .main-container {
         display: flex;
-        height: calc(100vh - 60px); /* trừ chiều cao header nếu có */
+        height: calc(100vh - 60px);
     }
 </style>
 <html>
@@ -169,22 +175,26 @@
 
             <div class="right-panel">
                 <h2>Đăng nhập</h2>
-                <a href="tu-van">Chưa có tài khoản ? Gửi yêu cầu tạo tài khoản phụ huynh / giáo viên tại đây</a>
+                <a href="tu-van" style="text-decoration: none">Chưa có tài khoản ? Gửi yêu cầu tạo tài khoản phụ huynh / giáo viên tại đây</a>
                 <form action="${pageContext.request.contextPath}/dang-nhap" method="post">
                     <label>Tên đăng nhập:</label>
                     <input type="text" name="identifier" value="${enteredIdentifier}" />
 
                     <label>Mật khẩu:</label>
                     <input type="password" name="password" />
-
-                    <div class="login-options">
-                        <a href="#">Quên mật khẩu ?</a>
+                    <div class="text-center mt-3">
+                        <a href="quen-mat-khau" class="login-option" style="text-decoration: none">
+                            <i class="fas fa-key me-1"></i>Quên mật khẩu?
+                        </a>
                     </div>
                     <input type="submit" value="Đăng nhập" />
                 </form>
                 <c:if test="${not empty error}">
                     <p class="error">${error}</p>
                 </c:if>
+                <c:if test="${not empty success}">
+                    <p class="success">${success}</p>
+                </c:if>                      
             </div>
         </div>
     </body>

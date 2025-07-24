@@ -347,6 +347,22 @@
             white-space: normal;
         }
     }
+    .back-btn {
+        display: inline-block;
+        padding: 6px 14px;
+        background-color: #6c757d;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    }
+    .back-btn:hover {
+        background-color: #5a6268;
+    }
+
 </style>
 
 <div class="page-container">
@@ -497,6 +513,7 @@
                 <button type="submit" class="submit-btn">Lưu điểm</button>
             </div>
         </form>
+        <a href="classBeingTaught" class="back-btn">← Quay lại</a>
     </div>
 </div>
 

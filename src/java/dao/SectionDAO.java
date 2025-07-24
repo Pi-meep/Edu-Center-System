@@ -46,8 +46,6 @@ public class SectionDAO extends DBUtil {
         section.setUpdatedAt(rs.getObject("updated_at", LocalDateTime.class));
         section.setTeacherId(rs.getInt("teacherId"));
         section.setNote(rs.getString("note"));
- 
-        
 
         return section;
     }
@@ -71,8 +69,6 @@ public class SectionDAO extends DBUtil {
         }
         return sectionList;
     }
-
-
 
     public List<SectionDTO> getAllSectionsByCourse() {
         List<SectionDTO> sectionList = new ArrayList<>();
@@ -252,12 +248,10 @@ public class SectionDAO extends DBUtil {
                 System.out.println("Không tìm thấy lớp học để cập nhật (ID không đúng?).");
             }
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Lỗi khi cập nhật section:");
             e.printStackTrace();
         }
-
 
     }
 
@@ -302,7 +296,6 @@ public class SectionDAO extends DBUtil {
             if (rs.next()) {
                 DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
 
                 SectionModal section = new SectionModal();
                 section.setId(rs.getInt("id"));
@@ -403,7 +396,7 @@ public class SectionDAO extends DBUtil {
      * @param status Trạng thái của lớp học
      */
     public void addSections(int courseId, String dayOfWeek, LocalTime startTime, LocalTime endTime,
-    String classroom, LocalDate startDate, LocalDate endDate, int teacherId) {
+            String classroom, LocalDate startDate, LocalDate endDate, int teacherId) {
 
         String sql = "INSERT INTO section (courseId, dayOfWeek, startTime, endTime, classroom, dateTime, status, teacherId) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -550,21 +543,23 @@ public class SectionDAO extends DBUtil {
 
     public boolean isConflictSection(int id, String classroom, LocalDate date, LocalTime startTime, LocalTime endTime) {
         String sql = """
-        SELECT COUNT(*) FROM section
+        SELECT COUNT(*) 
+        FROM section
         WHERE classroom = ?
           AND id != ?
           AND DATE(startTime) = ?
           AND (
-                (TIME(startTime) < ? AND TIME(endTime) > ?) 
-             )
+                (TIME(startTime) < TIME(?) AND TIME(endTime) > TIME(?))
+              )
     """;
 
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setString(1, classroom);
             ps.setInt(2, id);
             ps.setDate(3, java.sql.Date.valueOf(date));
-            ps.setTime(4, Time.valueOf(endTime));
-            ps.setTime(5, Time.valueOf(startTime));
+            ps.setTime(4, Time.valueOf(endTime));  
+            ps.setTime(5, Time.valueOf(startTime)); 
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -589,7 +584,6 @@ public class SectionDAO extends DBUtil {
         }
         return "";
     }
-
 
     public SectionModal getSectionById(int id) throws Exception {
         String sql = "SELECT * FROM section WHERE id = ?";
@@ -625,9 +619,8 @@ public class SectionDAO extends DBUtil {
                 }
             }
         }
-        return null; 
+        return null;
     }
-
 
     public List<SectionModal> getSectionsByCourseId(int courseId) {
         List<SectionModal> sectionList = new ArrayList<>();
@@ -724,27 +717,25 @@ public class SectionDAO extends DBUtil {
         return sectionList;
     }
 
-
     public List<SectionModal> getSectionsByCourse(int courseId) {
         List<SectionModal> list = new ArrayList<>();
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT * FROM section WHERE courseId = ? ")) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement("SELECT * FROM section WHERE courseId = ? ")) {
             ps.setInt(1, courseId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 SectionModal s = new SectionModal(
-                    rs.getInt("id"),
-                    rs.getInt("courseId"),
-                    SectionModal.DayOfWeekEnum.valueOf(rs.getString("dayOfWeek")),
-                    rs.getTimestamp("startTime").toLocalDateTime(),
-                    rs.getTimestamp("endTime").toLocalDateTime(),
-                    rs.getString("classroom"),
-                    rs.getTimestamp("dateTime").toLocalDateTime(),
-                    SectionModal.Status.valueOf(rs.getString("status")),
-                    rs.getTimestamp("created_at").toLocalDateTime(),
-                    rs.getTimestamp("updated_at").toLocalDateTime(),
-                    rs.getString("note"),
-                    rs.getInt("teacherId")
+                        rs.getInt("id"),
+                        rs.getInt("courseId"),
+                        SectionModal.DayOfWeekEnum.valueOf(rs.getString("dayOfWeek")),
+                        rs.getTimestamp("startTime").toLocalDateTime(),
+                        rs.getTimestamp("endTime").toLocalDateTime(),
+                        rs.getString("classroom"),
+                        rs.getTimestamp("dateTime").toLocalDateTime(),
+                        SectionModal.Status.valueOf(rs.getString("status")),
+                        rs.getTimestamp("created_at").toLocalDateTime(),
+                        rs.getTimestamp("updated_at").toLocalDateTime(),
+                        rs.getString("note"),
+                        rs.getInt("teacherId")
                 );
                 list.add(s);
             }
@@ -756,14 +747,13 @@ public class SectionDAO extends DBUtil {
 
     public static String getInfoById(int sectionId) {
         String info = "";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT date_time, start_time, end_time FROM section WHERE id = ?")) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement("SELECT date_time, start_time, end_time FROM section WHERE id = ?")) {
             ps.setInt(1, sectionId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                info = rs.getTimestamp("date_time").toLocalDateTime().toLocalDate() + " (" +
-                       rs.getTimestamp("start_time").toLocalDateTime().toLocalTime() + "-" +
-                       rs.getTimestamp("end_time").toLocalDateTime().toLocalTime() + ")";
+                info = rs.getTimestamp("date_time").toLocalDateTime().toLocalDate() + " ("
+                        + rs.getTimestamp("start_time").toLocalDateTime().toLocalTime() + "-"
+                        + rs.getTimestamp("end_time").toLocalDateTime().toLocalTime() + ")";
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -773,13 +763,12 @@ public class SectionDAO extends DBUtil {
 
     public List<Map<String, Object>> getUnpaidSectionsByCourseForStudent(int courseId, int studentId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT sec.*, sps.amount " +
-                     "FROM section sec " +
-                     "JOIN student_section ss ON sec.id = ss.sectionId AND ss.studentId = ? " +
-                     "JOIN student_payment_schedule sps ON sps.student_section_id = ss.id " +
-                     "WHERE sec.courseId = ? AND sps.isPaid = 0";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT sec.*, sps.amount "
+                + "FROM section sec "
+                + "JOIN student_section ss ON sec.id = ss.sectionId AND ss.studentId = ? "
+                + "JOIN student_payment_schedule sps ON sps.student_section_id = ss.id "
+                + "WHERE sec.courseId = ? AND sps.isPaid = 0";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, studentId);
             ps.setInt(2, courseId);
             ResultSet rs = ps.executeQuery();

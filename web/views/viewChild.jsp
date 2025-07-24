@@ -161,8 +161,26 @@
                                     <div class="child-phone">${child.phone}</div>
                                 </div>
                             </div>
-
                             <div class="info">
+                                <c:if test="${not empty child.status}">
+                                    <div class="info-row"
+                                         style="
+                                         color: <c:choose>
+                                             <c:when test='${child.status.name() == "active"}'>green</c:when>
+                                             <c:when test='${child.status.name() == "pending"}'>orange</c:when>
+                                             <c:when test='${child.status.name() == "inactive"}'>gray</c:when>
+                                         </c:choose>;
+                                         ">
+                                        <i class="fa-solid
+                                           <c:choose>
+                                               <c:when test='${child.status.name() == "active"}'>fa-face-smile</c:when>
+                                               <c:when test='${child.status.name() == "pending"}'>fa-face-meh</c:when>
+                                               <c:when test='${child.status.name() == "inactive"}'>fa-solid fa-face-dizzy</c:when>
+                                           </c:choose>"></i>
+                                        Trạng thái: ${child.status.displayName}
+                                    </div>
+                                </c:if>
+
                                 <c:if test="${not empty child.dob}">
                                     <div class="info-row">
                                         <i class="fa-solid fa-calendar-days"></i>
@@ -200,7 +218,10 @@
                                     </form>
 
                                     <a href="diem-chuyen-can?studentId=${child.id}" class="view-scores-btn" style="background: #38ada9; text-decoration: none;">
-                                        <i class="fa-solid fa-user-check" style="margin-right: 5px;"></i> Xem chuyên cần
+                                        <i class="fa-solid fa-user-check" style="margin-right: 5px;"></i> Chuyên cần
+                                    </a>
+                                    <a href="thoi-gian-bieu-phu-huynh?studentId=${child.id}" class="view-scores-btn" style="background: #7448fd; text-decoration: none;">
+                                        <i class="fa-solid fa-user-check" style="margin-right: 5px;"></i> Xem lịch học
                                     </a>
                                 </div>
 

@@ -4,12 +4,22 @@
  */
 package controller;
 
+import dao.CourseDAO;
+import dao.StudentCourseDAO;
+import dao.StudentSectionDAO;
+import dto.CourseDTO;
+import dto.StudentCourseRequestDTO;
 import java.io.IOException;
-import java.io.PrintWriter;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.net.URLEncoder;
+import modal.StudentCourseModal;
 
 /**
  *
@@ -17,31 +27,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class CourseRegistrationDetails extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet CourseRegistrationDetails</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet CourseRegistrationDetails at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    }
+    private final CourseDAO courseDao = new CourseDAO();
+    private final StudentCourseDAO studentCourseDao = new StudentCourseDAO();
+    private final StudentSectionDAO studentSectionDAO = new StudentSectionDAO();
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -55,7 +43,47 @@ public class CourseRegistrationDetails extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        String courseIdStr = request.getParameter("courseId");
+
+        if (courseIdStr == null || courseIdStr.isEmpty()) {
+            request.setAttribute("errorMessage", "Thiếu mã khóa học.");
+            request.getRequestDispatcher("views/managerCourseRegistration.jsp").forward(request, response);
+            return;
+        }
+
+        try {
+            int courseId = Integer.parseInt(courseIdStr);
+
+            // Lấy session hiện tại
+            HttpSession session = request.getSession();
+
+            // Nhận message nếu có (khi redirect từ POST)
+            String message = request.getParameter("message");
+            if (message != null && !message.isEmpty()) {
+                request.setAttribute("message", message); // để hiển thị ra JSP
+            }
+
+            // Lấy danh sách yêu cầu tham gia khóa học
+            List<StudentCourseRequestDTO> requestList = studentCourseDao.getStudentCoursesRequest(courseId);
+
+            // Lấy thông tin khóa học từ CourseDTO
+            CourseDTO course = courseDao.getCourseByIdCourse(courseId);
+            if (course == null) {
+                request.setAttribute("errorMessage", "Không tìm thấy thông tin khóa học với ID = " + courseId);
+            } else {
+                session.setAttribute("course", course); // Lưu cả CourseDTO
+            }
+
+            session.setAttribute("requestList", requestList);
+            request.getRequestDispatcher("views/courseRegistrationDetails.jsp").forward(request, response);
+        } catch (NumberFormatException e) {
+            request.setAttribute("errorMessage", "ID khóa học không hợp lệ.");
+            request.getRequestDispatcher("views/managerCourseRegistration.jsp").forward(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(CourseRegistrationDetails.class.getName()).log(Level.SEVERE, null, ex);
+            request.setAttribute("errorMessage", "Đã xảy ra lỗi hệ thống.");
+            request.getRequestDispatcher("views/managerCourseRegistration.jsp").forward(request, response);
+        }
     }
 
     /**
@@ -67,9 +95,64 @@ public class CourseRegistrationDetails extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int requestId = Integer.parseInt(request.getParameter("requestId"));
+        String action = request.getParameter("action");
+
+        try {
+            String message;
+            int courseId = -1;
+
+            if ("accept".equals(action)) {
+                boolean updated = studentCourseDao.updateStatus(requestId, "accepted");
+                if (updated) {
+                    // Lấy thông tin khóa học liên quan đến yêu cầu
+                    StudentCourseModal studentCourse = studentCourseDao.getStudentCourseById(requestId);
+                    courseId = studentCourse.getCourseId();
+                    int studentId = studentCourse.getStudentId();
+
+                    // Tăng sĩ số lớp
+                    courseDao.incrementEnrollment(courseId);
+
+                    // Thêm học sinh vào các buổi học đang hoạt động
+                    studentSectionDAO.addStudentToActiveSections(studentId, courseId);
+
+                    message = "Yêu cầu đã được chấp nhận.";
+                } else {
+                    message = "Cập nhật trạng thái thất bại.";
+                    // fallback courseId nếu chưa lấy được
+                    StudentCourseModal sc = studentCourseDao.getStudentCourseById(requestId);
+                    if (sc != null) {
+                        courseId = sc.getCourseId();
+                    }
+                }
+
+            } else if ("reject".equals(action)) {
+                boolean updated = studentCourseDao.updateStatus(requestId, "rejected");
+
+                StudentCourseModal sc = studentCourseDao.getStudentCourseById(requestId);
+                if (sc != null) {
+                    courseId = sc.getCourseId();
+                }
+
+                message = updated ? "Yêu cầu đã bị từ chối." : "Cập nhật trạng thái thất bại.";
+            } else {
+                message = "Hành động không hợp lệ.";
+            }
+
+            if (courseId != -1) {
+                // Redirect về GET kèm thông báo
+                response.sendRedirect("chi-tiet-yeu-cau?courseId=" + courseId + "&message=" + URLEncoder.encode(message, "UTF-8"));
+            } else {
+                // fallback nếu không có courseId
+                response.sendRedirect("danh-sach-khoa-hoc?message=" + URLEncoder.encode("Không xác định được khóa học.", "UTF-8"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorMessage = "Đã xảy ra lỗi: " + e.getMessage();
+            response.sendRedirect("danh-sach-khoa-hoc?message=" + URLEncoder.encode(errorMessage, "UTF-8"));
+        }
     }
 
     /**

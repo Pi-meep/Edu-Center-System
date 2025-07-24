@@ -19,8 +19,8 @@ public class StudentPaymentScheduleDAO  {
              java.sql.PreparedStatement ps = conn.prepareStatement(
                 "UPDATE student_payment_schedule sps " +
                 "JOIN student_section ss ON sps.student_section_id = ss.id " +
-                "SET sps.is_paid = 1, sps.paid_date = NOW() " +
-                "WHERE ss.student_id = ? AND ss.section_id = ?")) {
+                "SET sps.isPaid = 1, sps.paid_date = NOW() " +
+                "WHERE ss.studentId = ? AND ss.sectionId = ?")) {
             ps.setInt(1, studentId);
             ps.setInt(2, sectionId);
             ps.executeUpdate();
@@ -29,18 +29,35 @@ public class StudentPaymentScheduleDAO  {
         }
     }
 
+    public static void updateMarkPaying(int studentId, int id, boolean markPaying) {
+    try (java.sql.Connection conn = utils.DBUtil.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(
+            "UPDATE student_payment_schedule sps " +
+            "JOIN student_section ss ON sps.student_section_id = ss.id " +
+            "SET sps.markPaying = ? " +
+            "WHERE ss.studentId = ? AND (ss.sectionId = ? OR sps.courseId = ?)")) {
+        ps.setBoolean(1, markPaying);
+        ps.setInt(2, studentId); 
+        ps.setInt(3, id);
+        ps.setInt(4, id);
+        ps.executeUpdate();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
     public static boolean isPaid(int studentId, int sectionId) {
         boolean paid = false;
         try (java.sql.Connection conn = utils.DBUtil.getConnection();
              java.sql.PreparedStatement ps = conn.prepareStatement(
-                "SELECT sps.is_paid FROM student_payment_schedule sps " +
+                "SELECT sps.isPaid FROM student_payment_schedule sps " +
                 "JOIN student_section ss ON sps.student_section_id = ss.id " +
                 "WHERE ss.student_id = ? AND ss.section_id = ?")) {
             ps.setInt(1, studentId);
             ps.setInt(2, sectionId);
             java.sql.ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                paid = rs.getBoolean("is_paid");
+                paid = rs.getBoolean("isPaid");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -50,7 +67,7 @@ public class StudentPaymentScheduleDAO  {
 
     public static List<Map<String, Object>> getPendingSchedules() {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT sps.id as schedule_id, ss.studentId, ss.sectionId, sps.amount, sps.isPaid, sps.due_date, " +
+        String sql = "SELECT sps.id as schedule_id, ss.studentId, ss.sectionId, sps.amount, sps.isPaid, sps.due_date,sps.markPaying, " +
                      "a.name as student_name, c.name as course_name, sec.dateTime, sec.startTime, sec.endTime, sps.courseId " +
                      "FROM student_payment_schedule sps " +
                      "LEFT JOIN student_section ss ON sps.student_section_id = ss.id " +
@@ -68,6 +85,7 @@ public class StudentPaymentScheduleDAO  {
                 row.put("studentId", rs.getObject("studentId"));
                 row.put("sectionId", rs.getObject("sectionId"));
                 row.put("amount", rs.getBigDecimal("amount"));
+                row.put("markPaying", rs.getBoolean("markPaying"));
                 row.put("isPaid", rs.getBoolean("isPaid"));
                 row.put("dueDate", rs.getTimestamp("due_date"));
                 row.put("studentName", rs.getString("student_name"));
@@ -84,9 +102,32 @@ public class StudentPaymentScheduleDAO  {
         return list;
     }
 
+public boolean isPaymentPending(int studentId, Integer courseId, Integer sectionId) {
+    try (java.sql.Connection conn = utils.DBUtil.getConnection();
+         java.sql.PreparedStatement ps = conn.prepareStatement(
+            "SELECT COUNT(*) FROM student_payment_schedule sps " +
+            "LEFT JOIN student_section ss ON sps.student_section_id = ss.id " +
+            "WHERE ss.studentId = ? " +  
+            "AND (sps.courseId = ? OR ss.sectionId = ?) " +
+            "AND (sps.markPaying = true OR sps.isPaid = true)")) {
+        
+        ps.setInt(1, studentId);
+        ps.setInt(2, courseId);
+        ps.setInt(3, sectionId != null ? sectionId : courseId);
+        
+        java.sql.ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
     public static List<Map<String, Object>> getPendingSchedules(int limit, int offset) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT sps.id as schedule_id, ss.student_id, ss.section_id, sps.amount, sps.is_paid, sps.due_date, " +
+        String sql = "SELECT sps.id as schedule_id, ss.student_id, ss.section_id, sps.amount, sps.isPaid, sps.due_date,sps.markPaying, " +
                      "a.name as student_name, c.name as course_name, sec.date_time, sec.start_time, sec.end_time " +
                      "FROM student_payment_schedule sps " +
                      "JOIN student_section ss ON sps.student_section_id = ss.id " +
@@ -94,7 +135,7 @@ public class StudentPaymentScheduleDAO  {
                      "JOIN account a ON s.accountId = a.id " +
                      "JOIN section sec ON ss.section_id = sec.id " +
                      "JOIN course c ON sec.course_id = c.id " +
-                     "WHERE sps.is_paid = 0 " +
+                     "WHERE sps.isPaid = 0 " +
                      "ORDER BY sps.due_date ASC " +
                      "LIMIT ? OFFSET ?";
         try (java.sql.Connection conn = utils.DBUtil.getConnection();
@@ -108,7 +149,8 @@ public class StudentPaymentScheduleDAO  {
                 row.put("studentId", rs.getInt("student_id"));
                 row.put("sectionId", rs.getInt("section_id"));
                 row.put("amount", rs.getBigDecimal("amount"));
-                row.put("isPaid", rs.getBoolean("is_paid"));
+                row.put("markPaying", rs.getBoolean("markPaying"));
+                row.put("isPaid", rs.getBoolean("isPaid"));
                 row.put("dueDate", rs.getTimestamp("due_date"));
                 row.put("studentName", rs.getString("student_name"));
                 row.put("courseName", rs.getString("course_name"));
@@ -127,7 +169,7 @@ public class StudentPaymentScheduleDAO  {
         int count = 0;
         String sql = "SELECT COUNT(*) FROM student_payment_schedule sps " +
                      "JOIN student_section ss ON sps.student_section_id = ss.id " +
-                     "WHERE sps.is_paid = 0";
+                     "WHERE sps.isPaid = 0";
         try (java.sql.Connection conn = utils.DBUtil.getConnection();
              java.sql.PreparedStatement ps = conn.prepareStatement(sql);
              java.sql.ResultSet rs = ps.executeQuery()) {

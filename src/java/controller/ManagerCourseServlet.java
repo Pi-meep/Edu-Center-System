@@ -5,6 +5,7 @@
 package controller;
 
 import dao.CourseDAO;
+import dao.RoomDAO;
 import dao.SectionDAO;
 import dao.TeacherDAO;
 import dto.CourseDTO;
@@ -21,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import modal.CourseModal;
 import modal.CourseModal.Status;
+import modal.RoomModal;
 
 /**
  * Servlet dùng để quản lý các chức năng liên quan đến khóa học, bao gồm: - Hiển
@@ -116,7 +118,11 @@ public class ManagerCourseServlet extends HttpServlet {
             }
             case "add" -> {
                 List<TeacherDTO> teacherList = teacherDAO.getAllTeachers();
+                RoomDAO roomDAO = new RoomDAO();
+                List<RoomModal> roomList = roomDAO.getAllRooms();
+
                 request.setAttribute("teacherList", teacherList);
+                request.setAttribute("roomList", roomList);
                 request.getRequestDispatcher("views/addCourse.jsp").forward(request, response);
             }
             case "delete" -> {

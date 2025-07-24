@@ -134,6 +134,7 @@
             }
 
             input[type="text"],
+            input[type="number"],
             input[type="date"],
             input[type="file"],
             input[type="password"],
@@ -205,21 +206,6 @@
                 font-size: 14px;
             }
 
-            @media screen and (max-width: 768px) {
-                .main-container {
-                    flex-direction: column;
-                }
-
-                .left-panel, .right-panel {
-                    padding: 30px 20px;
-                    width: 100%;
-                }
-
-                .left-panel {
-                    text-align: center;
-                }
-            }
-            /*            Css cho popup điều khoản */
             .terms-modal {
                 position: fixed;
                 top: 0;
@@ -435,9 +421,12 @@
                         <label>Ngày sinh:</label>
                         <input type="date" name="dob" max="<%= java.time.LocalDate.now()%>" required>
 
-                        <label>SĐT:</label>
+                        <label>Số điện thoại:</label>
                         <input type="number" name="phone" required pattern="^0\d{9}$" title="Số điện thoại phải có 10 chữ số và bắt đầu bằng 0">
-
+                        
+                        <label>Email:</label>
+                        <input type="text" name="email" required>
+                        
                         <label>Địa chỉ (Tỉnh/TP):</label>
                         <input type="text" name="address" list="provinceList" required>
 

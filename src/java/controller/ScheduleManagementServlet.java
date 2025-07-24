@@ -37,6 +37,11 @@ public class ScheduleManagementServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
+    SectionDAO sectionDao = new SectionDAO();
+    TeacherDAO teacherDao = new TeacherDAO();
+    CourseDAO courseDao = new CourseDAO();
+    RoomDAO roomDao = new RoomDAO();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -77,6 +82,8 @@ public class ScheduleManagementServlet extends HttpServlet {
         String teacherIdStr = request.getParameter("teacherSelected");
         String roomIdStr = request.getParameter("roomSelected");
 
+        String changeType = request.getParameter("changeType");
+
         if (teacherIdStr != null) {
             if (teacherIdStr.equalsIgnoreCase("all")) {
                 teacherIdStr = null;
@@ -88,8 +95,14 @@ public class ScheduleManagementServlet extends HttpServlet {
             }
         }
 
+        if (changeType != null) {
+
+        }
+
         if (direction != null && !direction.isBlank()) {
             viewScheduleByView(request, response, direction, view, dayLabel, teacherIdStr, roomIdStr);
+        } else if (changeType != null) {
+
         } else {
             // Xử lý chuyển view mà không chuyển ngày
             Date parsedDate = (dayLabel != null && !dayLabel.isBlank())
@@ -97,22 +110,14 @@ public class ScheduleManagementServlet extends HttpServlet {
                     : null;
             viewSchedule(request, response, parsedDate, teacherIdStr, roomIdStr);
         }
-//        switch (action) {
-////            case "add":
-////                addSession(request, response);
-////                break;
-////            case "update":
-////                updateSession(request, response);
-////                break;
-////            case "delete":
-////                deleteSession(request, response);
-////                break;
-////            case "check-conflicts":
-////                checkConflicts(request, response);
-////                break;
-//            default:
-//                response.sendRedirect("quan-ly-lich-hoc");
-//        }
+    }
+
+    void changeSchedule(HttpServletRequest request, HttpServletResponse response, String changeType) {
+        String teacherIdStr = request.getParameter("teacherId");
+        String sectionId = request.getParameter("scheduleId");
+        if (changeType.equalsIgnoreCase("schedule")) {
+
+        }
     }
 
     void viewScheduleByView(HttpServletRequest request, HttpServletResponse response, String direction, String view, String dayLabel, String teacherId, String roomId) {
@@ -163,11 +168,6 @@ public class ScheduleManagementServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // Forward to JSP
-        SectionDAO sectionDao = new SectionDAO();
-        TeacherDAO teacherDao = new TeacherDAO();
-        CourseDAO courseDao = new CourseDAO();
-        RoomDAO roomDao = new RoomDAO();
-
         List<TeacherDTO> teachers = teacherDao.getAllTeachers();
         List<SectionDTO> sections = sectionDao.getAllSectionsDTO();
         List<CourseDTO> courses = courseDao.getAllCourses();

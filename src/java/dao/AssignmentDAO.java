@@ -36,7 +36,7 @@ public class AssignmentDAO {
      */
     public List<AssignmentModal> getAssignmentsByCourse(int courseId) {
         List<AssignmentModal> list = new ArrayList<>();
-        String sql = "SELECT id, courseId, title, description, file_path, uploaded_at "
+        String sql = "SELECT id, courseId, title, description, file_path, uploaded_at, due_at "
                 + "FROM section_assignment WHERE courseId = ? ORDER BY id DESC";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, courseId);
@@ -49,6 +49,7 @@ public class AssignmentDAO {
                     a.setDescription(rs.getString("description"));
                     a.setFilePath(rs.getString("file_path"));
                     a.setUploadedAt(rs.getTimestamp("uploaded_at"));
+                    a.setDueAt(rs.getTimestamp("due_at"));
                     list.add(a);
                 }
             }
@@ -65,14 +66,15 @@ public class AssignmentDAO {
      * tập cần thêm.
      */
     public void insertAssignment(AssignmentModal assignment) {
-        String sql = "INSERT INTO section_assignment (courseId, title, description, file_path, teacher_id) "
-                + "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO section_assignment (courseId, title, description, file_path, teacher_id, due_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, assignment.getCourseId());
             ps.setString(2, assignment.getTitle());
             ps.setString(3, assignment.getDescription());
             ps.setString(4, assignment.getFilePath());
             ps.setInt(5, assignment.getTeacherId());
+            ps.setTimestamp(6, assignment.getDueAt());
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -115,6 +117,7 @@ public class AssignmentDAO {
                     a.setFilePath(rs.getString("file_path"));
                     a.setTeacherId(rs.getInt("teacher_id"));
                     a.setUploadedAt(rs.getTimestamp("uploaded_at"));
+                    a.setDueAt(rs.getTimestamp("due_at"));
                     return a;
                 }
             }

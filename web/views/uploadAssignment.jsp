@@ -207,7 +207,10 @@
                 <label>Tệp đính kèm:</label>
                 <input type="file" name="fileUpload" required class="form-control" />
             </div>
-
+            <div style="margin-bottom: 15px;">
+                <label>Hạn nộp:</label>
+                <input type="datetime-local" name="dueAt" class="form-control" required />
+            </div>
             <div class="button-row">
                 <a href="classBeingTaught" class="btn-secondary" style="text-decoration: none; line-height: 1.5;">← Quay lại</a>
                 <button type="submit" class="btn-primary">Giao bài</button>
@@ -225,12 +228,19 @@
                     <div class="assignment-title">${a.title}</div>
                     <div class="assignment-description">${a.description}</div>
                     <c:if test="${not empty a.filePath}">
-                        <a href="${pageContext.request.contextPath}/uploads/${a.filePath}" target="_blank" class="assignment-link">
+                        <a href="uploadAssignmentServlet?action=view&filename=${a.filePath}" target="_blank" class="assignment-link">
                             📎 Xem tệp đính kèm
                         </a>
                     </c:if>
                     <div style="color: #718096; font-size: 13px; margin-top: 4px;">
-                        <p class="assignment-uploaded">🕒 Ngày giao: <fmt:formatDate value="${a.uploadedAt}" pattern="dd/MM/yyyy HH:mm" /></p>
+                        <c:if test="${a.dueAt != null}">
+                            <p class="assignment-due">
+                                ⏳ Hạn nộp: <fmt:formatDate value="${a.dueAt}" pattern="dd/MM/yyyy HH:mm" />
+                            </p>
+                        </c:if>
+                        <p class="assignment-uploaded">
+                            🕒 Ngày giao: <fmt:formatDate value="${a.uploadedAt}" pattern="dd/MM/yyyy HH:mm" />
+                        </p>
                     </div>
                     <div class="action-buttons">
                         <form action="uploadAssignmentServlet" method="post">

@@ -27,6 +27,7 @@ public class ConsultationDTO {
     private String dobString;
     private Integer certificateId;
     private String certificateImageUrl;
+    private String email;
 
     private String schoolName;
     private String schoolClassName;
@@ -39,7 +40,7 @@ public class ConsultationDTO {
     public ConsultationDTO() {
     }
 
-    public ConsultationDTO(Integer id, String name, LocalDateTime dob, String phone, Status status, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt, String schoolName, String schoolClassName) {
+    public ConsultationDTO(Integer id, String name, LocalDateTime dob, String phone, Status status, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt, String schoolName, String schoolClassName, String email) {
         this.id = id;
         this.name = name;
         this.dob = dob;
@@ -54,6 +55,15 @@ public class ConsultationDTO {
         this.updatedAt = updatedAt;
         this.schoolName = schoolName;
         this.schoolClassName = schoolClassName;
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Integer getId() {

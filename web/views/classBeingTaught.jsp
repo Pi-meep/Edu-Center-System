@@ -195,42 +195,65 @@
         }
     }
     .action-buttons {
-        margin-bottom: 10px;
         display: flex;
-        gap: 35px; 
-        justify-content: flex-start;
-        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
     }
 
     .action-buttons form {
-        flex: 0 0 auto;
+        flex: 1;
     }
 
-    .action-buttons button {
-        background-color: #4299e1;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 5px;
-        font-size: 12px;
-        font-weight: 500;
+    .action-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 10px;
         border: none;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .action-buttons button:hover {
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #fff;
         background-color: #2b6cb0;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        width: 100%;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        gap: 6px;
+        text-align: center;
     }
 
-    .action-buttons form:nth-child(2) button {
-        background-color: #48bb78;
+    .action-button:hover {
+        background-color: #2c5282;
+        transform: translateY(-1px);
     }
 
-    .action-buttons form:nth-child(2) button:hover {
-        background-color: #2f855a;
+    .action-button i {
+        font-size: 15px;
     }
 
+    /* Màu riêng cho từng nút */
+    .btn-score {
+        background-color: #4299e1;
+    }
+    .btn-score:hover {
+        background-color: #3182ce;
+    }
+
+    .btn-homework {
+        background-color: #4299e1;
+    }
+    .btn-homework:hover {
+        background-color: #4299e1;
+    }
+
+    .btn-submissions {
+        background-color: #4299e1;
+    }
+    .btn-submissions:hover {
+        background-color: #4299e1;
+    }
 </style>
 
 <div class="filter-container">
@@ -301,7 +324,7 @@
 
                             <c:forEach var="c" items="${listClass}">
                                 <div class="info-card">
-                                    <div class="action-buttons" style="margin-bottom: 12px; justify-content: flex-start;">
+                                    <div class="action-buttons">
                                         <form action="createScore" method="get">
                                             <input type="hidden" name="courseId" value="${c.getCourseId()}">
                                             <input type="hidden" name="grade" value="${c.grade}">
@@ -309,14 +332,23 @@
                                             <input type="hidden" name="level" value="${c.level}">
                                             <input type="hidden" name="subject" value="${c.subject}">
                                             <input type="hidden" name="studentEnrollment" value="${c.studentEnrollment}">
-                                            <button type="submit">📝 Chấm điểm</button>
+                                            <button class="action-button btn-score" type="submit">
+                                                <i class="fas fa-pen-alt"></i> Chấm điểm
+                                            </button>
                                         </form>
                                         <form action="uploadAssignmentServlet" method="get">
                                             <input type="hidden" name="courseId" value="${c.getCourseId()}">
-                                            <button type="submit">📘 Bài tập</button>
+                                            <button class="action-button btn-homework" type="submit">
+                                                <i class="fas fa-book"></i> Bài tập
+                                            </button>
+                                        </form>
+                                        <form action="viewSubmissionsServlet" method="get">
+                                            <input type="hidden" name="courseId" value="${c.getCourseId()}">
+                                            <button class="action-button btn-submissions" type="submit">
+                                                <i class="fas fa-eye"></i> Đã nộp
+                                            </button>
                                         </form>
                                     </div>
-
                                     <div class="info-item"><span class="info-label">Lớp:</span><span class="info-value">${c.grade}</span></div>
                                     <div class="info-item"><span class="info-label">Tên khóa học:</span><span class="info-value">${c.name}</span></div>
                                     <div class="info-item">

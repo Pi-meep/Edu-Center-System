@@ -700,4 +700,63 @@ public class CourseDAO extends DBUtil {
         }
         return fee;
     }
+    
+    public CourseDTO getCourseByIdCourse(int id) {
+        String sql = """
+            SELECT c.id, c.name, c.subject, c.grade, c.description, c.courseType,
+                    c.feeCombo, c.feeDaily, c.startDate, c.endDate, c.weekAmount,
+                    c.studentEnrollment, c.maxStudents, c.level, c.isHot,
+                    c.discountPercentage, c.status, a.name AS teacherName
+            FROM course c
+            JOIN teacher  t ON c.teacherId = t.id
+            JOIN account  a ON t.accountId = a.id
+                WHERE c.id = ?
+            """;
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement pre = conn.prepareStatement(sql)) {
+
+            pre.setInt(1, id);
+            try (ResultSet rs = pre.executeQuery()) {
+                if (rs.next()) {
+                    CourseDTO dto = new CourseDTO();
+                    dto.setId(rs.getInt("id"));
+                    dto.setName(rs.getString("name"));
+                    dto.setSubject(rs.getString("subject"));
+                    dto.setGrade(rs.getString("grade"));
+                    dto.setDescription(rs.getString("description"));
+                    dto.setCourseType(rs.getString("courseType"));
+                    dto.setFeeCombo(rs.getBigDecimal("feeCombo"));
+                    dto.setFeeDaily(rs.getBigDecimal("feeDaily"));
+                    dto.setStartDate(rs.getTimestamp("startDate"));
+                    dto.setEndDate(rs.getTimestamp("endDate"));
+                    dto.setWeekAmount(rs.getInt("weekAmount"));
+                    dto.setStudentEnrollment(rs.getInt("studentEnrollment"));
+                    dto.setMaxStudents(rs.getInt("maxStudents"));
+                    dto.setLevel(rs.getString("level"));
+                    dto.setIsHot(rs.getBoolean("isHot"));
+                    dto.setDiscountPercentage(rs.getBigDecimal("discountPercentage"));
+                    dto.setStatus(rs.getString("status"));
+                    dto.setTeacherName(rs.getString("teacherName"));
+                    return dto;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    
+     public boolean incrementEnrollment(int courseId) throws Exception {
+        String sql = "UPDATE course SET studentEnrollment = studentEnrollment + 1 WHERE id = ?";
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, courseId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }

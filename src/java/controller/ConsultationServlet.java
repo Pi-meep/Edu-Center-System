@@ -67,6 +67,7 @@ public class ConsultationServlet extends HttpServlet {
             // --- 1. Đọc và validate input ---
             String role = request.getParameter("role");
             String name = request.getParameter("name");
+            String email = request.getParameter("email");
             String phone = request.getParameter("phone");
             String address = request.getParameter("address");
             String dobRaw = request.getParameter("dob");
@@ -76,6 +77,8 @@ public class ConsultationServlet extends HttpServlet {
             String experience = request.getParameter("experience");
 
             Pattern textPattern = Pattern.compile("^[\\p{L}\\s]{3,}$"); // chữ unicode & space, >=3
+            Pattern phonePattern = Pattern.compile("^\\d{10}$");
+            Pattern emailPattern = Pattern.compile("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
 
             if (!textPattern.matcher(name).matches()) {
                 throw new IllegalArgumentException("Họ tên không hợp lệ (ít nhất 3 chữ và không chứa số).");
@@ -110,6 +113,16 @@ public class ConsultationServlet extends HttpServlet {
             if (schoolClassIdRaw != null && !schoolClassIdRaw.isEmpty()) {
                 schoolClassId = Integer.parseInt(schoolClassIdRaw);
             }
+            if (!phonePattern.matcher(phone).matches()) {
+                throw new IllegalArgumentException("Số điện thoại phải gồm đúng 10 chữ số.");
+            }
+
+            if (email == null || email.trim().isEmpty()) {
+                throw new IllegalArgumentException("Email không được để trống.");
+            }
+            if (!emailPattern.matcher(email).matches()) {
+                throw new IllegalArgumentException("Địa chỉ email không hợp lệ.");
+            }
 
             // --- 2. Lưu vào DB ---
             ConsultationDAO dao = new ConsultationDAO();
@@ -121,6 +134,7 @@ public class ConsultationServlet extends HttpServlet {
             ConsultationModal c = new ConsultationModal();
             c.setName(name);
             c.setPhone(phone);
+            c.setEmail(email);
             c.setAddress(address);
             c.setDob(dob.atStartOfDay());
             c.setSchoolId(schoolId);

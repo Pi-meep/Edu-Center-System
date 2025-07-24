@@ -4,6 +4,7 @@
  */
 package controller;
 
+import dao.RoomDAO;
 import dao.SectionDAO;
 import dto.SectionDTO;
 import dto.StudentSectionDTO;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import modal.RoomModal;
 import modal.SectionModal.DayOfWeekEnum;
 import modal.SectionModal.Status;
 
@@ -51,21 +53,32 @@ public class ManagerSectionServlet extends HttpServlet {
         if (action == null) {
             action = "list";
         }
-
         SectionDAO dao = new SectionDAO();
-
+        RoomDAO roomDAO = new RoomDAO();
+        List<RoomModal> roomList = roomDAO.getAllRooms();
+        request.setAttribute("roomList", roomList);
         try {
             switch (action) {
                 case "edit" -> {
                     int id = Integer.parseInt(request.getParameter("id"));
                     List<SectionDTO> sectionList = dao.getAllSectionsByCourse();
+                    SectionDTO selected = null;
 
                     for (SectionDTO dto : sectionList) {
                         if (dto.getId() == id) {
-                            request.setAttribute("section", dto);
+                            selected = dto;
                             break;
                         }
                     }
+
+                    if (selected == null) {
+                        response.sendRedirect("quan-ly-lop-hoc");
+                        return;
+                    }
+
+                    request.setAttribute("section", selected);
+                    request.setAttribute("roomList", roomList);
+                    request.setAttribute("selectedClassroom", selected.getClassroom());
                     request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
                 }
 
@@ -84,6 +97,10 @@ public class ManagerSectionServlet extends HttpServlet {
                     List<StudentSectionDTO> studentList = dao.getStudentDetailsInSection(id);
                     request.setAttribute("studentList", studentList);
 
+                    if (section != null) {
+                        RoomModal matched = findRoomByName(roomList, section.getClassroom());
+                        request.setAttribute("roomMatched", matched);
+                    }
                     request.getRequestDispatcher("views/detailSection.jsp").forward(request, response);
                 }
 
@@ -97,7 +114,8 @@ public class ManagerSectionServlet extends HttpServlet {
                             || (status != null && !status.isBlank())
                             ? dao.searchSections(keyword, dayOfWeek, status)
                             : dao.getAllSectionsByCourse();
-
+                    
+//                    request.setAttribute("roomList", roomList);
                     request.setAttribute("sectionList", sectionList);
                     request.getRequestDispatcher("views/managerSection.jsp").forward(request, response);
                 }
@@ -130,6 +148,7 @@ public class ManagerSectionServlet extends HttpServlet {
                 String dayOfWeekStr = request.getParameter("dayOfWeek");
                 String startTimeStr = request.getParameter("startTime");
                 String endTimeStr = request.getParameter("endTime");
+
                 String classroom = request.getParameter("classroom");
                 String dateStr = request.getParameter("dateTime");
                 String statusStr = request.getParameter("status");
@@ -146,7 +165,7 @@ public class ManagerSectionServlet extends HttpServlet {
                 dto.setDayOfWeek(DayOfWeekEnum.valueOf(dayOfWeekStr));
                 dto.setStartTime(startTime);
                 dto.setEndTime(endTime);
-                dto.setDateTime(startTime); 
+                dto.setDateTime(startTime);
                 dto.setClassroom(classroom);
                 dto.setStatus(Status.valueOf(statusStr));
                 dto.setStartTimeFormatted(startTimeOnly.format(timeFormatter));
@@ -159,6 +178,11 @@ public class ManagerSectionServlet extends HttpServlet {
                 if (dao.isConflictSection(id, classroom, date, startTimeOnly, endTimeOnly)) {
                     dto.setCourseName(dao.getCourseNameById(courseId));
                     request.setAttribute("section", dto);
+
+                    RoomDAO roomDAO = new RoomDAO();
+                    request.setAttribute("roomList", roomDAO.getAllRooms());
+                    request.setAttribute("selectedClassroom", classroom);
+
                     request.setAttribute("error", "Đã có lớp học khác trong cùng phòng, cùng ngày và trùng thời gian.");
                     request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
                     return;
@@ -175,7 +199,8 @@ public class ManagerSectionServlet extends HttpServlet {
                     SectionDTO dto = new SectionDTO();
                     dto.setId(Integer.parseInt(request.getParameter("id")));
                     dto.setCourseId(Integer.parseInt(request.getParameter("courseId")));
-                    dto.setClassroom(request.getParameter("classroom"));
+                    String classroom = request.getParameter("classroom");
+                    dto.setClassroom(classroom);
                     dto.setDateFormatted(request.getParameter("dateTime"));
                     dto.setDayOfWeek(DayOfWeekEnum.valueOf(request.getParameter("dayOfWeek")));
                     dto.setStatus(Status.valueOf(request.getParameter("status")));
@@ -192,6 +217,9 @@ public class ManagerSectionServlet extends HttpServlet {
                     SectionDAO dao = new SectionDAO();
                     dto.setCourseName(dao.getCourseNameById(dto.getCourseId()));
 
+                    RoomDAO roomDAO = new RoomDAO();
+                    request.setAttribute("roomList", roomDAO.getAllRooms());
+                    request.setAttribute("selectedClassroom", classroom);
                     request.setAttribute("section", dto);
                     request.setAttribute("error", "Đã xảy ra lỗi khi cập nhật lớp học.");
                     request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
@@ -212,5 +240,17 @@ public class ManagerSectionServlet extends HttpServlet {
     @Override
     public String getServletInfo() {
         return "Servlet quản lý lớp học - Section management controller";
+    }
+
+    private RoomModal findRoomByName(List<RoomModal> roomList, String roomName) {
+        if (roomName == null || roomList == null) {
+            return null;
+        }
+        for (RoomModal r : roomList) {
+            if (r.getRoomName() != null && r.getRoomName().equalsIgnoreCase(roomName)) {
+                return r;
+            }
+        }
+        return null;
     }
 }

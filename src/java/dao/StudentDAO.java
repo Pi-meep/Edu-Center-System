@@ -459,7 +459,7 @@ public class StudentDAO extends DBUtil {
 
         String sql = """
         SELECT s.id, a.name, a.phone, a.dob, a.address, a.avatarURL, 
-               s.currentGrade, s.schoolId, sc.name AS schoolName
+               s.currentGrade, s.schoolId, sc.name AS schoolName, a.status
         FROM student s
         JOIN account a ON s.accountId = a.id
         JOIN parent p ON s.parentId = p.id
@@ -491,6 +491,11 @@ public class StudentDAO extends DBUtil {
                     profile.setCurrentGrade(rs.getString("currentGrade"));
                     profile.setSchoolId(rs.getInt("schoolId"));
                     profile.setSchoolName(rs.getString("schoolName"));
+                    String statusStr = rs.getString("status");
+                    if (statusStr != null) {
+                        profile.setStatus(StudentProfile.Status.valueOf(statusStr));
+                    }
+
 
                     children.add(profile);
                 }
