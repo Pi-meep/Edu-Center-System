@@ -16,7 +16,7 @@
                 padding: 0;
                 box-sizing: border-box;
             }
-            
+
             body {
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -24,7 +24,7 @@
                 padding: 20px;
                 line-height: 1.6;
             }
-            
+
             .container {
                 max-width: 800px;
                 margin: 0 auto;
@@ -33,7 +33,7 @@
                 border-radius: 20px;
                 box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             }
-            
+
             h2 {
                 color: #2c3e50;
                 text-align: center;
@@ -43,7 +43,7 @@
                 position: relative;
                 padding-bottom: 15px;
             }
-            
+
             h2::after {
                 content: '';
                 position: absolute;
@@ -55,11 +55,11 @@
                 background: linear-gradient(90deg, #667eea, #764ba2);
                 border-radius: 2px;
             }
-            
+
             .form-group {
                 margin-bottom: 25px;
             }
-            
+
             label {
                 display: block;
                 margin-bottom: 8px;
@@ -67,7 +67,7 @@
                 color: #34495e;
                 font-size: 16px;
             }
-            
+
             input, select {
                 width: 100%;
                 padding: 15px;
@@ -77,18 +77,18 @@
                 transition: all 0.3s ease;
                 background: #f8f9fa;
             }
-            
+
             input:focus, select:focus {
                 outline: none;
                 border-color: #667eea;
                 background: white;
                 box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
             }
-            
+
             select {
                 cursor: pointer;
             }
-            
+
             .role-fields {
                 border: 3px solid #e8ecf4;
                 border-radius: 15px;
@@ -97,7 +97,7 @@
                 background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
                 position: relative;
             }
-            
+
             .role-fields::before {
                 content: '';
                 position: absolute;
@@ -108,7 +108,7 @@
                 background: linear-gradient(90deg, #667eea, #764ba2);
                 border-radius: 15px 15px 0 0;
             }
-            
+
             .role-fields h3 {
                 color: #2c3e50;
                 margin-bottom: 25px;
@@ -117,7 +117,7 @@
                 padding-left: 35px;
                 position: relative;
             }
-            
+
             .role-fields h3::before {
                 content: '';
                 position: absolute;
@@ -129,7 +129,7 @@
                 background: linear-gradient(135deg, #667eea, #764ba2);
                 border-radius: 50%;
             }
-            
+
             .certificate-section {
                 margin-top: 30px;
                 background: white;
@@ -138,7 +138,7 @@
                 border: 2px solid #e0e6ed;
                 box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             }
-            
+
             .certificate-section h4 {
                 color: #2c3e50;
                 margin-bottom: 20px;
@@ -147,7 +147,7 @@
                 border-bottom: 2px solid #eee;
                 padding-bottom: 10px;
             }
-            
+
             .certificate-item {
                 margin-bottom: 25px;
                 padding: 25px;
@@ -156,13 +156,13 @@
                 border: 2px solid #c3e6c3;
                 transition: all 0.3s ease;
             }
-            
+
             .certificate-header {
                 display: flex;
                 align-items: center;
                 margin-bottom: 20px;
             }
-            
+
             .certificate-item input[type="checkbox"] {
                 width: 20px;
                 height: 20px;
@@ -170,7 +170,7 @@
                 cursor: pointer;
                 accent-color: #28a745;
             }
-            
+
             .certificate-item label {
                 margin-bottom: 0;
                 cursor: pointer;
@@ -178,7 +178,7 @@
                 font-weight: 600;
                 font-size: 16px;
             }
-            
+
             .certificate-name-input {
                 margin-bottom: 20px;
                 border: 2px solid #28a745 !important;
@@ -186,7 +186,7 @@
                 padding: 15px !important;
                 border-radius: 10px !important;
             }
-            
+
             .certificate-image-container {
                 text-align: center;
                 background: white;
@@ -194,7 +194,7 @@
                 border-radius: 10px;
                 border: 2px solid #28a745;
             }
-            
+
             .certificate-image {
                 max-width: 100%;
                 height: auto;
@@ -206,7 +206,7 @@
                 display: block;
                 margin: 0 auto;
             }
-            
+
             .submit-btn {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
@@ -222,12 +222,12 @@
                 text-transform: uppercase;
                 letter-spacing: 1px;
             }
-            
+
             .submit-btn:hover {
                 transform: translateY(-3px);
                 box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
             }
-            
+
             .error {
                 color: #721c24;
                 background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
@@ -238,7 +238,7 @@
                 font-weight: 600;
                 font-size: 16px;
             }
-            
+
             .info-note {
                 background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
                 color: #0c5460;
@@ -251,7 +251,7 @@
                 position: relative;
                 padding-left: 60px;
             }
-            
+
             .info-note::before {
                 content: 'ℹ';
                 position: absolute;
@@ -262,7 +262,7 @@
                 font-weight: bold;
                 color: #0c5460;
             }
-            
+
             .no-certificates {
                 text-align: center;
                 color: #6c757d;
@@ -273,21 +273,21 @@
                 border: 3px dashed #dee2e6;
                 font-size: 18px;
             }
-            
+
             .required {
                 color: #dc3545;
                 font-weight: bold;
             }
-            
+
             .hidden {
                 display: none;
             }
-            
+
             .readonly-field {
                 background-color: #e9ecef !important;
                 color: #6c757d;
             }
-           
+
         </style>
     </head>
     <body>
@@ -362,6 +362,19 @@
                                placeholder="Nhập kinh nghiệm giảng dạy"/>
                     </div>
 
+                    <div class="form-group">
+                        <label for="subject">Môn học:</label>
+                        <select id="subject" name="subject">
+                            <option value="">-- Chọn môn học --</option>
+                            <c:forEach var="teacherSubject" items="${teacherSubjects}">
+                                <option value="${teacherSubject.name()}" 
+                                        ${consultation.subject != null && consultation.subject.name() == teacherSubject.name() ? 'selected' : ''}>
+                                    ${teacherSubject.displayName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
                     <div class="certificate-section">
                         <h4>Chứng chỉ có sẵn từ tư vấn:</h4>
                         <c:choose>
@@ -405,7 +418,7 @@
             function toggleRole(role) {
                 const parentFields = document.getElementById('parentFields');
                 const teacherFields = document.getElementById('teacherFields');
-                
+
                 if (role === 'parent') {
                     parentFields.classList.remove('hidden');
                     teacherFields.classList.add('hidden');

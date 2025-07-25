@@ -73,7 +73,7 @@ public class ConsultationServlet extends HttpServlet {
             String dobRaw = request.getParameter("dob");
             String schoolName = request.getParameter("schoolName");
             String schoolClassIdRaw = request.getParameter("schoolClassId");
-            String subject = request.getParameter("subject");
+            String subjectRaw = request.getParameter("subject"); // Nhận dạng String từ form
             String experience = request.getParameter("experience");
 
             Pattern textPattern = Pattern.compile("^[\\p{L}\\s]{3,}$"); // chữ unicode & space, >=3
@@ -124,6 +124,27 @@ public class ConsultationServlet extends HttpServlet {
                 throw new IllegalArgumentException("Địa chỉ email không hợp lệ.");
             }
 
+            // Xử lý subject enum - chỉ áp dụng cho teacher
+            ConsultationModal.Subject subjectEnum = null;
+            if ("teacher".equals(role)) {
+                if (subjectRaw == null || subjectRaw.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Môn học không được để trống đối với giáo viên.");
+                }
+                try {
+                    subjectEnum = ConsultationModal.Subject.valueOf(subjectRaw);
+                } catch (IllegalArgumentException ex) {
+                    throw new IllegalArgumentException("Môn học không hợp lệ.");
+                }
+
+                // Validate experience cho teacher
+                if (experience == null || experience.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Kinh nghiệm không được để trống đối với giáo viên.");
+                }
+                if (experience.trim().length() < 10) {
+                    throw new IllegalArgumentException("Mô tả kinh nghiệm phải có ít nhất 10 ký tự.");
+                }
+            }
+
             // --- 2. Lưu vào DB ---
             ConsultationDAO dao = new ConsultationDAO();
             Integer schoolId = dao.getSchoolIdByName(schoolName);
@@ -140,11 +161,19 @@ public class ConsultationServlet extends HttpServlet {
             c.setSchoolId(schoolId);
             c.setSchoolClassId(schoolClassId);
             c.setStatus(ConsultationModal.Status.pending);
-            c.setSubject("teacher".equals(role) ? subject : null);
-            c.setExperience("teacher".equals(role) ? experience : null);
+
+            // Set subject và experience chỉ cho teacher
+            if ("teacher".equals(role)) {
+                c.setSubject(subjectEnum);
+                c.setExperience(experience);
+            } else {
+                c.setSubject(null);
+                c.setExperience(null);
+            }
 
             int consultationId = dao.insertConsultation(c);
 
+            // Xử lý upload certificates chỉ cho teacher
             if ("teacher".equals(role)) {
                 for (Part part : request.getParts()) {
                     if ("certificates".equals(part.getName()) && part.getSize() > 0) {

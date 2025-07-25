@@ -19,6 +19,7 @@ import utils.DBUtil;
  * @author ASUS
  */
 public class ConsultationDAO {
+
     private ConsultationCertificateModal mapResultSetToConsultationCertificate(ResultSet rs) throws SQLException {
         ConsultationCertificateModal certificate = new ConsultationCertificateModal();
         certificate.setId(rs.getInt("id"));
@@ -39,7 +40,14 @@ public class ConsultationDAO {
             ps.setString(4, c.getPhone());
             ps.setString(5, c.getStatus().name());
             ps.setString(6, c.getAddress());
-            ps.setString(7, c.getSubject()); // Có thể null nếu là phụ huynh
+
+            // Xử lý subject enum - có thể null nếu là phụ huynh
+            if (c.getSubject() != null) {
+                ps.setString(7, c.getSubject().name());
+            } else {
+                ps.setNull(7, Types.VARCHAR);
+            }
+
             ps.setString(8, c.getExperience()); // Có thể null nếu là phụ huynh
             ps.setInt(9, c.getSchoolId());
 
@@ -60,11 +68,10 @@ public class ConsultationDAO {
 
     public List<ConsultationDTO> listAndSearchConsultations(String name, String status) {
         List<ConsultationDTO> list = new ArrayList<>();
-        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status,c.email, cc.imageURL as certificateImageUrl\n"
-        + "FROM consultation c\n"
-        + "LEFT JOIN consultation_certificate cc ON c.id = cc.consultationId\n"
-        + "WHERE 1=1 ";
-
+        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status, c.email, cc.imageURL as certificateImageUrl\n"
+                + "FROM consultation c\n"
+                + "LEFT JOIN consultation_certificate cc ON c.id = cc.consultationId\n"
+                + "WHERE 1=1 ";
 
         if (name != null && !name.trim().isEmpty()) {
             sql += " AND LOWER(TRIM(c.name)) LIKE ?";
@@ -78,7 +85,6 @@ public class ConsultationDAO {
 
             if (name != null && !name.trim().isEmpty()) {
                 ps.setString(paramIndex++, "%" + name.trim().toLowerCase() + "%");
-
             }
             if (status != null && !status.trim().isEmpty()) {
                 ps.setString(paramIndex++, status);
@@ -114,9 +120,8 @@ public class ConsultationDAO {
         return list;
     }
 
-     
     public ConsultationDTO getConsultationById(int id) {
-         String sql = "SELECT c.*, s.name AS schoolName, sc.classname AS schoolClassName,email,cert.imageURL AS certificateImageUrl "
+        String sql = "SELECT c.*, s.name AS schoolName, sc.classname AS schoolClassName, c.email, cert.imageURL AS certificateImageUrl "
                 + "FROM consultation c "
                 + "LEFT JOIN school s ON c.schoolId = s.id "
                 + "LEFT JOIN school_class sc ON c.schoolClassId = sc.id "
@@ -144,7 +149,11 @@ public class ConsultationDAO {
                 c.setPhone(rs.getString("phone"));
                 c.setStatus(ConsultationDTO.Status.valueOf(rs.getString("status")));
                 c.setAddress(rs.getString("address"));
-                c.setSubject(rs.getString("subject"));
+
+                // Xử lý subject từ database - có thể null
+                String subjectStr = rs.getString("subject");
+                c.setSubjectFromString(subjectStr);
+
                 c.setExperience(rs.getString("experience"));
                 c.setSchoolId(rs.getInt("schoolId"));
                 c.setSchoolClassId(rs.getInt("schoolClassId"));
@@ -175,7 +184,6 @@ public class ConsultationDAO {
         return false;
     }
 
-    
     public List<ConsultationCertificateModal> getConsultationCertificates(int consultationId) throws Exception {
         List<ConsultationCertificateModal> certificates = new ArrayList<>();
         String sql = "SELECT * FROM consultation_certificate WHERE consultationId = ? ORDER BY created_at";
@@ -199,14 +207,16 @@ public class ConsultationDAO {
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) return mapResultSetToConsultationCertificate(rs);
+            if (rs.next()) {
+                return mapResultSetToConsultationCertificate(rs);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             throw new Exception("Lỗi khi lấy thông tin chứng chỉ consultation theo ID", e);
         }
         return null;
     }
-    
+
     public boolean insertConsultationCertificate(ConsultationCertificateModal certificate) throws Exception {
         String sql = "INSERT INTO consultation_certificate (consultationId, imageURL, created_at) VALUES (?, ?, ?)";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -219,7 +229,6 @@ public class ConsultationDAO {
             throw new Exception("Lỗi khi thêm chứng chỉ consultation", e);
         }
     }
-
 
     public void insertCertificate(int consultationId, String imageURL) throws Exception {
         String sql = "INSERT INTO consultation_certificate (consultationId, imageURL, created_at) VALUES (?, ?, NOW())";
@@ -254,5 +263,4 @@ public class ConsultationDAO {
         }
         return -1;
     }
-
 }

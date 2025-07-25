@@ -19,6 +19,7 @@ import modal.TeacherAchivementModal;
 import modal.TeacherCertificateModal;
 import modal.TeacherModal;
 import utils.DBUtil;
+import java.sql.*;
 
 /**
  *
@@ -64,7 +65,6 @@ public class TeacherDAO extends DBUtil {
 
         return achivement;
     }
-
 
     public List<TeacherCertificateModal> getCertOfTeacher(int teacherId) {
         List<TeacherCertificateModal> certificateList = new ArrayList<>();
@@ -241,8 +241,10 @@ public class TeacherDAO extends DBUtil {
 
     /**
      * Lấy danh sách giáo viên nổi bật bao gồm thông tin account
+     *
      * @param limit Giới hạn số lượng giáo viên
-     * @return List<Object[]> với Object[0] là AccountModal, Object[1] là TeacherModal
+     * @return List<Object[]> với Object[0] là AccountModal, Object[1] là
+     * TeacherModal
      */
     public List<Object[]> getTopTeachersWithAccount(int limit) {
         List<Object[]> topTeachers = new ArrayList<>();
@@ -542,12 +544,20 @@ public class TeacherDAO extends DBUtil {
     }
 
     public void insertTeacher(TeacherModal t) {
-        String sql = "INSERT INTO teacher (accountId, experience, created_at, updated_at) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO teacher (accountId, subject, experience, created_at, updated_at) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, t.getAccountId());
-            ps.setString(2, t.getExperience());
-            ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+
+            // Kiểm tra null cho subject
+            if (t.getSubject() != null) {
+                ps.setString(2, t.getSubject().name());
+            } else {
+                ps.setNull(2, Types.VARCHAR);
+            }
+
+            ps.setString(3, t.getExperience());
             ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();

@@ -50,18 +50,22 @@ public class CreateAccountServlet extends HttpServlet {
                 return;
             }
 
-            // Format date for display
+  
             if (consultation.getDob() != null) {
                 String dobString = consultation.getDob().toLocalDate().toString(); // yyyy-MM-dd
                 req.setAttribute("dobString", dobString);
             }
 
-            // Determine default role based on experience
+
             String defaultRole = "parent";
             if (consultation.getExperience() != null && !consultation.getExperience().trim().isEmpty()) {
                 defaultRole = "teacher";
             }
             req.setAttribute("defaultRole", defaultRole);
+
+
+            req.setAttribute("consultationSubjects", ConsultationModal.Subject.values());
+            req.setAttribute("teacherSubjects", TeacherModal.Subject.values());
 
             List<ConsultationCertificateModal> consultationCertificates
                     = new ConsultationDAO().getConsultationCertificates(consultationId);
@@ -89,7 +93,7 @@ public class CreateAccountServlet extends HttpServlet {
                 throw new IllegalArgumentException("Không tìm thấy thông tin tư vấn.");
             }
 
-            // Get data from form instead of consultation
+
             String roleParam = req.getParameter("role");
             if (roleParam == null) {
                 throw new IllegalArgumentException("Vui lòng chọn vai trò.");
@@ -104,7 +108,7 @@ public class CreateAccountServlet extends HttpServlet {
                 throw new IllegalArgumentException("Username đã tồn tại. Vui lòng chọn username khác.");
             }
 
-            // Get all form data
+
             String name = req.getParameter("name");
             String phone = req.getParameter("phone");
             String address = req.getParameter("address");
@@ -117,7 +121,6 @@ public class CreateAccountServlet extends HttpServlet {
                     LocalDate localDate = LocalDate.parse(dobParam);
                     dob = localDate.atStartOfDay();
                 } catch (Exception e) {
-                    // If parsing fails, use consultation's dob as fallback
                     dob = consultation.getDob();
                 }
             } else {
@@ -127,7 +130,7 @@ public class CreateAccountServlet extends HttpServlet {
             AccountModal.Role role = AccountModal.Role.valueOf(roleParam);
             AccountModal acc = new AccountModal();
 
-            // Use form data with consultation as fallback
+
             acc.setName(name != null && !name.trim().isEmpty() ? name : consultation.getName());
             acc.setUsername(username);
             acc.setPhone(phone != null && !phone.trim().isEmpty() ? phone : consultation.getPhone());
@@ -161,25 +164,43 @@ public class CreateAccountServlet extends HttpServlet {
                 TeacherModal teacher = new TeacherModal();
                 teacher.setAccountId(accountId);
 
-                // Get experience from form, fallback to consultation
+
                 String experience = req.getParameter("experience");
                 if (experience == null || experience.trim().isEmpty()) {
                     experience = consultation.getExperience();
                 }
                 teacher.setExperience(experience);
 
+
+                String subjectParam = req.getParameter("subject");
+                if (subjectParam != null && !subjectParam.trim().isEmpty()) {
+                    try {
+                        TeacherModal.Subject teacherSubject = TeacherModal.Subject.valueOf(subjectParam);
+                        teacher.setSubject(teacherSubject);
+                    } catch (IllegalArgumentException e) {
+  
+                        TeacherModal.Subject convertedSubject = convertConsultationSubjectToTeacherSubject(consultation.getSubject());
+                        teacher.setSubject(convertedSubject);
+                    }
+                } else {
+
+                    TeacherModal.Subject convertedSubject = convertConsultationSubjectToTeacherSubject(consultation.getSubject());
+                    teacher.setSubject(convertedSubject);
+                }
+
                 new TeacherDAO().insertTeacher(teacher);
 
                 TeacherModal teacherNew = new TeacherDAO().getTeacherByAccountId(accountId);
                 int teacherId = teacherNew.getId();
 
+  
                 String[] existingCerts = req.getParameterValues("existingCertificate");
                 if (existingCerts != null) {
                     for (String certIdStr : existingCerts) {
                         if (certIdStr != null && !certIdStr.trim().isEmpty()) {
                             try {
                                 int certId = Integer.parseInt(certIdStr);
-                                // Get certificate name from form
+
                                 String certName = req.getParameter("existingCertificateName_" + certId);
                                 transferCertificateToTeacher(certId, teacherId, certName);
                             } catch (NumberFormatException e) {
@@ -189,6 +210,7 @@ public class CreateAccountServlet extends HttpServlet {
                     }
                 }
 
+                // Handle new certificates
                 String[] newCertificates = req.getParameterValues("newCertificate");
                 if (newCertificates != null) {
                     for (String cert : newCertificates) {
@@ -209,7 +231,7 @@ public class CreateAccountServlet extends HttpServlet {
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi tạo tài khoản: " + e.getMessage());
 
-            // Reload consultation data and set default role for error case
+
             try {
                 int consultationId = Integer.parseInt(req.getParameter("consultationId"));
                 ConsultationDTO consultation = new ConsultationDAO().getConsultationById(consultationId);
@@ -226,6 +248,9 @@ public class CreateAccountServlet extends HttpServlet {
                 }
                 req.setAttribute("defaultRole", defaultRole);
 
+                req.setAttribute("consultationSubjects", ConsultationModal.Subject.values());
+                req.setAttribute("teacherSubjects", TeacherModal.Subject.values());
+
                 List<ConsultationCertificateModal> consultationCertificates
                         = new ConsultationDAO().getConsultationCertificates(consultationId);
                 req.setAttribute("consultationCertificates", consultationCertificates);
@@ -237,6 +262,51 @@ public class CreateAccountServlet extends HttpServlet {
             req.getRequestDispatcher("/views/createAccount.jsp").forward(req, resp);
         }
     }
+
+
+private TeacherModal.Subject convertConsultationSubjectToTeacherSubject(ConsultationModal.Subject consultationSubject) {
+    System.out.println("DEBUG - Converting consultation subject: " + consultationSubject);
+    
+    if (consultationSubject == null) {
+        System.out.println("DEBUG - Consultation subject is null, returning null");
+        return null;
+    }
+    
+    try {
+        // Thử convert trực tiếp bằng tên enum
+        TeacherModal.Subject result = TeacherModal.Subject.valueOf(consultationSubject.name());
+        System.out.println("DEBUG - Direct conversion successful: " + result);
+        return result;
+    } catch (IllegalArgumentException e) {
+        System.out.println("DEBUG - Direct conversion failed, using switch case");
+        
+        switch (consultationSubject) {
+            case Mathematics:
+                return TeacherModal.Subject.Mathematics;
+            case Literature:
+                return TeacherModal.Subject.Literature;
+            case English:
+                return TeacherModal.Subject.English;
+            case Physics:
+                return TeacherModal.Subject.Physics;
+            case Chemistry:
+                return TeacherModal.Subject.Chemistry;
+            case Biology:
+                return TeacherModal.Subject.Biology;
+            case History:
+                return TeacherModal.Subject.History;
+            case Geography:
+                return TeacherModal.Subject.Geography;
+            case Civic_Education:
+                return TeacherModal.Subject.Civic_Education;
+            case Informatics:
+                return TeacherModal.Subject.Informatics;
+            default:
+                System.out.println("DEBUG - No matching subject found, returning Mathematics as default");
+                return TeacherModal.Subject.Mathematics;
+        }
+    }
+}
 
     private void transferCertificateToTeacher(int consultationCertId, int teacherId, String certificateName) throws Exception {
         ConsultationDAO consultationDAO = new ConsultationDAO();
@@ -263,6 +333,6 @@ public class CreateAccountServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Create Account Servlet - Enhanced version with certificate management";
+        return "Create Account Servlet - Enhanced version with certificate and subject management";
     }
 }
