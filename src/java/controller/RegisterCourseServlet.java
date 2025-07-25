@@ -26,6 +26,8 @@ public class RegisterCourseServlet extends HttpServlet {
         HttpSession session = request.getSession();
         String courseIdStr = request.getParameter("courseId");
         String studentIdStr = request.getParameter("studentId");
+        System.out.println(courseIdStr); 
+        System.out.println(studentIdStr); 
 
         try {
             int courseId = Integer.parseInt(courseIdStr);
@@ -34,7 +36,7 @@ public class RegisterCourseServlet extends HttpServlet {
             // Thêm học sinh vào khóa học
             boolean success = studentCourseDao.addStudentToCourse(studentId, courseId);
             if (success) {
-                session.setAttribute("successMessage", "Đăng ký thành công!Yêu cầu đang chờ duyệt.");
+                session.setAttribute("successMessage", "Đăng ký thành công! Yêu cầu đang chờ duyệt.");
             } else {
                 session.setAttribute("errorMessage", "Không thể đăng ký học sinh. Vui lòng thử lại.");
             }

@@ -379,21 +379,33 @@
         position: relative;
     }
 
-    .child-selector button.disabled-child {
+    /* Trạng thái: đã tham gia (accepted) */
+    .child-joined {
         background: #ccc !important;
         color: #666 !important;
         cursor: not-allowed;
-        position: relative;
         opacity: 0.6;
         pointer-events: none;
+        border: 1px solid #aaa;
     }
 
+    /* Trạng thái: đang chờ duyệt (pending) */
+    .child-pending {
+        background: #ccc !important;
+        color: #666 !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+        pointer-events: none;
+        border: 1px solid #aaa;
+    }
+
+    /* Overlay: Đã tham gia */
     .child-selector .joined-overlay {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        background-color: rgba(255, 0, 0, 0.65);
+        background-color: rgba(255, 0, 0, 0.65); /* đỏ nhạt */
         color: white;
         padding: 4px 12px;
         font-size: 14px;
@@ -405,7 +417,21 @@
         z-index: 10;
     }
 
-    /* Nút chọn con */
+    /* Overlay: Đang chờ duyệt */
+    .child-selector .joined-overlay.pending {
+        background-color: #d4edda; /* xanh lá nhạt */
+        color: #155724;            /* chữ xanh đậm */
+        padding: 4px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 4px;
+        pointer-events: none;
+        white-space: nowrap;
+        user-select: none;
+        z-index: 10;
+    }
+
+    /* Nút mặc định */
     .child-selector button {
         background: #3498db;
         color: #fff;
@@ -425,20 +451,23 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Hiệu ứng nút đang chọn */
+    /* Hiệu ứng nút đang được chọn */
     .child-selector button.selected {
-        background: #2ecc71; /* Xanh lá */
+        background: #2ecc71;
         box-shadow: 0 0 0 2px #2ecc71 inset;
     }
 
-    .hidden {
-        display: none;
-    }
-
+    /* Sau khi chọn con */
     .child-selector button.selected-child {
         background-color: orange !important;
         color: white !important;
     }
+
+    /* Ẩn khi cần */
+    .hidden {
+        display: none;
+    }
+
 
     .tab-content .section {
         padding-top: 40px;
@@ -479,19 +508,6 @@
         color: #333;
     }
 
-    /* Form chọn tuần */
-    #lich form {
-        margin-bottom: 20px;
-    }
-
-    #lich select {
-        padding: 8px 12px;
-        font-size: 14px;
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        outline: none;
-        background-color: #fff;
-    }
     /* Mỗi thẻ lịch học */
     .schedule-item {
         background-color: #eef6fb; /* Nền xanh nhạt */
@@ -501,7 +517,7 @@
         margin: 12px 0;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         width: 100%;
-        max-width: 500px; /* Không chiếm hết chiều ngang */
+        max-width: 300px; /* Không chiếm hết chiều ngang */
         transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -762,23 +778,10 @@
 
                         <!-- Lịch học -->
                         <div id="lich" class="section">
-                            <h3>Lịch học</h3>
-                            <form method="post" action="thong-tin-lop-hoc">
-                                <input type="hidden" name="courseId" value="${course.id}" />
-                                <label>Chọn khoảng thời gian:</label>
-                                <select name="startDate" onchange="this.form.submit()">
-                                    <c:forEach var="week" items="${sessionScope.weekOptions}">
-                                        <option value="${week[0]}" ${week[0] == sessionScope.startDate ? 'selected' : ''}>
-                                            ${week[1]}
-                                        </option>
-                                    </c:forEach>
-                                </select>
-                            </form>
-                            <c:forEach var="section" items="${sessionScope.schedules}">
+                            <h3>Lịch học trong tuần</h3>
+                            <c:forEach var="section" items="${sessionScope.daysOfWeek}">
                                 <div class="schedule-item">
-                                    <strong>Thứ:</strong> ${section.dayOfWeek.displayName}<br>
-                                    <strong>Thời gian:</strong> ${section.startTime.toLocalTime().toString().substring(0,5)} - ${section.endTime.toLocalTime().toString().substring(0,5)}<br>
-                                    <strong>Địa điểm:</strong> ${section.classroom}
+                                    <strong>${section.displayName}</strong> 
                                 </div>
                             </c:forEach>
                         </div>
@@ -849,15 +852,28 @@
 
                         <c:choose>
                             <c:when test="${requestScope.loggedInUserRole eq 'student'}">
-                                <input type="hidden" id="hiddenStudentId" value="${requestScope.loggedInUserId}" />
+                                <input type="hidden" id="hiddenStudentId" value="${requestScope.studentId}" />
+
                                 <c:choose>
-                                    <c:when test="${not sessionScope.hasJoined}">                                       
+                                    <c:when test="${empty requestScope.studentCourseStatus}">
+                                        <!-- Chưa đăng ký -->
                                         <a href="#" id="registerBtn" class="register-btn" onclick="handleRegisterClick(event)">
                                             Đăng ký học ngay
                                         </a>
                                     </c:when>
-                                    <c:otherwise>
+
+                                    <c:when test="${requestScope.studentCourseStatus eq 'pending'}">
+                                        <!-- Đang chờ duyệt -->
+                                        <p class="joined-note">Yêu cầu của bạn đang chờ xét duyệt.</p>
+                                    </c:when>
+
+                                    <c:when test="${requestScope.studentCourseStatus eq 'accepted'}">
+                                        <!-- Đã được duyệt -->
                                         <p class="joined-note">Bạn đã tham gia khóa học này.</p>
+                                    </c:when>
+
+                                    <c:otherwise>
+                                        <p class="joined-note">Tình trạng không xác định.</p>
                                     </c:otherwise>
                                 </c:choose>
                             </c:when>
@@ -867,19 +883,24 @@
                                     <h4>Chọn con muốn đăng ký:</h4>
                                     <ul>
                                         <c:forEach var="child" items="${sessionScope.childrenList}">
-                                            <c:set var="joined" value="${sessionScope.hasJoinedMap[child.id]}" />
+                                            <c:set var="status" value="${sessionScope.studentJoinStatusMap[child.id]}" />
                                             <li style="position: relative;">
                                                 <button
                                                     type="button"
                                                     data-student-id="${child.id}"
                                                     onclick="selectStudent(${child.id}, '${sessionScope.childrenMap[child.id]}')"
-                                                    class="${joined ? 'disabled-child' : ''}"
-                                                    ${joined ? 'disabled' : ''}>
+                                                    class="child-btn
+                                                    ${status eq 'accepted' ? 'child-joined' : ''}
+                                                    ${status eq 'pending' ? 'child-pending' : ''}"
+                                                    ${status eq 'accepted' || status eq 'pending' ? 'disabled' : ''}>
                                                     ${sessionScope.childrenMap[child.id]}
                                                 </button>
 
-                                                <c:if test="${joined}">
+                                                <c:if test="${status eq 'accepted'}">
                                                     <span class="joined-overlay">Đã tham gia</span>
+                                                </c:if>
+                                                <c:if test="${status eq 'pending'}">
+                                                    <span class="joined-overlay pending">Đang chờ duyệt</span>
                                                 </c:if>
                                             </li>
                                         </c:forEach>
