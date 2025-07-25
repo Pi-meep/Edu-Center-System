@@ -17,7 +17,7 @@ public class RoomDAO {
     public List<RoomModal> getAllRooms() {
         List<RoomModal> rooms = new ArrayList<>();
 
-        String sql = "SELECT * FROM room ORDER BY room_name";
+        String sql = "SELECT * FROM room ORDER BY id";
 
         try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {
 
@@ -25,7 +25,6 @@ public class RoomDAO {
                 RoomModal room = new RoomModal();
                 room.setId(rs.getString("id"));
                 room.setRoomName(rs.getString("room_name"));
-                room.setLocation(rs.getString("location"));
                 rooms.add(room);
             }
 

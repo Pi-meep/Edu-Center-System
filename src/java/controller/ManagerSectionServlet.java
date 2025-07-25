@@ -100,7 +100,7 @@ public class ManagerSectionServlet extends HttpServlet {
                     request.setAttribute("studentList", studentList);
 
                     if (section != null) {
-                        RoomModal matched = findRoomByName(roomList, section.getClassroom());
+                        RoomModal matched = findRoomById(roomList, section.getClassroom());
                         request.setAttribute("roomMatched", matched);
                     }
                     request.getRequestDispatcher("views/detailSection.jsp").forward(request, response);
@@ -118,7 +118,28 @@ public class ManagerSectionServlet extends HttpServlet {
                             ? dao.searchSections(keyword, dayOfWeek, status)
                             : dao.getAllSectionsByCourse();
 
-//                    request.setAttribute("roomList", roomList);
+                    LocalDateTime now = LocalDateTime.now();
+
+                    for (SectionDTO section : sectionList) {
+                        LocalDateTime startTime = section.getStartTime();
+                        LocalDateTime endTime = section.getEndTime();
+
+                        if (startTime == null || endTime == null) {
+                            System.out.println("Section thiếu thời gian: ID=" + section.getId());
+                            continue;
+                        }
+
+                        Status newStatus = determineStatus(now, startTime, endTime);
+
+                        if (section.getStatus() == null || !section.getStatus().equals(newStatus)) {
+
+                            section.setStatus(newStatus);
+                            dao.updateStatus(section.getId(), newStatus.name()); // Truyền String xuống DB
+                        }
+                    }
+
+                    request.setAttribute("sectionList", sectionList);
+                    request.setAttribute("roomList", roomList);
                     request.setAttribute("sectionList", sectionList);
                     request.getRequestDispatcher("views/managerSection.jsp").forward(request, response);
                 }
@@ -154,7 +175,6 @@ public class ManagerSectionServlet extends HttpServlet {
 
                 String classroom = request.getParameter("classroom");
                 String dateStr = request.getParameter("dateTime");
-                String statusStr = request.getParameter("status");
 
                 LocalDate date = LocalDate.parse(dateStr);
                 LocalTime startTimeOnly = LocalTime.parse(startTimeStr, timeFormatter);
@@ -170,7 +190,6 @@ public class ManagerSectionServlet extends HttpServlet {
                 dto.setEndTime(endTime);
                 dto.setDateTime(startTime);
                 dto.setClassroom(classroom);
-                dto.setStatus(Status.valueOf(statusStr));
                 dto.setStartTimeFormatted(startTimeOnly.format(timeFormatter));
                 dto.setEndTimeFormatted(endTimeOnly.format(timeFormatter));
                 dto.setDateFormatted(date.toString());
@@ -245,15 +264,26 @@ public class ManagerSectionServlet extends HttpServlet {
         return "Servlet quản lý lớp học - Section management controller";
     }
 
-    private RoomModal findRoomByName(List<RoomModal> roomList, String roomName) {
-        if (roomName == null || roomList == null) {
+    private RoomModal findRoomById(List<RoomModal> roomList, String roomId) {
+        if (roomId == null || roomList == null) {
             return null;
         }
         for (RoomModal r : roomList) {
-            if (r.getRoomName() != null && r.getRoomName().equalsIgnoreCase(roomName)) {
+            if (r.getId() != null && r.getId().equalsIgnoreCase(roomId)) {
                 return r;
             }
         }
         return null;
     }
+
+    public static Status determineStatus(LocalDateTime now, LocalDateTime startTime, LocalDateTime endTime) {
+        if (now.isBefore(startTime)) {
+            return Status.inactive;
+        } else if ((now.isEqual(startTime) || now.isAfter(startTime)) && now.isBefore(endTime)) {
+            return Status.active;
+        } else {
+            return Status.completed;
+        }
+    }
+
 }

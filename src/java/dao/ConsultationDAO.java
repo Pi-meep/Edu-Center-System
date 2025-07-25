@@ -66,7 +66,7 @@ public class ConsultationDAO {
         return -1;
     }
 
-    public List<ConsultationDTO> listAndSearchConsultations(String name, String status) {
+    public List<ConsultationDTO> listAndSearchConsultations(String name, String status, String role) {
         List<ConsultationDTO> list = new ArrayList<>();
         String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status, c.email, cc.imageURL as certificateImageUrl\n"
                 + "FROM consultation c\n"
@@ -77,7 +77,7 @@ public class ConsultationDAO {
             sql += " AND LOWER(TRIM(c.name)) LIKE ?";
         }
         if (status != null && !status.trim().isEmpty()) {
-            sql += " AND c.status = ? ";
+            sql += " AND c.status = ?";
         }
 
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -107,8 +107,16 @@ public class ConsultationDAO {
 
                 c.setPhone(rs.getString("phone"));
                 c.setStatus(ConsultationDTO.Status.valueOf(rs.getString("status")));
-                c.setCertificateImageUrl(rs.getString("certificateImageUrl"));
                 c.setEmail(rs.getString("email"));
+
+                String imageUrl = rs.getString("certificateImageUrl");
+                c.setCertificateImageUrl(imageUrl);
+
+                if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                    c.setRole(ConsultationDTO.Role.teacher);
+                } else {
+                    c.setRole(ConsultationDTO.Role.parent);
+                }
 
                 list.add(c);
             }
@@ -116,7 +124,6 @@ public class ConsultationDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return list;
     }
 

@@ -140,6 +140,7 @@ public class TeacherDAO extends DBUtil {
         SELECT t.id, a.name, t.subject
         FROM teacher t
         JOIN account a ON t.accountId = a.id
+        WHERE a.status = 'active'
     """;
         try (
                 Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {

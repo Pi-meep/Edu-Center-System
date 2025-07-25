@@ -31,14 +31,14 @@
                     <label class="form-label fw-semibold">Khóa học</label>
                     <input type="text" class="form-control-plaintext bg-light border rounded px-3 py-2" value="${section.courseName}" readonly>
                 </div>
-                
-                
+
+
                 <!-- Ngày học -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Ngày học</label>
                     <input type="date" name="dateTime" class="form-control" value="${section.dateFormatted}" required>
                 </div>
-                
+
                 <!-- Thứ -->
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Thứ</label>
@@ -67,12 +67,10 @@
 
                 <!-- Phòng học -->
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Phòng học</label>
-                    <select name="classroom" class="form-select" required>
+                    <label class="form-label">Phòng học</label>
+                    <select name="classroom" class="form-select form-select-sm" required>
                         <c:forEach var="room" items="${roomList}">
-                            <option value="${room.roomName}" ${room.roomName == section.classroom ? 'selected' : ''}>
-                                ${room.roomName} - ${room.location}
-                            </option>
+                            <option value="${room.id}" ${room.id == section.classroom ? 'selected' : ''}>${room.id}</option>
                         </c:forEach>
                     </select>
                 </div>
@@ -100,7 +98,7 @@
         </div>
     </div>
 </div>
-                    
+
 <script>
     const weekdayMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
