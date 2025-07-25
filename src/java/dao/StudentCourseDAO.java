@@ -230,22 +230,21 @@ public class StudentCourseDAO extends DBUtil {
         }
     }
 
-    public boolean hasStudentJoinedCourse(int studentId, int courseId) throws Exception {
-        String sql = "SELECT COUNT(*) FROM student_course WHERE studentId = ? AND courseId = ?";
+    public String getStudentCourseStatus(int studentId, int courseId) throws Exception {
+        String sql = "SELECT status FROM student_course WHERE studentId = ? AND courseId = ?";
         try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
-
             stmt.setInt(1, studentId);
             stmt.setInt(2, courseId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1) > 0;
+                    return rs.getString("status"); // "accepted", "pending", ...
                 }
             }
         }
-        return false;
+        return "none"; // Không tồn tại bản ghi
     }
-    
+
     public boolean updateStatus(int requestId, String status) throws Exception {
         String sql = "UPDATE student_course SET status = ? WHERE id = ?";
         try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {

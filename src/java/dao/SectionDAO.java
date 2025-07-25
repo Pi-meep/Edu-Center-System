@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import modal.SectionModal;
-import modal.SectionModal.Status;
+import modal.SectionModal.DayOfWeekEnum;
 import utils.DBUtil;
 
 /**
@@ -145,28 +145,29 @@ public class SectionDAO extends DBUtil {
      * @param courseId
      * @return
      */
-    public List<SectionModal> getSectionsByCourseIdAndDateRange(int courseId, LocalDate startDate, LocalDate endDate) {
-        List<SectionModal> sectionList = new ArrayList<>();
-        String sql = "SELECT * FROM section WHERE courseId = ? AND dateTime BETWEEN ? AND ? ORDER BY dateTime";
+    public List<DayOfWeekEnum> getDaysOfWeekForCourse(int courseId) {
+        List<DayOfWeekEnum> dayList = new ArrayList<>();
+        String sql = "SELECT DISTINCT dayOfWeek FROM section WHERE courseId = ? ORDER BY FIELD(dayOfWeek, "
+                + "'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')";
 
         try (Connection connection = DBUtil.getConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
-            Timestamp startTimestamp = Timestamp.valueOf(startDate.atStartOfDay());         // 00:00:00
-            Timestamp endTimestamp = Timestamp.valueOf(endDate.atTime(LocalTime.MAX));      // 23:59:59
-
             stmt.setInt(1, courseId);
-            stmt.setTimestamp(2, startTimestamp);
-            stmt.setTimestamp(3, endTimestamp);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    sectionList.add(mapResultSet(rs)); // Hàm ánh xạ từ ResultSet sang SectionModal bạn đã có
+                    String dayStr = rs.getString("dayOfWeek");
+                    try {
+                        dayList.add(DayOfWeekEnum.valueOf(dayStr));
+                    } catch (IllegalArgumentException e) {
+                        System.err.println("Invalid dayOfWeek in DB: " + dayStr);
+                    }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return sectionList;
+        return dayList;
     }
 
     public List<Map<String, Object>> getTeacherSections(Integer teacherId) throws Exception {
@@ -979,17 +980,6 @@ public class SectionDAO extends DBUtil {
         } catch (Exception e) {
             e.printStackTrace();
             return "ERROR_DATABASE";
-        }
-    }
-
-    public void updateStatus(int sectionId, String status) {
-        String sql = "UPDATE section SET status = ? WHERE id = ?";
-        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, status); // lowercase string: "active", "inactive", "completed"
-            ps.setInt(2, sectionId);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

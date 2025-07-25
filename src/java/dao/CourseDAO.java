@@ -10,6 +10,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import modal.CourseModal;
 import utils.DBUtil;
 
@@ -141,13 +142,21 @@ public class CourseDAO extends DBUtil {
      * @param status
      * @return
      */
-    public List<CourseModal> getCourseByStatus(String status) {
+    public List<CourseModal> getCoursesByStatuses(List<String> statuses) {
         List<CourseModal> courseList = new ArrayList<>();
-        String sql = "SELECT * FROM course WHERE status = ? ORDER BY created_at DESC";
+        if (statuses == null || statuses.isEmpty()) {
+            return courseList;
+        }
 
-        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) { // Không cần ResultSet trong try-with-resources ở đây
+        String placeholders = statuses.stream().map(s -> "?").collect(Collectors.joining(", "));
+        String sql = "SELECT * FROM course WHERE status IN (" + placeholders + ") ORDER BY created_at DESC";
 
-            pre.setString(1, status);
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) {
+
+            for (int i = 0; i < statuses.size(); i++) {
+                pre.setString(i + 1, statuses.get(i));
+            }
+
             try (ResultSet rs = pre.executeQuery()) {
                 while (rs.next()) {
                     courseList.add(mapResultSetToCourse(rs));
@@ -156,6 +165,7 @@ public class CourseDAO extends DBUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return courseList;
     }
 

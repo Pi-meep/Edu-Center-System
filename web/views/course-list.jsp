@@ -246,6 +246,21 @@
         z-index: 2;
     }
 
+    .upcoming-tag {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        background-color: #ffc107;
+        color: #000;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        z-index: 10;
+    }
+    .card-image {
+        position: relative;
+    }
 
     .course-content {
         padding: 16px;
@@ -396,42 +411,58 @@
         color: #333;
     }
 
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+        width: 100%;
+    }
+
     /* ======== Responsive ======== */
+    @media (max-width: 1200px) {
+        .grid {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+    }
+
     @media (max-width: 992px) {
         .featured-banner {
             flex-direction: column;
             text-align: center;
-            padding: 40px 30px;
+            padding: 40px 20px;
             background-position: center;
-            min-height: 300px;
-            border-bottom-left-radius: 40px;
-            border-bottom-right-radius: 40px;
+            min-height: 280px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
         }
 
         .banner-content {
             max-width: 100%;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .banner-content h1 {
-            font-size: 2.5em;
+            font-size: 2.2em;
+        }
+
+        .grid {
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 18px;
         }
     }
 
     @media (max-width: 768px) {
         .main-container {
             flex-direction: column;
-            padding: 30px 20px;
-        }
-
-        .grid {
-            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            padding: 25px 15px;
         }
 
         .featured-banner {
-            min-height: 250px;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
+            min-height: 240px;
+            padding: 30px 15px;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
         }
 
         .banner-content h1 {
@@ -439,20 +470,41 @@
         }
 
         .review-section {
-            padding: 40px 20px;
+            padding: 30px 15px;
+        }
+
+        .grid {
+            grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            gap: 15px;
+        }
+
+        .course-card {
+            padding: 15px;
         }
     }
 
     @media (max-width: 480px) {
         .featured-banner {
             min-height: 200px;
-            padding: 30px 20px;
+            padding: 25px 10px;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
         }
 
         .banner-content h1 {
-            font-size: 1.8em;
+            font-size: 1.6em;
+        }
+
+        .grid {
+            grid-template-columns: 1fr;
+        }
+
+        .course-card h3 {
+            font-size: 1em;
+        }
+
+        .course-card p {
+            font-size: 0.9em;
         }
     }
 
@@ -543,6 +595,7 @@
         <!-- COURSE LIST -->
         <main class="course-list">
             <h2 class="section-heading">${requestScope.coursePageTitle}</h2>
+
             <c:if test="${empty sessionScope.courseList}">
                 <p class="no-course-text">Không có khóa học nào.</p>
             </c:if>
@@ -566,6 +619,11 @@
                                 <c:if test="${course.isHot}">
                                     <div class="hot-badge">HOT</div>
                                 </c:if>
+
+                                <!-- Tag 'Sắp có' nếu là upcoming -->
+                                <c:if test="${course.status eq 'upcoming'}">
+                                    <div class="upcoming-tag">Sắp có</div>
+                                </c:if>
                             </div>
 
                             <div class="course-content">
@@ -584,7 +642,7 @@
                                 </p>
 
                                 <!-- Giáo viên -->
-                                <p><strong>Giáo viên :</strong>
+                                <p><strong>Giáo viên : </strong>
                                     <a href="thong-tin-giao-vien?teacherId=${course.teacherId}" onclick="event.stopPropagation();">
                                         <c:out value="${sessionScope.teacherMap[course.teacherId].name}" />
                                     </a>
@@ -594,22 +652,23 @@
                                 <p><strong>Thời lượng :</strong> ${course.weekAmount} tuần</p>
 
                                 <!-- Ngày khai giảng -->
-                                <%
-                                    modal.CourseModal courseObj = (modal.CourseModal) pageContext.findAttribute("course");
-                                %>
                                 <p><strong>Khai giảng :</strong>
-                                    <%= DateFormat.formatDate(courseObj.getStartDate())%>
+                                    ${DateFormat.formatDate(course.startDate)}
                                 </p>
 
-                                <!-- Tính số suất trống -->
-                                <c:set var="slotsLeft" value="${course.maxStudents - course.studentEnrollment}" />
-
-                                <!-- Footer chứa chỗ trống + CTA -->
                                 <div class="course-footer">
-                                    <!-- Slots left -->
-                                    <p class="slots-left">
-                                        <span class="slots-number">${slotsLeft}</span> suất đăng ký còn lại
-                                    </p>
+                                    <c:choose>
+                                        <c:when test="${course.status eq 'activated'}">
+                                            <!-- Slots left -->
+                                            <c:set var="slotsLeft" value="${course.maxStudents - course.studentEnrollment}" />
+                                            <p class="slots-left">
+                                                <span class="slots-number">${slotsLeft}</span> suất đăng ký còn lại
+                                            </p>
+                                        </c:when>
+                                        <c:when test="${course.status eq 'upcoming'}">
+                                            <p class="slots-left text-warning fw-bold">Đang mở đăng ký</p>
+                                        </c:when>
+                                    </c:choose>
 
                                     <!-- CTA dạng link bên phải -->
                                     <a href="javascript:void(0);" class="detail-link"
@@ -618,24 +677,23 @@
                                     </a>
                                 </div>
 
-                                <!-- Thanh progress -->
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar-fill"
-                                         style="width: calc(${course.studentEnrollment * 100 / course.maxStudents}%);"></div>
-                                </div>
-
+                                <!-- Progress bar (chỉ khi activated) -->
+                                <c:if test="${course.status eq 'activated'}">
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar-fill"
+                                             style="width: calc(${course.studentEnrollment * 100 / course.maxStudents}%);"></div>
+                                    </div>
+                                </c:if>
                             </div>
                         </div>
-
                     </c:forEach>
                 </div>
 
+                <!-- Pagination -->
                 <div id="pagination" class="pagination-container">
-                    <div id="pagination" class="pagination-container">
-                        <button id="prevBtn" onclick="changePage(-1)">← Previous</button>
-                        <span id="pagination-numbers"></span>
-                        <button id="nextBtn" onclick="changePage(1)">Next →</button>
-                    </div>
+                    <button id="prevBtn" onclick="changePage(-1)">← Previous</button>
+                    <span id="pagination-numbers"></span>
+                    <button id="nextBtn" onclick="changePage(1)">Next →</button>
                 </div>
             </c:if>
         </main>

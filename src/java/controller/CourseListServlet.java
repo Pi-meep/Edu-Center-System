@@ -56,7 +56,8 @@ public class CourseListServlet extends HttpServlet {
             }
         }
         // Nếu không phải học sinh hoặc không có lớp phù hợp → trả về danh sách khóa học đang hoạt động
-        return courseDao.getCourseByStatus("activated");
+        return courseDao.getCoursesByStatuses(List.of("activated", "upcoming"));
+
     }
 
     /**

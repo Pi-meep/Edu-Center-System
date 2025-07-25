@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import modal.AccountModal;
 import modal.CourseModal;
 import modal.SectionModal;
+import modal.SectionModal.DayOfWeekEnum;
 import modal.StudentModal;
 import modal.TeacherAchivementModal;
 import modal.TeacherCertificateModal;
@@ -97,10 +98,16 @@ public class CourseDetailsServlet extends HttpServlet {
         }
 
         // ===== Kiểm tra đã tham gia (chỉ Student) =====
-        boolean hasJoined = false;
+        String studentCourseStatus = null;
+
         if ("student".equalsIgnoreCase(loggedInUserRole) && loggedInUserId != null) {
             try {
-                hasJoined = studentCourseDao.hasStudentJoinedCourse(loggedInUserId, courseId);
+                StudentModal student = studentDao.getStudentByAccountId(loggedInUserId);
+                if (student != null) {
+                    int studentId = student.getId();
+                    studentCourseStatus = studentCourseDao.getStudentCourseStatus(studentId, courseId);
+                    request.setAttribute("studentId", studentId);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -150,11 +157,7 @@ public class CourseDetailsServlet extends HttpServlet {
         // ===== Lấy giáo viên, chứng chỉ, lịch học, tuần, khoá học liên quan =====
         TeacherModal teacher = teacherDao.getTeacherById(course.getTeacherId());
         List<TeacherAchivementModal> achiveOfTeacher = teacherDao.getAchiveOfTeacher(teacher.getId());
-        LocalDate[] weekRange = getCurrentWeekRange();
-        LocalDate startDate = weekRange[0];
-        LocalDate endDate = weekRange[1];
-        List<SectionModal> schedules = sectionDao.getSectionsByCourseIdAndDateRange(courseId, startDate, endDate);
-        List<String[]> weekOptions = generateWeekRanges(startDate);
+        List<DayOfWeekEnum> daysOfWeek = sectionDao.getDaysOfWeekForCourse(courseId);
         List<CourseModal> relatedCourses = courseDao.getRelatedCourses(courseId, course.getSubject().name(), course.getGrade());
 
         // ===== Lưu session =====
@@ -163,7 +166,7 @@ public class CourseDetailsServlet extends HttpServlet {
         session.setAttribute("teacherMap", buildTeacherAccountMapFromCourses(courseDao.getAllCourse()));
         try {
             session.setAttribute("childrenMap", buildChildrenMap(studentDao.getAllStudents()));
-            session.setAttribute("hasJoinedMap", hasJoinedMap(studentDao.getAllStudents(), courseId));
+            session.setAttribute("studentJoinStatusMap", getStudentJoinStatusMap(studentDao.getAllStudents(), courseId));
         } catch (Exception ex) {
             Logger.getLogger(CourseDetailsServlet.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -176,13 +179,10 @@ public class CourseDetailsServlet extends HttpServlet {
         session.setAttribute("priceLabel", priceLabel);
         session.setAttribute("achiveOfTeacher", achiveOfTeacher);
         session.setAttribute("achiveYearMap", getAchiveYearMap(achiveOfTeacher));
-        session.setAttribute("hasJoined", hasJoined);
+        session.setAttribute("daysOfWeek", daysOfWeek);
 
         // ===== Thuộc request =====
-        request.setAttribute("schedules", schedules);
-        request.setAttribute("weekOptions", weekOptions);
-        request.setAttribute("startDate", startDate);
-        request.setAttribute("endDate", endDate);
+        request.setAttribute("studentCourseStatus", studentCourseStatus);
 
         // Luôn set role → JSP dùng cho c:choose
         request.setAttribute("loggedInUserRole", loggedInUserRole);
@@ -199,37 +199,6 @@ public class CourseDetailsServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession();
-        CourseModal course = (CourseModal) session.getAttribute("course");
-
-        if (course == null) {
-            response.sendRedirect("error.jsp");
-            return;
-        }
-
-        int courseId = course.getId();
-
-        // Lấy startDate từ form
-        String startDateRaw = request.getParameter("startDate");
-        if (startDateRaw == null) {
-            response.sendRedirect("error.jsp");
-            return;
-        }
-
-        LocalDate startDate = LocalDate.parse(startDateRaw);
-        LocalDate endDate = startDate.plusDays(6);
-
-        // Truy vấn lịch học theo tuần đã chọn
-        List<SectionModal> schedules = sectionDao.getSectionsByCourseIdAndDateRange(courseId, startDate, endDate);
-        List<String[]> weekOptions = generateWeekRanges(startDate);
-
-        // Cập nhật lại phần thay đổi vào session/request
-        session.setAttribute("startDate", startDate);
-        session.setAttribute("endDate", endDate);
-        session.setAttribute("schedules", schedules);
-        session.setAttribute("weekOptions", weekOptions);
-
-        request.getRequestDispatcher("views/course-details.jsp").forward(request, response);
     }
 
     /**
@@ -288,19 +257,18 @@ public class CourseDetailsServlet extends HttpServlet {
         return childrenMap;
     }
 
-    public static Map<Integer, Boolean> hasJoinedMap(List<StudentModal> childrenList, int courseId) {
-        Map<Integer, Boolean> hasJoinedMap = new HashMap<>();
+    public static Map<Integer, String> getStudentJoinStatusMap(List<StudentModal> childrenList, int courseId) {
+        Map<Integer, String> statusMap = new HashMap<>();
         for (StudentModal child : childrenList) {
-            boolean joined = false;
+            String status = "none";
             try {
-                joined = studentCourseDao.hasStudentJoinedCourse(child.getId(), courseId);
+                status = studentCourseDao.getStudentCourseStatus(child.getId(), courseId);
             } catch (Exception e) {
                 e.printStackTrace();
-                joined = false;
             }
-            hasJoinedMap.put(child.getId(), joined);
+            statusMap.put(child.getId(), status);
         }
-        return hasJoinedMap;
+        return statusMap;
     }
 
     /**
@@ -318,44 +286,4 @@ public class CourseDetailsServlet extends HttpServlet {
         return certYearMap;
     }
 
-    /**
-     * Trả về [Thứ 2, Chủ nhật] của tuần hiện tại theo múi giờ Việt Nam.
-     */
-    private LocalDate[] getCurrentWeekRange() {
-        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        TemporalField weekField = WeekFields.ISO.dayOfWeek(); // ISO: Thứ 2 là ngày đầu tuần
-
-        LocalDate startDate = today.with(weekField, 1); // Thứ 2
-        LocalDate endDate = startDate.plusDays(6);      // Chủ nhật
-
-        return new LocalDate[]{startDate, endDate};
-    }
-
-    /**
-     * Tạo danh sách tuần (value = start date, label = dd/MM/yyyy - dd/MM/yyyy).
-     * Dùng để hiển thị dropdown chọn tuần.
-     */
-    private List<String[]> generateWeekRanges(LocalDate currentMonday) {
-        List<String[]> weeks = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        for (int i = -2; i <= 3; i++) {
-            LocalDate start = currentMonday.plusWeeks(i);
-            LocalDate end = start.plusDays(6);
-            weeks.add(new String[]{
-                start.toString(), // value gửi đi (yyyy-MM-dd)
-                formatRange(start, end) // hiển thị dropdown
-            });
-        }
-
-        return weeks;
-    }
-
-    /**
-     * Format dải ngày từ -> đến: dd/MM/yyyy - dd/MM/yyyy
-     */
-    private String formatRange(LocalDate start, LocalDate end) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return start.format(formatter) + " - " + end.format(formatter);
-    }
 }
