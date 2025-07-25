@@ -5,6 +5,7 @@
 package dto;
 
 import java.time.LocalDateTime;
+import modal.ConsultationModal;
 
 /**
  *
@@ -19,7 +20,7 @@ public class ConsultationDTO {
     private Status status;
     private Role role;
     private String address;
-    private String subject;
+    private ConsultationModal.Subject subject; // Thay đổi từ String thành enum
     private String experience;
     private Integer schoolId;
     private Integer schoolClassId;
@@ -37,6 +38,7 @@ public class ConsultationDTO {
     public enum Status {
         pending, accepted, rejected
     }
+
     public enum Role {
         teacher, parent
     }
@@ -44,7 +46,7 @@ public class ConsultationDTO {
     public ConsultationDTO() {
     }
 
-    public ConsultationDTO(Integer id, String name, LocalDateTime dob, String phone, Status status, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt, String schoolName, String schoolClassName, String email) {
+    public ConsultationDTO(Integer id, String name, LocalDateTime dob, String phone, Status status, String address, ConsultationModal.Subject subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt, String schoolName, String schoolClassName, String email) {
         this.id = id;
         this.name = name;
         this.dob = dob;
@@ -62,7 +64,7 @@ public class ConsultationDTO {
         this.email = email;
     }
 
-    public ConsultationDTO(Integer id, String name, LocalDateTime dob, String phone, Status status, Role role, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt, String dobString, Integer certificateId, String certificateImageUrl, String email, String schoolName, String schoolClassName) {
+    public ConsultationDTO(Integer id, String name, LocalDateTime dob, String phone, Status status, Role role, String address, ConsultationModal.Subject subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt, String dobString, Integer certificateId, String certificateImageUrl, String email, String schoolName, String schoolClassName) {
         this.id = id;
         this.name = name;
         this.dob = dob;
@@ -91,7 +93,6 @@ public class ConsultationDTO {
     public void setRole(Role role) {
         this.role = role;
     }
-    
 
     public String getEmail() {
         return email;
@@ -173,12 +174,30 @@ public class ConsultationDTO {
         this.address = address;
     }
 
-    public String getSubject() {
+    public ConsultationModal.Subject getSubject() {
         return subject;
     }
 
-    public void setSubject(String subject) {
+    public void setSubject(ConsultationModal.Subject subject) {
         this.subject = subject;
+    }
+
+    // Thêm method helper để lấy display name của subject
+    public String getSubjectDisplayName() {
+        return subject != null ? subject.getDisplayName() : null;
+    }
+
+    public void setSubjectFromString(String subjectStr) {
+        if (subjectStr != null && !subjectStr.trim().isEmpty()) {
+            try {
+                this.subject = ConsultationModal.Subject.valueOf(subjectStr);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid subject enum value: " + subjectStr);
+                this.subject = null;
+            }
+        } else {
+            this.subject = null;
+        }
     }
 
     public String getExperience() {
@@ -236,5 +255,4 @@ public class ConsultationDTO {
     public void setSchoolClassName(String schoolClassName) {
         this.schoolClassName = schoolClassName;
     }
-
 }

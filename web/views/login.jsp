@@ -15,10 +15,9 @@
 
     .main-container {
         display: flex;
-        height: calc(100vh - 60px); /* trừ chiều cao header nếu có */
+        height: calc(100vh - 60px);
     }
 
-    /* ===================== HEADER ===================== */
     .header {
         background-color: #000;
         opacity: 0.85;
@@ -31,19 +30,23 @@
         position: static;
     }
 
-    /* ===================== KHUNG 2 BÊN ===================== */
     .left-panel {
+        position: sticky;
+        flex: 1;
+        left: 0;
+        top: 0;
         width: 40%;
-        background: linear-gradient(135deg, #6a11cb, #2575fc);
-        /*        background: linear-gradient(rgba(90, 0, 130, 0.85), rgba(90, 0, 130, 0.85)),
-                    url('your-background-image.jpg') center/cover no-repeat;*/
+        height: 100vh;
+        background: url('assets/banners/banner_1.jpg') no-repeat center center;
+        background-size: cover;
         color: white;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 60px;
+        padding: 60px 40px;
+        z-index: 1;
     }
 
     .left-panel h1 {
@@ -55,14 +58,15 @@
         font-size: 18px;
     }
 
-    /* ===================== PANEL PHẢI (CHỨA FORM) ===================== */
     .right-panel {
         width: 60%;
         background: white;
-        padding: 60px 80px;
+        padding: 60px 50px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.08);
+        min-height: 100vh;
     }
 
     .right-panel h2 {
@@ -95,7 +99,6 @@
         display: inline-block;
     }
 
-    /* ===================== FORM ===================== */
     form {
         display: flex;
         flex-direction: column;
@@ -134,7 +137,6 @@
         background: #f4a100;
     }
 
-    /* ===================== THÔNG BÁO ===================== */
     .message {
         margin-top: 10px;
         text-align: center;

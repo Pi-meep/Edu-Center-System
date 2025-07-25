@@ -6,6 +6,7 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="java.time.LocalDate"%>
+<%@page import="modal.ConsultationModal"%>
 <%
     String selectedRole = request.getParameter("role");
     if (selectedRole == null)
@@ -29,13 +30,19 @@
 
             .main-container {
                 display: flex;
-                flex: 1;
+                min-height: 100vh;
                 min-height: 100vh;
             }
 
             .left-panel {
+                position: sticky;
                 flex: 1;
-                background: linear-gradient(135deg, #6a11cb, #2575fc); /* đổi màu modern hơn */
+                left: 0;
+                top: 0;
+                width: 40%;
+                height: 100vh;
+                background: url('assets/banners/banner_1.jpg') no-repeat center center;
+                background-size: cover;
                 color: white;
                 display: flex;
                 flex-direction: column;
@@ -43,6 +50,7 @@
                 justify-content: center;
                 text-align: center;
                 padding: 60px 40px;
+                z-index: 1;
             }
 
             .left-panel h1 {
@@ -56,13 +64,14 @@
             }
 
             .right-panel {
-                flex: 1.2;
+                width: 60%;
                 background: white;
                 padding: 60px 50px;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: flex-start;
                 box-shadow: -5px 0 15px rgba(0, 0, 0, 0.08);
+                min-height: 100vh;
             }
 
             .right-panel h2 {
@@ -250,51 +259,6 @@
                 text-decoration: underline;
                 cursor: pointer;
             }
-            .terms-modal {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                display: none;
-                justify-content: center;
-                align-items: center;
-                z-index: 999;
-            }
-
-            .terms-content {
-                background: white;
-                padding: 30px;
-                border-radius: 10px;
-                max-width: 600px;
-                width: 90%;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-                max-height: 80vh;
-                overflow-y: auto;
-                position: relative;
-            }
-
-            .terms-content h3 {
-                margin-top: 0;
-                color: #6a11cb;
-            }
-
-            .terms-close {
-                position: absolute;
-                top: 10px;
-                right: 15px;
-                font-size: 18px;
-                cursor: pointer;
-                color: #888;
-            }
-
-            .terms-link {
-                color: #6a11cb;
-                text-decoration: underline;
-                cursor: pointer;
-            }
-
         </style>
 
         <script>
@@ -302,15 +266,18 @@
                 console.log("Switching role:", role);
                 document.getElementById("roleInput").value = role;
 
-                // Highlight active button
+                const titleEl = document.getElementById("formTitle");
+                if (titleEl) {
+                    titleEl.innerText = role === "teacher" ? "Đăng ký tuyển dụng" : "Đăng ký tư vấn";
+                }
+
                 document.querySelectorAll('.role-button').forEach(btn => btn.classList.remove('active'));
                 document.getElementById(role + '-btn').classList.add('active');
 
-                // Show/hide teacher fields
                 const teacherFields = document.querySelectorAll('.teacher-only');
                 teacherFields.forEach(field => {
                     field.style.display = (role === 'teacher') ? 'block' : 'none';
-                    field.querySelectorAll('input, textarea').forEach(input => {
+                    field.querySelectorAll('input, textarea, select').forEach(input => {
                         input.required = (role === 'teacher');
                     });
                 });
@@ -404,7 +371,7 @@
             </div>
 
             <div class="right-panel">
-                <h2>Đăng ký tư vấn</h2>
+                <h2 id="formTitle">Đăng ký tư vấn</h2>
 
                 <div class="role-selector">
                     <div id="parent-btn" class="role-button active" onclick="switchRole('parent')">Phụ huynh</div>
@@ -423,10 +390,10 @@
 
                         <label>Số điện thoại:</label>
                         <input type="number" name="phone" required pattern="^0\d{9}$" title="Số điện thoại phải có 10 chữ số và bắt đầu bằng 0">
-                        
+
                         <label>Email:</label>
                         <input type="text" name="email" required>
-                        
+
                         <label>Địa chỉ (Tỉnh/TP):</label>
                         <input type="text" name="address" list="provinceList" required>
 
@@ -460,30 +427,22 @@
                         <!-- Giáo viên thêm -->
                         <div class="teacher-only" style="display:none;">
                             <label for="subject">Môn dạy:</label>
-                            <input type="text" name="subject" id="subject" list="subjectList" />
-
-                            <datalist id="subjectList">
-                                <option value="Toán">
-                                <option value="Văn">
-                                <option value="Tiếng Anh">
-                                <option value="Lý">
-                                <option value="Hóa">
-                                <option value="Sinh">
-                                <option value="Sử">
-                                <option value="Địa">
-                                <option value="Tin học">
-                                <option value="GDCD">
-                                <option value="Công nghệ">
-                                <option value="Âm nhạc">
-                                <option value="Mỹ thuật">
-                                <option value="Thể dục">
-                            </datalist>
+                            <select name="subject" id="subject">
+                                <option value="">-- Chọn môn học --</option>
+                                <%
+                                    for (ConsultationModal.Subject subj : ConsultationModal.Subject.values()) {
+                                %>
+                                <option value="<%= subj.name()%>"><%= subj.getDisplayName()%></option>
+                                <%
+                                    }
+                                %>
+                            </select>
 
                             <label>Kinh nghiệm:</label>
-                            <textarea name="experience"></textarea>
+                            <textarea name="experience" placeholder="Mô tả kinh nghiệm giảng dạy của bạn..."></textarea>
 
                             <label>Upload chứng chỉ:</label>
-                            <input type="file" name="certificates" multiple accept=".jpg,.jpeg,.png">
+                            <input type="file" name="certificates" multiple accept=".jpg,.jpeg,.png" required>
                         </div>
 
                         <div>
@@ -496,7 +455,6 @@
                     </form>
                 </div>
 
-                <!-- Datalist -->
                 <datalist id="schoolList">
                     <%
                         if (schoolList != null) {
@@ -598,4 +556,4 @@
     </body>
 
 </html>
-<jsp:include page="layout/footer.jsp" /> 
+<jsp:include page="layout/footer.jsp" />

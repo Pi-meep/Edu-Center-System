@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import modal.AccountModal;
+import utils.EmailUtil;
 
 /**
  *
@@ -72,12 +73,46 @@ public class AccountApproveServlet extends HttpServlet {
                 int id = Integer.parseInt(accountIdStr);
                 try {
                     if (action.equalsIgnoreCase("acept")) {
+                        // Lấy thông tin tài khoản trước khi cập nhật
+                        AccountModal account = acDao.getAccountById(id);
+
+                        // Cập nhật trạng thái tài khoản
                         acDao.updateStatusById(id, "active");
+
+                        // Gửi email thông báo phê duyệt
+                        if (account != null) {
+                            boolean emailSent = EmailUtil.sendAccountApprovalNotification(
+                                    account.getUsername(),
+                                    account.getName(),
+                                    account.getRole().toString()
+                            );
+
+                            if (emailSent) {
+                                System.out.println("Email thông báo đã được gửi đến: " + account.getUsername());
+                                // Có thể thêm thông báo thành công vào session
+                                request.getSession().setAttribute("successMessage",
+                                        "Tài khoản đã được phê duyệt và email thông báo đã được gửi!");
+                            } else {
+                                System.err.println("Không thể gửi email thông báo đến: " + account.getUsername());
+                                // Có thể thêm thông báo lỗi vào session
+                                request.getSession().setAttribute("warningMessage",
+                                        "Tài khoản đã được phê duyệt nhưng không thể gửi email thông báo!");
+                            }
+                        }
                     } else {
+                        // Lấy thông tin tài khoản trước khi xóa (nếu cần gửi email thông báo từ chối)
+                        AccountModal account = acDao.getAccountById(id);
+
                         acDao.deleteById(id);
+
+                        // Có thể thêm hàm gửi email thông báo từ chối ở đây nếu cần
+                        System.out.println("Tài khoản đã bị từ chối và xóa: "
+                                + (account != null ? account.getUsername() : "Unknown"));
                     }
                 } catch (Exception ex) {
                     Logger.getLogger(AccountApproveServlet.class.getName()).log(Level.SEVERE, null, ex);
+                    request.getSession().setAttribute("errorMessage",
+                            "Đã xảy ra lỗi khi xử lý tài khoản!");
                 }
             }
         }

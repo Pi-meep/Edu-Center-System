@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
  * @author Astersa
  */
 public class ConsultationModal {
+
     private Integer id;
     private String name;
     private String email;
@@ -18,7 +19,7 @@ public class ConsultationModal {
     private String phone;
     private Status status;
     private String address;
-    private String subject;
+    private Subject subject;
     private String experience;
     private Integer schoolId;
     private Integer schoolClassId;
@@ -32,7 +33,7 @@ public class ConsultationModal {
     public ConsultationModal() {
     }
 
-    public ConsultationModal(Integer id, String name, LocalDateTime dob, String phone, Status status, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public ConsultationModal(Integer id, String name, LocalDateTime dob, String phone, Status status, String address, Subject subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.dob = dob;
@@ -47,7 +48,7 @@ public class ConsultationModal {
         this.updatedAt = updatedAt;
     }
 
-    public ConsultationModal(Integer id, String name, String email, LocalDateTime dob, String phone, Status status, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public ConsultationModal(Integer id, String name, String email, LocalDateTime dob, String phone, Status status, String address, Subject subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -63,7 +64,29 @@ public class ConsultationModal {
         this.updatedAt = updatedAt;
     }
 
-    
+    public enum Subject {
+        Mathematics("Toán học"),
+        Literature("Ngữ văn"),
+        English("Tiếng Anh"),
+        Physics("Vật lý"),
+        Chemistry("Hóa học"),
+        Biology("Sinh học"),
+        History("Lịch sử"),
+        Geography("Địa lý"),
+        Civic_Education("Giáo dục công dân"),
+        Informatics("Tin học");
+
+        private final String displayName;
+
+        Subject(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+
     public Integer getId() {
         return id;
     }
@@ -112,11 +135,11 @@ public class ConsultationModal {
         this.address = address;
     }
 
-    public String getSubject() {
+    public Subject getSubject() {
         return subject;
     }
 
-    public void setSubject(String subject) {
+    public void setSubject(Subject subject) {
         this.subject = subject;
     }
 
@@ -167,6 +190,5 @@ public class ConsultationModal {
     public void setEmail(String email) {
         this.email = email;
     }
-    
-    
+
 }
