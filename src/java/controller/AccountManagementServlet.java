@@ -82,6 +82,8 @@ public class AccountManagementServlet extends HttpServlet {
                         request.setAttribute("error", "Đổi trạng thái thất bại!");
 
                         request.getRequestDispatcher("/views/accountManagement.jsp").forward(request, response);
+                    } catch (Exception ex) {
+                        Logger.getLogger(AccountManagementServlet.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 } else {
                     try {
@@ -91,6 +93,8 @@ public class AccountManagementServlet extends HttpServlet {
 
                         request.setAttribute("error", "Đổi trạng thái thất bại!");
                         request.getRequestDispatcher("/views/accountManagement.jsp").forward(request, response);
+                    } catch (Exception ex) {
+                        Logger.getLogger(AccountManagementServlet.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             } else if (action.equalsIgnoreCase("delete")) {

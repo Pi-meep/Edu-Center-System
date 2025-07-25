@@ -987,4 +987,15 @@ public class SectionDAO extends DBUtil {
         }
     }
 
+    public void updateStatus(int sectionId, String newStatus) {
+        String sql = "UPDATE section SET status = ? WHERE id = ?";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, newStatus); 
+            ps.setInt(2, sectionId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
