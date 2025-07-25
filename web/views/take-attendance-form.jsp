@@ -147,7 +147,6 @@
                         <th>Loại yêu cầu</th>
                         <th>Nội dung</th>
                         <th>Trạng thái</th>
-                        <th>Thời gian gửi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -156,18 +155,20 @@
                             <td>${r.requesterName}</td>
                             <td>${r.type}</td>
                             <td>${r.description}</td>
-                            <td>${r.status}</td>
-                            <td>${r.createdAt}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${r.status == 'accepted'}">Chấp nhận</c:when>
+                                    <c:when test="${r.status == 'rejected'}">Từ chối</c:when>
+                                    <c:when test="${r.status == 'pending'}">Đang chờ</c:when>
+                                    <c:otherwise>Không rõ</c:otherwise>
+                                </c:choose>
+                            </td>
+
                         </tr>
                     </c:forEach>
                 </tbody>
             </table>
         </c:if>
 
-        <script>
-            setTimeout(() => {
-                document.querySelectorAll('.alert').forEach(alert => alert.remove());
-            }, 5000);
-        </script>
     </body>
 </html>

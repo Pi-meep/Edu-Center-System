@@ -178,7 +178,7 @@ public class CreateStudentAccountServlet extends HttpServlet {
             studentAccount.setPassword(hashedPassword);
             studentAccount.setDob(dob != null ? dob.atStartOfDay() : null);
             studentAccount.setAddress(address);
-            studentAccount.setStatus(AccountModal.Status.inactive);
+            studentAccount.setStatus(AccountModal.Status.pending);
             studentAccount.setRole(AccountModal.Role.student);
             studentAccount.setCreatedAt(LocalDateTime.now());
             studentAccount.setUpdatedAt(LocalDateTime.now());

@@ -121,6 +121,7 @@
                                                 <th>Thời gian</th>
                                                 <th>Phòng học</th>
                                                 <th>Trạng thái</th>
+                                                <th>Ghi chú</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -141,6 +142,7 @@
                                                             </c:choose>
                                                         </span>
                                                     </td>
+                                                    <td>${section.note}</td>
                                                 </tr>
                                             </c:forEach>
                                         </tbody>
