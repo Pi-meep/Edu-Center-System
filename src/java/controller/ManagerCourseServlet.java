@@ -100,6 +100,18 @@ public class ManagerCourseServlet extends HttpServlet {
                 } else {
                     courseList = courseDAO.getAllCourses();
                 }
+                for (CourseDTO course : courseList) {
+                    if (course.getStartDate() != null && course.getEndDate() != null) {
+                        LocalDate start = ((Timestamp) course.getStartDate()).toLocalDateTime().toLocalDate();
+                        LocalDate end = ((Timestamp) course.getEndDate()).toLocalDateTime().toLocalDate();
+
+                        String currentStatus = determineStatus(start, end).name();
+                        if (!course.getStatus().equals(currentStatus)) {
+                            course.setStatus(currentStatus);
+                            courseDAO.updateStatus(course.getId(), currentStatus);
+                        }
+                    }
+                }
 
                 List<TeacherDTO> teacherList = teacherDAO.getAllTeachers();
                 request.setAttribute("courseList", courseList);
@@ -205,6 +217,8 @@ public class ManagerCourseServlet extends HttpServlet {
             if ("add".equals(action)) {
                 try {
                     CourseModal course = new CourseModal();
+                    LocalDate startDate = LocalDate.parse(request.getParameter("startDate"));
+                    LocalDate endDate = LocalDate.parse(request.getParameter("endDate"));
                     //Thêm thông tin khoá học 
                     course.setName(request.getParameter("name"));
                     course.setTeacherId(Integer.valueOf(request.getParameter("teacherId")));
@@ -212,7 +226,10 @@ public class ManagerCourseServlet extends HttpServlet {
                     course.setGrade(request.getParameter("grade"));
                     course.setDescription(request.getParameter("description"));
                     course.setCourseType(CourseModal.CourseType.valueOf(request.getParameter("courseType")));
-                    course.setStatus(Status.valueOf(request.getParameter("status")));
+                    course.setStartDate(startDate.atStartOfDay());
+                    course.setEndDate(endDate.atStartOfDay());
+                    course.setStatus(determineStatus(startDate, endDate));
+
                     course.setStartDate(LocalDate.parse(request.getParameter("startDate")).atStartOfDay());
                     course.setEndDate(LocalDate.parse(request.getParameter("endDate")).atStartOfDay());
                     course.setWeekAmount(Integer.parseInt(request.getParameter("weekAmount")));
@@ -267,8 +284,6 @@ public class ManagerCourseServlet extends HttpServlet {
 
                         LocalTime startTime = LocalTime.parse(startTimeStr);
                         LocalTime endTime = LocalTime.parse(endTimeStr);
-                        LocalDate startDate = course.getStartDate().toLocalDate();
-                        LocalDate endDate = course.getEndDate().toLocalDate();
                         //Thêm section 
                         sectionDAO.addSections(courseId, dayOfWeek, startTime, endTime, classroom, startDate, endDate, course.getTeacherId());
                     }
@@ -284,6 +299,8 @@ public class ManagerCourseServlet extends HttpServlet {
 
             if ("update".equals(action)) {
                 CourseModal course = new CourseModal();
+                LocalDate startDate = LocalDate.parse(request.getParameter("startDate"));
+                LocalDate endDate = LocalDate.parse(request.getParameter("endDate"));
                 course.setId(Integer.parseInt(request.getParameter("id")));
                 course.setName(request.getParameter("name"));
                 course.setTeacherId(Integer.parseInt(request.getParameter("teacherId")));
@@ -297,7 +314,10 @@ public class ManagerCourseServlet extends HttpServlet {
                 course.setMaxStudents(Integer.parseInt(request.getParameter("maxStudents")));
                 course.setWeekAmount(Integer.parseInt(request.getParameter("weekAmount")));
                 course.setLevel(CourseModal.Level.valueOf(request.getParameter("level")));
-                course.setStatus(Status.valueOf(request.getParameter("status")));
+                course.setStartDate(startDate.atStartOfDay());
+                course.setEndDate(endDate.atStartOfDay());
+                course.setStatus(determineStatus(startDate, endDate));
+
                 //cập nhật ảnh của course
                 Part part = request.getPart("course_img");
                 String oldImage = request.getParameter("oldImage");
@@ -316,7 +336,7 @@ public class ManagerCourseServlet extends HttpServlet {
 
                     part.write(realPath + File.separator + fileName);
                 }
-                
+
                 course.setCourse_img(fileName);
                 dao.updateCourse(course);
                 response.sendRedirect("quan-ly-khoa-hoc?action=list");
@@ -336,6 +356,18 @@ public class ManagerCourseServlet extends HttpServlet {
     //Hàm này giúp tránh lỗi khi người dùng không nhập gì.
     private BigDecimal parseBigDecimal(String value) {
         return (value != null && !value.isEmpty()) ? new BigDecimal(value) : null;
+    }
+
+    private Status determineStatus(LocalDate startDate, LocalDate endDate) {
+        LocalDate now = LocalDate.now();
+
+        if (now.isBefore(startDate)) {
+            return Status.upcoming;
+        } else if (!now.isAfter(endDate)) {
+            return Status.activated;
+        } else {
+            return Status.completed;
+        }
     }
 
     /**

@@ -74,7 +74,7 @@ public class CourseDAO extends DBUtil {
             SELECT c.id, c.name, c.subject, c.grade, c.description, c.courseType,
                    c.feeCombo, c.feeDaily, c.startDate, c.endDate, c.weekAmount,
                    c.studentEnrollment, c.maxStudents, c.level, c.isHot,
-                   c.discountPercentage, c.status, a.name AS teacherName
+                   c.discountPercentage, c.status, a.name AS teacherName,c.course_img
             FROM course c
             JOIN teacher  t ON c.teacherId = t.id
             JOIN account  a ON t.accountId = a.id
@@ -159,10 +159,10 @@ public class CourseDAO extends DBUtil {
         return courseList;
     }
 
-public List<CourseModal> getEnrollCourseByAccountId(int accountId) {
-    List<CourseModal> courseList = new ArrayList<>();
-    
-    String sql = """
+    public List<CourseModal> getEnrollCourseByAccountId(int accountId) {
+        List<CourseModal> courseList = new ArrayList<>();
+
+        String sql = """
         SELECT c.*
         FROM account a
         JOIN student s ON s.accountId = a.id
@@ -171,27 +171,26 @@ public List<CourseModal> getEnrollCourseByAccountId(int accountId) {
         WHERE a.id = ?
     """;
 
-    try (Connection connection = DBUtil.getConnection(); 
-         PreparedStatement pre = connection.prepareStatement(sql)) {
-         
-        pre.setInt(1, accountId);
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) {
 
-        try (ResultSet rs = pre.executeQuery()) {
-            while (rs.next()) {
-                courseList.add(mapResultSetToCourse(rs));
+            pre.setInt(1, accountId);
+
+            try (ResultSet rs = pre.executeQuery()) {
+                while (rs.next()) {
+                    courseList.add(mapResultSetToCourse(rs));
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+
+        return courseList;
     }
 
-    return courseList;
-}
+    public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
+        List<CourseModal> courseList = new ArrayList<>();
 
-public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
-    List<CourseModal> courseList = new ArrayList<>();
-    
-    String sql = """
+        String sql = """
         SELECT c.*
         FROM course c
         WHERE c.id NOT IN (
@@ -202,22 +201,21 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
         )
     """;
 
-    try (Connection connection = DBUtil.getConnection(); 
-         PreparedStatement pre = connection.prepareStatement(sql)) {
-         
-        pre.setInt(1, accountId);
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement pre = connection.prepareStatement(sql)) {
 
-        try (ResultSet rs = pre.executeQuery()) {
-            while (rs.next()) {
-                courseList.add(mapResultSetToCourse(rs));
+            pre.setInt(1, accountId);
+
+            try (ResultSet rs = pre.executeQuery()) {
+                while (rs.next()) {
+                    courseList.add(mapResultSetToCourse(rs));
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
 
-    return courseList;
-}
+        return courseList;
+    }
 
     /**
      * Lấy danh sách khóa học do một giáo viên cụ thể giảng dạy (theo
@@ -440,7 +438,6 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
             sql += " AND c.teacherId = ?";
         }
 
-
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             int i = 1;
             if (name != null && !name.trim().isEmpty()) {
@@ -461,7 +458,6 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
             if (teacherId != null) {
                 ps.setInt(i++, teacherId);
             }
-
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -571,7 +567,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
             }
 
             ps.setString(16, c.getStatus().toString());
-            ps.setInt(17, c.getTeacherId()); 
+            ps.setInt(17, c.getTeacherId());
             ps.setString(18, c.getCourse_img());
 
             ps.executeUpdate();
@@ -635,6 +631,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
 
     /**
      * Lấy danh sách khóa học hot (isHot = true)
+     *
      * @param limit Giới hạn số lượng khóa học
      * @return Danh sách khóa học hot
      */
@@ -667,34 +664,33 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
 
     public List<CourseModal> getDailyCoursesByStudent(int studentId) {
         List<CourseModal> list = new ArrayList<>();
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(
                 "SELECT c.* FROM course c JOIN student_course sc ON c.id = sc.courseId WHERE sc.studentId = ? AND c.courseType = 'daily' AND sc.status = 'accepted'")) {
             ps.setInt(1, studentId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 CourseModal c = new CourseModal(
-                    rs.getInt("id"),
-                    rs.getString("course_img"),
-                    rs.getInt("teacherId"),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    CourseModal.Status.valueOf(rs.getString("status")),
-                    CourseModal.CourseType.valueOf(rs.getString("courseType")),
-                    rs.getBigDecimal("feeCombo"),
-                    rs.getBigDecimal("feeDaily"),
-                    rs.getTimestamp("startDate").toLocalDateTime(),
-                    rs.getTimestamp("endDate").toLocalDateTime(),
-                    rs.getInt("weekAmount"),
-                    rs.getInt("studentEnrollment"),
-                    rs.getInt("maxStudents"),
-                    CourseModal.Level.valueOf(rs.getString("level")),
-                    rs.getBoolean("isHot"),
-                    CourseModal.Subject.valueOf(rs.getString("subject")),
-                    rs.getString("grade"),
-                    rs.getBigDecimal("discountPercentage"),
-                    rs.getTimestamp("created_at").toLocalDateTime(),
-                    rs.getTimestamp("updated_at").toLocalDateTime()
+                        rs.getInt("id"),
+                        rs.getString("course_img"),
+                        rs.getInt("teacherId"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        CourseModal.Status.valueOf(rs.getString("status")),
+                        CourseModal.CourseType.valueOf(rs.getString("courseType")),
+                        rs.getBigDecimal("feeCombo"),
+                        rs.getBigDecimal("feeDaily"),
+                        rs.getTimestamp("startDate").toLocalDateTime(),
+                        rs.getTimestamp("endDate").toLocalDateTime(),
+                        rs.getInt("weekAmount"),
+                        rs.getInt("studentEnrollment"),
+                        rs.getInt("maxStudents"),
+                        CourseModal.Level.valueOf(rs.getString("level")),
+                        rs.getBoolean("isHot"),
+                        CourseModal.Subject.valueOf(rs.getString("subject")),
+                        rs.getString("grade"),
+                        rs.getBigDecimal("discountPercentage"),
+                        rs.getTimestamp("created_at").toLocalDateTime(),
+                        rs.getTimestamp("updated_at").toLocalDateTime()
                 );
                 list.add(c);
             }
@@ -706,8 +702,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
 
     public String getNameById(int courseId) {
         String name = "";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT name FROM course WHERE id = ?")) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement("SELECT name FROM course WHERE id = ?")) {
             ps.setInt(1, courseId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -721,8 +716,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
 
     public String getCourseType(int courseId) {
         String type = null;
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT courseType FROM course WHERE id = ?")) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement("SELECT courseType FROM course WHERE id = ?")) {
             ps.setInt(1, courseId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -736,8 +730,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
 
     public BigDecimal getFeeDaily(int courseId) {
         BigDecimal fee = null;
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT feeDaily FROM course WHERE id = ?")) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement("SELECT feeDaily FROM course WHERE id = ?")) {
             ps.setInt(1, courseId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -751,8 +744,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
 
     public BigDecimal getFeeCombo(int courseId) {
         BigDecimal fee = null;
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement("SELECT feeCombo FROM course WHERE id = ?")) {
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement("SELECT feeCombo FROM course WHERE id = ?")) {
             ps.setInt(1, courseId);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -763,7 +755,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
         }
         return fee;
     }
-    
+
     public CourseDTO getCourseByIdCourse(int id) {
         String sql = """
             SELECT c.id, c.name, c.subject, c.grade, c.description, c.courseType,
@@ -809,8 +801,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
         return null;
     }
 
-    
-     public boolean incrementEnrollment(int courseId) throws Exception {
+    public boolean incrementEnrollment(int courseId) throws Exception {
         String sql = "UPDATE course SET studentEnrollment = studentEnrollment + 1 WHERE id = ?";
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, courseId);
@@ -822,8 +813,7 @@ public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
         }
     }
 
-
-public CourseDTO getCourseByIdFull(int id) {
+    public CourseDTO getCourseByIdFull(int id) {
         String sql = """
         SELECT c.*, a.name AS teacherName
         FROM course c
@@ -869,4 +859,14 @@ public CourseDTO getCourseByIdFull(int id) {
         return null;
     }
 
+    public void updateStatus(int courseId, String newStatus) {
+        String sql = "UPDATE course SET status = ? WHERE id = ?";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, newStatus);
+            ps.setInt(2, courseId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
