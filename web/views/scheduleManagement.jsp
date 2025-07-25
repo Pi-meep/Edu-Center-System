@@ -13,6 +13,8 @@
 <jsp:include page="layout/adminHeader.jsp" />
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 <c:set var="monthNumber" value="${fn:substring(dayLabel, 5, 7)}" />
 <c:set var="year" value="${fn:substring(dayLabel, 0, 4)}"/>
 <c:choose>
@@ -300,13 +302,7 @@
 </style>
 
 <div class="container-fluid">
-    <!--    <div class="db-breadcrumb">
-            <h4 class="breadcrumb-title">Quản lý Lịch học</h4>
-            <ul class="db-breadcrumb-list">
-                <li><a href="bang-dieu-khien"><i class="fa fa-home"></i>Bảng điều khiển</a></li>
-                <li>Quản lý Lịch học</li>
-            </ul>
-        </div>-->
+
 
     <!-- Calendar Container -->
     <div class="calendar-container">
@@ -321,6 +317,7 @@
                     <input type="hidden" name="direction" value="prev" />
                     <input type="hidden" name="roomSelected" value="${not empty roomSelected ? roomSelected : 'All'}">
                     <input type="hidden" name="teacherSelected" value="${not empty teacherSelected ? teacherSelected : 'All'}">
+                    <input type="hidden" name="courseSelected" value="${not empty courseSelected ? courseSelected : 'All'}">
                     <button type="submit" class="btn btn-outline-secondary" id="prevBtn">
                         <i class="fa fa-chevron-left"></i>
                     </button>
@@ -328,7 +325,24 @@
 
                 <!-- Ngày hiện tại -->
                 <fmt:formatDate var="dayLabelFormatted" value="${dayLabel}" pattern="'Ngày' d 'tháng' M 'năm' yyyy" />
-                <span class="mx-3 h5" id="currentViewLabel">${dayLabelFormatted}</span>
+                <span class="mx-3 h5 d-inline-flex align-items-center" id="currentViewLabel">
+                    ${dayLabelFormatted}
+                    <form action="quan-ly-lich-hoc" method="post" class="d-inline-block position-relative" style="margin-left: 20px">
+                        <input type="hidden" name="dayLabel" value="${dayLabel}" />
+                        <input type="hidden" name="view" value="${currentView}" />
+                        <input type="hidden" name="roomSelected" value="${not empty roomSelected ? roomSelected : 'All'}" />
+                        <input type="hidden" name="teacherSelected" value="${not empty teacherSelected ? teacherSelected : 'All'}" />
+                        <input type="hidden" name="courseSelected" value="${not empty courseSelected ? courseSelected : 'All'}">
+                        <i class="bi bi-calendar-date fs-5 text-primary"></i>
+                        <input type="date" name="dateChoose"
+                               class="position-absolute top-0 start-0"
+                               style="opacity: 0; width: 1.5em; height: 1.5em; cursor: pointer;"
+                               onchange="this.form.submit()" />
+                    </form>
+                </span>
+
+
+
 
                 <!-- Nút next -->
                 <form action="quan-ly-lich-hoc" method="post" class="ms-2">
@@ -337,6 +351,7 @@
                     <input type="hidden" name="direction" value="next" />
                     <input type="hidden" name="roomSelected" value="${not empty roomSelected ? roomSelected : 'All'}">
                     <input type="hidden" name="teacherSelected" value="${not empty teacherSelected ? teacherSelected : 'All'}">
+                    <input type="hidden" name="courseSelected" value="${not empty courseSelected ? courseSelected : 'All'}">
                     <button type="submit" class="btn btn-outline-secondary" id="nextBtn">
                         <i class="fa fa-chevron-right"></i>
                     </button>
@@ -349,6 +364,7 @@
                     <input type="hidden" name="view" value="day" />
                     <input type="hidden" name="roomSelected" value="${not empty roomSelected ? roomSelected : 'All'}">
                     <input type="hidden" name="teacherSelected" value="${not empty teacherSelected ? teacherSelected : 'All'}">
+                    <input type="hidden" name="courseSelected" value="${not empty courseSelected ? courseSelected : 'All'}">
                     <button type="submit" class="btn btn-outline-primary" id="todayBtn">Hôm nay</button>
                 </form>
             </div>
@@ -359,6 +375,7 @@
                         <input type="hidden" name="dayLabel" value="${dayLabel}" />
                         <input type="hidden" name="roomSelected" value="${not empty roomSelected ? roomSelected : 'All'}">
                         <input type="hidden" name="teacherSelected" value="${not empty teacherSelected ? teacherSelected : 'All'}">
+                        <input type="hidden" name="courseSelected" value="${not empty courseSelected ? courseSelected : 'All'}">
                         <button class="btn btn-outline-secondary me-2 ${currentView == 'day' ? 'active' : ''}" name="view" value="day">Ngày</button>
                         <button class="btn btn-outline-secondary me-2 ${currentView == 'week' || currentView == null ? 'active' : ''}" name="view" value="week">Tuần</button>
                         <button class="btn btn-outline-secondary ${currentView == 'month' ? 'active' : ''}" name="view" value="month">Tháng</button>
@@ -396,6 +413,17 @@
                         </c:forEach>
                     </select>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">Môn học </label>
+                    <select class="form-select" name="courseSelected">
+                        <option value="All" ${courseSelected == null ? 'selected' : ''}>Tất cả môn học</option>
+                        <c:forEach items="${courses}" var="c">
+                            <option value="${c.id}"
+                                    <c:if test="${c.id == courseSelected}">selected</c:if>>${c.name}
+                                    </option>
+                        </c:forEach>
+                    </select>
+                </div>
                 <div class="col-md-3 d-flex align-items-end">
                     <button type="submit" class="btn btn-primary w-100">Lọc</button>
 
@@ -410,6 +438,11 @@
 
         <!-- Lịch học -->
         <div class="calendar-body">
+            <c:if test="${not empty message}">
+                <div>
+
+                </div>
+            </c:if>
             <!-- Ngày hiện trên bảng  -->
             <c:choose>
                 <c:when test="${currentView == 'month'}">
@@ -422,6 +455,12 @@
                         Lịch học của tuần trong tháng ${monthNumber}
                     </div>
                 </c:when>
+                <c:otherwise>
+                    <div style="font-size: 24px; font-weight: bold; text-align: center; margin: 20px 0; color: #2c3e50;">
+                        <fmt:formatDate var="dayLabelFormatted" value="${dayLabel}" pattern="'Ngày' d 'tháng' M 'năm' yyyy" />
+                        Lịch học của ${dayLabelFormatted}
+                    </div>
+                </c:otherwise>
             </c:choose>
 
 
@@ -570,9 +609,9 @@
 
                 </div>
             </div>
+
         </div>
 
-        <!-- Modal Đổi lịch -->
         <!-- Modal đổi lịch / giáo viên -->
         <div class="modal fade" id="changeScheduleModal" tabindex="-1" aria-labelledby="changeScheduleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -584,13 +623,18 @@
                     </div>
 
                     <form action="quan-ly-lich-hoc" method="post">
+                        <input type="hidden" name="dayLabel" value="${dayLabel}" />
+                        <input type="hidden" name="view" value="${currentView}" />
+                        <input type="hidden" name="roomSelected" value="${not empty roomSelected ? roomSelected : 'All'}">
+                        <input type="hidden" name="teacherSelected" value="${not empty teacherSelected ? teacherSelected : 'All'}">
+                        <input type="hidden" name="courseSelected" value="${not empty courseSelected ? courseSelected : 'All'}">
                         <div class="modal-body">
 
                             <!-- Chọn loại đổi -->
                             <select class="form-select" id="changeType" name="changeType">
-                                <option value="schedule">Đổi lịch học</option>
-                                <option value="teacher">Đổi giáo viên</option>
-                                <option value="room">Đổi phòng học</option>
+                                <option value="changeSchedule">Đổi lịch học</option>
+                                <option value="changeTeacher">Đổi giáo viên</option>
+                                <option value="changeRoom">Đổi phòng học</option>
                             </select>
 
 
@@ -600,8 +644,8 @@
                                 <div class="mb-3">
                                     <label class="form-label">Chọn cách đổi lịch:</label>
                                     <select class="form-select" id="scheduleChangeMode" name="scheduleChangeMode">
-                                        <option value="by_teacher">Đổi theo giáo viên</option>
-                                        <option value="by_date">Đổi theo ngày</option>
+                                        <option value="byTeacher">Đổi theo giáo viên</option>
+                                        <option value="byDate">Đổi theo ngày</option>
                                     </select>
                                 </div>
 
@@ -621,16 +665,17 @@
                                         <select class="form-select" name="scheduleId" id="scheduleOriginalSelect">
                                             <c:forEach items="${sections}" var="s">
                                                 <option value="${s.id}" data-teacher="${s.teacherId}">
-                                                    ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted})
+                                                    ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted}
                                                 </option>
                                             </c:forEach>
                                         </select>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label class="form-label">Chọn thời gian mới:</label>
-                                        <input type="datetime-local" class="form-control" name="newTime" />
+                                        <label class="form-label">Chọn ngày mới:</label>
+                                        <input type="date" class="form-control" name="newDate" />
                                     </div>
+
                                 </div>
 
                                 <!-- Đổi toàn bộ lịch theo ngày -->
@@ -663,15 +708,10 @@
                                     <select class="form-select" name="scheduleId" id="teacherScheduleSelect">
                                         <c:forEach items="${sections}" var="s">
                                             <option value="${s.id}" data-teacher="${s.teacherId}">
-                                                ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted})
+                                                ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted}
                                             </option>
                                         </c:forEach>
                                     </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Giáo viên hiện tại:</label>
-                                    <input type="text" class="form-control" id="currentTeacherDisplay" readonly />
                                 </div>
 
                                 <div class="mb-3">
@@ -757,36 +797,44 @@
             // Gọi cập nhật sau khi load
             updateCalendarView();
 
-            const scheduleOptions = document.querySelectorAll("#scheduleOriginalSelect option");
-            const teacherScheduleOptions = document.querySelectorAll("#teacherScheduleSelect option");
-            const roomScheduleOptions = document.querySelectorAll("#roomScheduleSelect option");
+            const changeTypeSelect = document.getElementById("changeType");
+            const changeScheduleForm = document.getElementById("changeScheduleForm");
+            const changeTeacherForm = document.getElementById("changeTeacherForm");
+            const changeRoomForm = document.getElementById("changeRoomForm");
 
-            document.getElementById("changeType").addEventListener("change", function () {
-                const val = this.value;
-                document.getElementById("changeScheduleForm").style.display = (val === "schedule") ? "block" : "none";
-                document.getElementById("changeTeacherForm").style.display = (val === "teacher") ? "block" : "none";
-                document.getElementById("changeRoomForm").style.display = (val === "room") ? "block" : "none";
+            const scheduleChangeMode = document.getElementById("scheduleChangeMode");
+            const changeScheduleByTeacher = document.getElementById("changeScheduleByTeacher");
+            const changeScheduleByDate = document.getElementById("changeScheduleByDate");
+
+            // Xử lý hiển thị form theo loại thay đổi
+            function handleChangeType() {
+                const val = changeTypeSelect.value;
+
+                changeScheduleForm.style.display = (val === "changeSchedule") ? "block" : "none";
+                changeTeacherForm.style.display = (val === "changeTeacher") ? "block" : "none";
+                changeRoomForm.style.display = (val === "changeRoom") ? "block" : "none";
+            }
+
+            // Xử lý hiển thị theo kiểu đổi lịch học (giáo viên hoặc ngày)
+            function handleScheduleMode() {
+                const mode = scheduleChangeMode.value;
+
+                changeScheduleByTeacher.style.display = (mode === "byTeacher") ? "block" : "none";
+                changeScheduleByDate.style.display = (mode === "byDate") ? "block" : "none";
+            }
+
+            // Gọi lại khi thay đổi
+            changeTypeSelect.addEventListener("change", handleChangeType);
+            scheduleChangeMode.addEventListener("change", handleScheduleMode);
+
+            // Gọi ngay lần đầu để khởi tạo đúng trạng thái
+            handleChangeType();
+            handleScheduleMode();
+
+            document.getElementById("hiddenDateInput").addEventListener("change", function () {
+                this.form.submit();
             });
 
-            document.getElementById("scheduleChangeMode").addEventListener("change", function () {
-                const mode = this.value;
-                document.getElementById("changeScheduleByTeacher").style.display = (mode === "by_teacher") ? "block" : "none";
-                document.getElementById("changeScheduleByDate").style.display = (mode === "by_date") ? "block" : "none";
-            });
-
-            window.updateCurrentTeacher = function (selectEl) {
-                const selectedOption = selectEl.options[selectEl.selectedIndex];
-                const teacherId = selectedOption.getAttribute("data-teacher");
-                const display = document.getElementById("currentTeacherDisplay");
-
-                const selectedTeacher = [...document.querySelectorAll("#newTeacherSelect option")]
-                        .find(opt => opt.value === teacherId);
-                display.value = selectedTeacher ? selectedTeacher.textContent : "Không xác định";
-
-                document.querySelectorAll("#newTeacherSelect option").forEach(opt => {
-                    opt.disabled = (opt.value === teacherId);
-                });
-            };
         });
     </script>
 

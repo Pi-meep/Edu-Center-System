@@ -8,6 +8,21 @@
 <jsp:include page="/views/layout/header.jsp"/>
 
 <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 60vh;
+    }
+
+    .content-wrapper {
+        flex: 1;
+    }
     body {
         background-color: #f8fafc;
         font-family: Arial, sans-serif;
@@ -83,26 +98,28 @@
         margin-top: 30px;
     }
 </style>
+<div class="page-wrapper">
+    <div class="content-wrapper">
+        <div class="container">
+            <div class="page-title">Danh sách khoá học đang học</div>
 
-<div class="container">
-    <div class="page-title">Danh sách khoá học đang học</div>
+            <c:if test="${empty courses}">
+                <div class="no-course">Bạn chưa đăng ký khóa học nào.</div>
+            </c:if>
 
-    <c:if test="${empty courses}">
-        <div class="no-course">Bạn chưa đăng ký khóa học nào.</div>
-    </c:if>
-
-    <div class="grid-container">
-        <c:forEach var="course" items="${courses}">
-            <div class="course-card">
-                <div class="course-title">${course.name}</div>
-                <div class="course-action">
-                    <a class="action-link" href="studentAssignmentServlet?courseId=${course.id}">
-                        📘 Xem bài tập
-                    </a>
-                </div>
+            <div class="grid-container">
+                <c:forEach var="course" items="${courses}">
+                    <div class="course-card">
+                        <div class="course-title">${course.name}</div>
+                        <div class="course-action">
+                            <a class="action-link" href="studentAssignmentServlet?courseId=${course.id}">
+                                📘 Xem bài tập
+                            </a>
+                        </div>
+                    </div>
+                </c:forEach>
             </div>
-        </c:forEach>
+        </div>
     </div>
+    <jsp:include page="layout/footer.jsp" />
 </div>
-
-<jsp:include page="layout/footer.jsp" />

@@ -9,7 +9,11 @@
 
 <div class="container mt-4">
     <h4 class="mb-4"><i class="fas fa-plus-circle text-success me-2"></i>Thêm khóa học mới</h4>
-    <form id="courseForm" action="quan-ly-khoa-hoc?action=add" method="post" onsubmit="return validateForm()">
+    <form id="courseForm" action="quan-ly-khoa-hoc?action=add" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <div class="form-group mb-3">
+            <label for="courseImg" class="form-label">Ảnh khóa học</label>
+            <input type="file" class="form-control form-control-sm" name="course_img" id="courseImg" accept="image/*">
+        </div>
 
         <div class="mb-3">
             <label class="form-label">Tên khoá học</label>
@@ -197,9 +201,6 @@
             <a href="quan-ly-khoa-hoc" class="btn btn-secondary">Hủy</a>
     </form>
 </div>
-
-<jsp:include page="layout/footer.jsp" /> 
-
 <script>
     let tenBiTrung = false;
 

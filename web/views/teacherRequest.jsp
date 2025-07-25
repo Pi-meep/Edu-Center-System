@@ -497,22 +497,16 @@
                 <div class="teacherrequest-form-group">
                     <label class="teacherrequest-label">Loại yêu cầu</label>
                     <div class="teacherrequest-type-grid" id="requestTypeGrid">
-                        <button class="teacherrequest-type-btn" data-type="teacher-absent">
+                        <button class="teacherrequest-type-btn" data-type="TEACHER_ABSENT">
                             <div class="teacherrequest-type-content">
                                 <span class="teacherrequest-type-icon">🏠</span>
                                 <span class="teacherrequest-type-label">Xin nghỉ</span>
                             </div>
                         </button>
-                        <button class="teacherrequest-type-btn" data-type="teacher-change-class">
-                            <div class="teacherrequest-type-content">
-                                <span class="teacherrequest-type-icon">🏢</span>
-                                <span class="teacherrequest-type-label">Đổi phòng học</span>
-                            </div>
-                        </button>
-                        <button class="teacherrequest-type-btn" data-type="teacher-add-section">
+                        <button class="teacherrequest-type-btn" data-type="TEACHER_CHANGE_SECTION">
                             <div class="teacherrequest-type-content">
                                 <span class="teacherrequest-type-icon">➕</span>
-                                <span class="teacherrequest-type-label">Thêm lớp bù</span>
+                                <span class="teacherrequest-type-label">Xin dạy bù</span>
                             </div>
                         </button>
                     </div>
@@ -577,9 +571,8 @@
                                         <div class="teacherrequest-item-header">
                                             <h3 class="teacherrequest-item-title">
                                                 <c:choose>
-                                                    <c:when test="${request.type == 'teacher-absent'}">Xin nghỉ</c:when>
-                                                    <c:when test="${request.type == 'teacher-change-class'}">Đổi phòng học</c:when>
-                                                    <c:when test="${request.type == 'teacher-add-section'}">Thêm lớp bù</c:when>
+                                                    <c:when test="${request.type == 'TEACHER_ABSENT'}">Xin nghỉ</c:when>
+                                                    <c:when test="${request.type == 'TEACHER_CHANGE_SECTION'}">Xin dạy bù</c:when>
                                                     <c:otherwise>${request.type}</c:otherwise>
                                                 </c:choose>
                                             </h3>
@@ -612,9 +605,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="teacherrequest-item-actions">
-                                        <button class="teacherrequest-action-btn detail" onclick="viewRequestDetail(${request.id})">Xem chi tiết</button>
-                                    </div>
                                 </div>
                             </div>
                         </c:forEach>
@@ -633,7 +623,6 @@
 </div>
 
 <script>
-    // Xử lý chọn loại yêu cầu
     document.querySelectorAll('.teacherrequest-type-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.teacherrequest-type-btn').forEach(b => b.classList.remove('selected'));
@@ -647,7 +636,7 @@
             const sectionGroup = document.getElementById('sectionGroup');
             const courseGroup = document.getElementById('courseGroup');
             
-            if (requestType === 'teacher-add-section') {
+            if (requestType === 'TEACHER_CHANGE_SECTION') {
                 sectionGroup.style.display = 'none';
                 courseGroup.style.display = 'block';
             } else {
@@ -657,7 +646,6 @@
         });
     });
 
-    // Form validation trước khi submit
     document.getElementById('createRequestForm').addEventListener('submit', function(e) {
         const description = document.getElementById('requestDescription').value;
         const selectedType = document.getElementById('selectedType').value;
@@ -668,7 +656,7 @@
             return;
         }
         
-        if (selectedType === 'teacher-add-section') {
+        if (selectedType === 'TEACHER_CHANGE_SECTION') {
             const courseId = document.getElementById('courseSelect').value;
             if (!courseId) {
                 e.preventDefault();
@@ -685,7 +673,6 @@
         }
     });
 
-    // Tìm kiếm theo nội dung
     document.getElementById('searchInput').addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         const requestItems = document.querySelectorAll('.teacherrequest-item');
@@ -702,13 +689,11 @@
         });
     });
 
-    // Hàm xem chi tiết request
     function viewRequestDetail(requestId) {
         alert(`Xem chi tiết yêu cầu ID: ${requestId}`);
     }
 </script>
 
-<!-- Hiển thị thông báo lỗi/thành công nếu có -->
 <c:if test="${not empty error}">
     <script>
         alert('${error}');

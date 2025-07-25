@@ -15,9 +15,20 @@
                 <i class="fas fa-edit me-2"></i>Chỉnh sửa khóa học
             </h4>
 
-            <form method="post" action="quan-ly-khoa-hoc" id="editCourseForm">
+            <form method="post" action="quan-ly-khoa-hoc" enctype="multipart/form-data" id="editCourseForm">
                 <input type="hidden" name="action" value="update" />
                 <input type="hidden" name="id" value="${course.id}" />
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Ảnh khóa học</label>
+                    <input type="file" class="form-control" name="course_img" accept="image/*" />
+                    <c:if test="${not empty course.course_img}">
+                        <div class="mt-2">
+                            <span>Ảnh hiện tại:</span><br/>
+                            <img src="assets/banners_course/${course.course_img}" alt="Ảnh hiện tại" style="max-height: 120px;" class="rounded shadow"/>
+                            <input type="hidden" name="oldImage" value="${course.course_img}" />
+                        </div>
+                    </c:if>
+                </div>
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Giáo viên</label>
                     <select name="teacherId" class="form-select" required>
@@ -133,7 +144,6 @@
     </div>
 </div>
 
-<jsp:include page="layout/footer.jsp" />
 <script>
     var tenBiTrung = false;
 

@@ -103,6 +103,7 @@ public class CourseDAO extends DBUtil {
                 dto.setDiscountPercentage(rs.getBigDecimal("discountPercentage"));
                 dto.setStatus(rs.getString("status"));
                 dto.setTeacherName(rs.getString("teacherName"));
+                dto.setCourseImg(rs.getString("course_img"));
                 courseList.add(dto);
             }
 
@@ -157,6 +158,66 @@ public class CourseDAO extends DBUtil {
         }
         return courseList;
     }
+
+public List<CourseModal> getEnrollCourseByAccountId(int accountId) {
+    List<CourseModal> courseList = new ArrayList<>();
+    
+    String sql = """
+        SELECT c.*
+        FROM account a
+        JOIN student s ON s.accountId = a.id
+        JOIN student_course sc ON sc.studentId = s.id
+        JOIN course c ON c.id = sc.courseId
+        WHERE a.id = ?
+    """;
+
+    try (Connection connection = DBUtil.getConnection(); 
+         PreparedStatement pre = connection.prepareStatement(sql)) {
+         
+        pre.setInt(1, accountId);
+
+        try (ResultSet rs = pre.executeQuery()) {
+            while (rs.next()) {
+                courseList.add(mapResultSetToCourse(rs));
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return courseList;
+}
+
+public List<CourseModal> getUnenrolledCoursesByAccountId(int accountId) {
+    List<CourseModal> courseList = new ArrayList<>();
+    
+    String sql = """
+        SELECT c.*
+        FROM course c
+        WHERE c.id NOT IN (
+            SELECT sc.courseId
+            FROM student_course sc
+            JOIN student s ON sc.studentId = s.id
+            WHERE s.accountId = ?
+        )
+    """;
+
+    try (Connection connection = DBUtil.getConnection(); 
+         PreparedStatement pre = connection.prepareStatement(sql)) {
+         
+        pre.setInt(1, accountId);
+
+        try (ResultSet rs = pre.executeQuery()) {
+            while (rs.next()) {
+                courseList.add(mapResultSetToCourse(rs));
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return courseList;
+}
 
     /**
      * Lấy danh sách khóa học do một giáo viên cụ thể giảng dạy (theo
@@ -305,7 +366,7 @@ public class CourseDAO extends DBUtil {
                 startDate=?, endDate=?,
                 studentEnrollment=?, maxStudents=?,
                 weekAmount=?, level=?,
-                status=?, teacherId=?
+                status=?, teacherId=?,course_img=?
             WHERE id=?
         """;
 
@@ -324,7 +385,8 @@ public class CourseDAO extends DBUtil {
             ps.setString(11, c.getLevel().name());
             ps.setString(12, c.getStatus().toString());
             ps.setInt(13, c.getTeacherId());
-            ps.setInt(14, c.getId());
+            ps.setString(14, c.getCourse_img());
+            ps.setInt(15, c.getId());
 
             ps.executeUpdate();
         } catch (Exception e) {
@@ -455,8 +517,8 @@ public class CourseDAO extends DBUtil {
                 weekAmount, studentEnrollment,
                 maxStudents, level,
                 isHot, discountPercentage,
-                status, teacherId
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                 status, teacherId,course_img
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """;
         // Lấy kết nối và chuẩn bị statement cho phép lấy khóa tự tăng
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -509,7 +571,8 @@ public class CourseDAO extends DBUtil {
             }
 
             ps.setString(16, c.getStatus().toString());
-            ps.setInt(17, c.getTeacherId());
+            ps.setInt(17, c.getTeacherId()); 
+            ps.setString(18, c.getCourse_img());
 
             ps.executeUpdate();
             // Lấy ID tự động sinh ra từ CSDL
@@ -757,6 +820,53 @@ public class CourseDAO extends DBUtil {
             e.printStackTrace();
             return false;
         }
+    }
+
+
+public CourseDTO getCourseByIdFull(int id) {
+        String sql = """
+        SELECT c.*, a.name AS teacherName
+        FROM course c
+        JOIN teacher t ON c.teacherId = t.id
+        JOIN account a ON t.accountId = a.id
+        WHERE c.id = ?
+    """;
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    CourseDTO course = new CourseDTO();
+                    course.setId(rs.getInt("id"));
+                    course.setName(rs.getString("name"));
+                    course.setSubject(rs.getString("subject"));
+                    course.setGrade(rs.getString("grade"));
+                    course.setDescription(rs.getString("description"));
+                    course.setCourseType(rs.getString("courseType"));
+                    course.setFeeCombo(rs.getBigDecimal("feeCombo"));
+                    course.setFeeDaily(rs.getBigDecimal("feeDaily"));
+                    course.setStartDate(rs.getTimestamp("startDate"));
+                    course.setEndDate(rs.getTimestamp("endDate"));
+                    course.setWeekAmount(rs.getInt("weekAmount"));
+                    course.setStudentEnrollment(rs.getInt("studentEnrollment"));
+                    course.setMaxStudents(rs.getInt("maxStudents"));
+                    course.setLevel(rs.getString("level"));
+                    course.setIsHot(rs.getBoolean("isHot"));
+                    course.setDiscountPercentage(rs.getBigDecimal("discountPercentage"));
+                    course.setStatus(rs.getString("status"));
+                    course.setTeacherName(rs.getString("teacherName"));
+                    course.setCourseImg(rs.getString("course_img"));
+
+                    return course;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

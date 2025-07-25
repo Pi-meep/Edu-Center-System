@@ -5,31 +5,68 @@
 package modal;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 /**
  *
  * @author Astersa
  */
 public class RequestModal {
+
     private Integer id;
     private Integer requestBy;
     private Integer processedBy;
-    private String type;
+    private ReqType type;
     private String description;
     private Status status;
     private Integer sectionId;
     private Integer courseId;
+    private Integer fromCourseId;
+    private Integer toCourseId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public Date getCreatedAtAsDate() {
+        if (createdAt == null) return null;
+        return Date.from(createdAt.atZone(ZoneId.systemDefault()).toInstant());
+    }
+    
+    public enum ReqType {
+        STUDENT_CHANGE_COURSE("Xin thay đổi Lớp Học"),
+        STUDENT_ABSENT_REQUEST("Xin nghỉ học"),
+        TEACHER_ABSENT("Xin nghỉ dạy"),
+        TEACHER_CHANGE_SECTION("Xin dạy bù"),
+        OTHER("Khác");
+
+        private final String displayName;
+
+        ReqType(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+
     public enum Status {
-        pending, rejected, accepted
+        pending("Đang xử lý"), rejected("Đã từ chối"), accepted("Đã chấp nhận");
+        private final String displayName;
+
+        Status(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 
     public RequestModal() {
     }
 
-    public RequestModal(Integer id, Integer requestBy, Integer processedBy, String type, String description, Status status, Integer sectionId, Integer courseId, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public RequestModal(Integer id, Integer requestBy, Integer processedBy, ReqType type, String description, Status status, Integer sectionId, Integer courseId, Integer fromCourseId, Integer toCourseId, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.requestBy = requestBy;
         this.processedBy = processedBy;
@@ -38,6 +75,8 @@ public class RequestModal {
         this.status = status;
         this.sectionId = sectionId;
         this.courseId = courseId;
+        this.fromCourseId = fromCourseId;
+        this.toCourseId = toCourseId;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -66,11 +105,11 @@ public class RequestModal {
         this.processedBy = processedBy;
     }
 
-    public String getType() {
+    public ReqType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ReqType type) {
         this.type = type;
     }
 
@@ -106,6 +145,22 @@ public class RequestModal {
         this.courseId = courseId;
     }
 
+    public Integer getFromCourseId() {
+        return fromCourseId;
+    }
+
+    public void setFromCourseId(Integer fromCourseId) {
+        this.fromCourseId = fromCourseId;
+    }
+
+    public Integer getToCourseId() {
+        return toCourseId;
+    }
+
+    public void setToCourseId(Integer toCourseId) {
+        this.toCourseId = toCourseId;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -122,8 +177,4 @@ public class RequestModal {
         this.updatedAt = updatedAt;
     }
 
-    @Override
-    public String toString() {
-        return "RequestModal{" + "id=" + id + ", requestBy=" + requestBy + ", processedBy=" + processedBy + ", type=" + type + ", description=" + description + ", status=" + status + ", sectionId=" + sectionId + ", courseId=" + courseId + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
-    }
-} 
+}

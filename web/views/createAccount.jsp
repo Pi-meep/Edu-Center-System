@@ -282,6 +282,11 @@
             .hidden {
                 display: none;
             }
+            
+            .readonly-field {
+                background-color: #e9ecef !important;
+                color: #6c757d;
+            }
            
         </style>
     </head>
@@ -291,6 +296,7 @@
 
             <div class="info-note">
                 <strong>Lưu ý:</strong> Tài khoản được tạo sẽ có mật khẩu mặc định là <strong>123456</strong>. 
+                Thông tin được điền sẵn từ tư vấn, bạn có thể chỉnh sửa trước khi tạo tài khoản.
             </div>
 
             <c:if test="${not empty error}">
@@ -308,7 +314,8 @@
                 <div class="form-group">
                     <label for="username">Tên đăng nhập (username): <span class="required">*</span></label>
                     <input type="text" id="username" name="username" required 
-value="${consultation.email}"/>
+                           value="${not empty consultation.email ? consultation.email : ''}"
+                           placeholder="Nhập tên đăng nhập"/>
                 </div>
 
                 <div class="form-group">
@@ -329,12 +336,12 @@ value="${consultation.email}"/>
                 <div class="form-group">
                     <label for="role">Vai trò: <span class="required">*</span></label>
                     <select id="role" name="role" required onchange="toggleRole(this.value)">
-                        <option value="parent">Phụ huynh</option>
-                        <option value="teacher">Giáo viên</option>
+                        <option value="parent" ${defaultRole == 'parent' ? 'selected' : ''}>Phụ huynh</option>
+                        <option value="teacher" ${defaultRole == 'teacher' ? 'selected' : ''}>Giáo viên</option>
                     </select>
                 </div>
 
-                <div id="parentFields" class="role-fields">
+                <div id="parentFields" class="role-fields ${defaultRole == 'teacher' ? 'hidden' : ''}">
                     <h3>Thông tin phụ huynh</h3>
                     <div class="form-group">
                         <label for="relationship">Mối quan hệ với học sinh:</label>
@@ -346,12 +353,13 @@ value="${consultation.email}"/>
                     </div>
                 </div>
 
-                <div id="teacherFields" class="role-fields hidden">
+                <div id="teacherFields" class="role-fields ${defaultRole == 'parent' ? 'hidden' : ''}">
                     <h3>Thông tin giáo viên</h3>
                     <div class="form-group">
                         <label for="experience">Kinh nghiệm:</label>
                         <input type="text" id="experience" name="experience" 
-                               value="${consultation.experience}" />
+                               value="${consultation.experience}" 
+                               placeholder="Nhập kinh nghiệm giảng dạy"/>
                     </div>
 
                     <div class="certificate-section">
@@ -368,11 +376,14 @@ value="${consultation.email}"/>
 
                                         <input type="text" name="existingCertificateName_${cert.id}" 
                                                class="certificate-name-input"
-                                               placeholder="Nhập tên chứng chỉ..." />
+                                               placeholder="Nhập tên chứng chỉ..." 
+                                               value="Chứng chỉ từ tư vấn"/>
 
                                         <div class="certificate-image-container">
                                             <img src="${pageContext.request.contextPath}/assets/${cert.imageURL}" 
-                                                 alt="Chứng chỉ" class="certificate-image" />
+                                                 alt="Chứng chỉ" class="certificate-image" 
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                                            <div style="display:none; padding: 20px; color: #666;">Không thể tải hình ảnh chứng chỉ</div>
                                         </div>
                                     </div>
                                 </c:forEach>

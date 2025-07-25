@@ -116,7 +116,7 @@ public class ParentRequest extends HttpServlet {
                 
                 RequestModal newRequest = new RequestModal();
                 newRequest.setRequestBy(loggedInUserId);
-                newRequest.setType(type);
+                newRequest.setType(RequestModal.ReqType.valueOf(type));
                 newRequest.setDescription(description.trim());
                 newRequest.setStatus(RequestModal.Status.pending);
                 newRequest.setCreatedAt(LocalDateTime.now());

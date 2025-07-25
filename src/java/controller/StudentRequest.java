@@ -10,13 +10,11 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import dao.RequestDAO;
 import dao.CourseDAO;
 import modal.RequestModal;
 import modal.RequestModal.Status;
-import modal.AccountModal;
 import modal.CourseModal;
 
 /**
@@ -48,7 +46,6 @@ public class StudentRequest extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         
-        // Lấy thông tin user từ request attribute (được set bởi AuthFilter)
         String loggedInUserName = (String) request.getAttribute("loggedInUserName");
         String loggedInUserRole = (String) request.getAttribute("loggedInUserRole");
         Integer loggedInUserId = (Integer) request.getAttribute("loggedInUserId");
@@ -60,10 +57,8 @@ public class StudentRequest extends HttpServlet {
         }
         
         try {
-            // Lấy danh sách request của user hiện tại
             List<RequestModal> userRequests = requestDAO.getRequestsByUser(loggedInUserId);
             
-            // Format date cho mỗi request
             for (RequestModal req : userRequests) {
                 if (req.getCreatedAt() != null) {
                     String formattedDate = req.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
@@ -74,8 +69,10 @@ public class StudentRequest extends HttpServlet {
             request.setAttribute("requests", userRequests);
             
             // Lấy danh sách khóa học đang hoạt động
-            List<CourseModal> activeCourses = courseDAO.getCourseByStatus("activated");
-            request.setAttribute("courses", activeCourses);
+            List<CourseModal> fromCourses = courseDAO.getEnrollCourseByAccountId(loggedInUserId);
+            List<CourseModal> toCourses = courseDAO.getUnenrolledCoursesByAccountId(loggedInUserId);
+            request.setAttribute("fromCourses", fromCourses);
+            request.setAttribute("toCourses", toCourses);
             
         } catch (Exception e) {
             request.setAttribute("error", "Có lỗi xảy ra khi tải dữ liệu: " + e.getMessage());
@@ -123,9 +120,9 @@ public class StudentRequest extends HttpServlet {
         try {
             String type = request.getParameter("type");
             String description = request.getParameter("description");
-            String courseIdStr = request.getParameter("courseId");
+            String fromCourseIdStr = request.getParameter("fromCourseId");
+            String toCourseIdStr = request.getParameter("toCourseId");
             
-            // Validation
             if (type == null || type.trim().isEmpty()) {
                 request.setAttribute("error", "Loại yêu cầu không được để trống");
                 doGet(request, response);
@@ -138,18 +135,19 @@ public class StudentRequest extends HttpServlet {
                 return;
             }
             
-            // Tạo request object
             RequestModal newRequest = new RequestModal();
             newRequest.setRequestBy(loggedInUserId);
-            newRequest.setType(type);
+            newRequest.setType(RequestModal.ReqType.valueOf(type));
             newRequest.setDescription(description);
             newRequest.setStatus(Status.pending);
             
             // Xử lý courseId nếu có
-            if (courseIdStr != null && !courseIdStr.trim().isEmpty()) {
+            if (fromCourseIdStr != null && !fromCourseIdStr.trim().isEmpty() && toCourseIdStr != null && !toCourseIdStr.trim().isEmpty()) {
                 try {
-                    Integer courseId = Integer.parseInt(courseIdStr);
-                    newRequest.setCourseId(courseId);
+                    Integer fromCourseId = Integer.parseInt(fromCourseIdStr);
+                    Integer toCourseId = Integer.parseInt(toCourseIdStr);
+                    newRequest.setFromCourseId(fromCourseId);
+                    newRequest.setToCourseId(toCourseId);
                 } catch (NumberFormatException e) {
                     request.setAttribute("error", "ID khóa học không hợp lệ");
                     doGet(request, response);

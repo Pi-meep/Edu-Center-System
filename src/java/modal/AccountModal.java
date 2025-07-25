@@ -29,7 +29,7 @@ public class AccountModal {
     private LocalDateTime updatedAt;
 
     public enum Status {
-        active, inactive
+        active, inactive, pending
     }
 
     public enum Role {

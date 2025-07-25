@@ -533,12 +533,12 @@
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                                         <c:if test="${course.courseType == 'combo'}">
                                             <span style="font-size: 1.1rem; font-weight: bold; color: #673ab7;">
-                                                <fmt:formatNumber value="${course.feeCombo}" type="currency" currencySymbol="VNĐ"/>
+                                                <fmt:formatNumber value="${course.feeCombo}" type="number" maxFractionDigits="0" groupingUsed="true"/> VNĐ
                                             </span>
                                         </c:if>
                                         <c:if test="${course.courseType == 'daily'}">
                                             <span style="font-size: 1.1rem; font-weight: bold; color: #673ab7;">
-                                                <fmt:formatNumber value="${course.feeDaily}" type="currency" currencySymbol="VNĐ"/> / buổi
+                                                <fmt:formatNumber value="${course.feeDaily}" type="number" maxFractionDigits="0" groupingUsed="true" /> VNĐ / buổi
                                             </span>
                                         </c:if>
                                         <span style="font-size: 0.9rem; color: #666;">

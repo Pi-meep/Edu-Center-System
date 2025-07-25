@@ -599,5 +599,34 @@ public class StudentSectionDAO {
         }
     }
 
+    public void deleteAllByStudentId(int studentId) {
+        String sql = "DELETE FROM student_section WHERE studentId = ?";
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, studentId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int createStudentSection(int studentId, int sectionId) {
+        String sql = """
+            INSERT INTO student_section (studentId, sectionId, isPaid, attendanceStatus, created_at)
+            VALUES (?, ?, false, 'absent', CURRENT_TIMESTAMP)
+        """;
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, studentId);
+            ps.setInt(2, sectionId);
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
      
 }

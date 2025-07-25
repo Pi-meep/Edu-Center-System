@@ -795,4 +795,193 @@ public class SectionDAO extends DBUtil {
         return list;
     }
 
+    public String rescheduleAllSectionsInDay(LocalDate fromDate, LocalDate toDate) {
+        String getSectionsSQL = "SELECT id FROM section WHERE DATE(dateTime) = ?";
+        List<Integer> sectionIds = new ArrayList<>();
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(getSectionsSQL)) {
+
+            stmt.setDate(1, java.sql.Date.valueOf(fromDate));
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                sectionIds.add(rs.getInt("id"));
+            }
+
+            for (int sectionId : sectionIds) {
+                String result = updateSectionDate(sectionId, toDate);
+                if (result.equalsIgnoreCase("CONFLICT_TEACHER")) {
+                    return "Lỗi: Giáo viên có ca học bị trùng vào ngày " + toDate + ", Section ID: " + sectionId;
+                } else if (result.equalsIgnoreCase("CONFLICT_CLASSROOM")) {
+                    return "Lỗi: Phòng học bị trùng vào ngày " + toDate + ", Section ID: " + sectionId;
+                } else if (result.equalsIgnoreCase("NOT_FOUND")) {
+                    return "Lỗi: Không tìm thấy lớp học với ID: " + sectionId;
+                } else if (result.equalsIgnoreCase("ERROR")) {
+                    return "Lỗi hệ thống khi xử lý lớp học ID: " + sectionId;
+                }
+            }
+            return "Tất cả các ca đã được chuyển từ " + fromDate + " sang " + toDate + " thành công.";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Lỗi khi truy vấn danh sách ca học trong ngày " + fromDate;
+        }
+    }
+
+    public String updateSectionDate(int sectionId, LocalDate newDate) {
+        String checkTeacherSQL = """
+            SELECT COUNT(*) FROM section
+            WHERE id != ?
+              AND teacherId = (SELECT teacherId FROM section WHERE id = ?)
+              AND TIME(startTime) = (SELECT TIME(startTime) FROM section WHERE id = ?)
+              AND DATE(dateTime) = ?
+        """;
+
+        String checkRoomSQL = """
+            SELECT COUNT(*) FROM section
+            WHERE id != ?
+              AND classroom = (SELECT classroom FROM section WHERE id = ?)
+              AND TIME(startTime) = (SELECT TIME(startTime) FROM section WHERE id = ?)
+              AND DATE(dateTime) = ?
+        """;
+
+        String updateSQL = """
+            UPDATE section
+            SET dateTime = ?
+            WHERE id = ?
+        """;
+
+        try (Connection conn = DBUtil.getConnection()) {
+
+            // ✅ Check trùng giáo viên
+            try (PreparedStatement stmt = conn.prepareStatement(checkTeacherSQL)) {
+                stmt.setInt(1, sectionId);
+                stmt.setInt(2, sectionId);
+                stmt.setInt(3, sectionId);
+                stmt.setDate(4, java.sql.Date.valueOf(newDate));
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return "CONFLICT_TEACHER";
+                }
+            }
+
+            // ✅ Check trùng phòng học
+            try (PreparedStatement stmt = conn.prepareStatement(checkRoomSQL)) {
+                stmt.setInt(1, sectionId);
+                stmt.setInt(2, sectionId);
+                stmt.setInt(3, sectionId);
+                stmt.setDate(4, java.sql.Date.valueOf(newDate));
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return "CONFLICT_CLASSROOM";
+                }
+            }
+
+            // ✅ Cập nhật nếu không trùng
+            try (PreparedStatement stmt = conn.prepareStatement(updateSQL)) {
+                LocalDateTime newDateTime = newDate.atStartOfDay();
+                stmt.setTimestamp(1, Timestamp.valueOf(newDateTime));
+                stmt.setInt(2, sectionId);
+                int rows = stmt.executeUpdate();
+                return (rows > 0) ? "SUCCESS" : "NOT_FOUND";
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "ERROR";
+        }
+    }
+
+    public String updateSectionTeacher(int sectionId, int newTeacherId) {
+        String getSectionSQL = "SELECT DATE(dateTime) AS date, slotId FROM section WHERE id = ?";
+        String checkConflictSQL = """
+        SELECT COUNT(*) FROM section
+        WHERE teacherId = ? AND slotId = ? AND DATE(dateTime) = ?
+          AND id != ?
+    """;
+        String updateSQL = "UPDATE section SET teacherId = ? WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection(); PreparedStatement getStmt = conn.prepareStatement(getSectionSQL); PreparedStatement checkStmt = conn.prepareStatement(checkConflictSQL); PreparedStatement updateStmt = conn.prepareStatement(updateSQL)) {
+
+            // 1. Lấy ngày và ca học của section
+            getStmt.setInt(1, sectionId);
+            ResultSet rs = getStmt.executeQuery();
+
+            if (!rs.next()) {
+                return "ERROR_NOT_FOUND"; // Không có lớp học
+            }
+
+            java.sql.Date date = rs.getDate("date");
+            int slotId = rs.getInt("slotId");
+
+            // 2. Kiểm tra trùng lịch giáo viên
+            checkStmt.setInt(1, newTeacherId);
+            checkStmt.setInt(2, slotId);
+            checkStmt.setDate(3, date);
+            checkStmt.setInt(4, sectionId);
+
+            ResultSet checkRs = checkStmt.executeQuery();
+            checkRs.next();
+            int conflictCount = checkRs.getInt(1);
+
+            if (conflictCount > 0) {
+                return "TEACHER_CONFLICT"; // Trùng lịch giáo viên
+            }
+
+            // 3. Cập nhật giáo viên mới
+            updateStmt.setInt(1, newTeacherId);
+            updateStmt.setInt(2, sectionId);
+            int rows = updateStmt.executeUpdate();
+
+            if (rows > 0) {
+                return "SUCCESS";
+            } else {
+                return "ERROR_UPDATE_FAILED";
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "ERROR_DATABASE";
+        }
+    }
+
+    public String updateSectionClassroom(int sectionId, String newRoom) {
+        String checkSql = """
+        SELECT COUNT(*) FROM section
+        WHERE classroom = ? AND id != ? 
+              AND date = (SELECT date FROM section WHERE id = ?)
+              AND startTime = (SELECT startTime FROM section WHERE id = ?)
+    """;
+
+        String updateSql = "UPDATE section SET classroom = ? WHERE id = ?";
+
+        try (Connection conn = DBUtil.getConnection()) {
+            // 1. Check trùng phòng
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+                checkStmt.setString(1, newRoom);
+                checkStmt.setInt(2, sectionId);
+                checkStmt.setInt(3, sectionId);
+                checkStmt.setInt(4, sectionId);
+
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        return "ROOM_CONFLICT"; // Trùng phòng học
+                    }
+                }
+            }
+
+            // 2. Nếu không trùng thì update
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                updateStmt.setString(1, newRoom);
+                updateStmt.setInt(2, sectionId);
+
+                int rows = updateStmt.executeUpdate();
+                return (rows > 0) ? "SUCCESS" : "ERROR_NOT_FOUND";
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "ERROR_DATABASE";
+        }
+    }
+
+
 }

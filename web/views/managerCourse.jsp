@@ -139,6 +139,7 @@
             <thead class="table-light">
                 <tr>
                     <th>STT</th>
+                    <th>Ảnh</th>
                     <th>Tên</th>
                     <th>Giáo viên</th>
                     <th>Môn</th>
@@ -156,6 +157,18 @@
                 <c:forEach var="course" items="${courseList}" varStatus="status">
                     <tr>
                         <td>${status.index + 1}</td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${not empty course.courseImg}">
+                                    <img src="${pageContext.request.contextPath}/assets/banners_course/${course.courseImg}" 
+                                         alt="Ảnh khóa học" 
+                                         style="width: 120px; height: auto;">
+                                </c:when>
+                                <c:otherwise>
+                                    <img src="${pageContext.request.contextPath}/images/default_course.jpg" alt="Ảnh mặc định" style="width: 100px;">
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
                         <td class="text-start">${course.name}</td>
                         <td>${course.teacherName}</td>
                         <td>
@@ -259,5 +272,4 @@
         </table>
     </div>
 </div>
-<jsp:include page="layout/footer.jsp" />
 

@@ -227,19 +227,9 @@
                             </div>
                         </li>
 
-                        <!-- Avatar -->
                         <li>
-                            <a href="#" class="ttr-material-button ttr-submenu-toggle">
-                                <span class="ttr-user-avatar">
-                                    <c:choose>
-                                        <c:when test="${not empty sessionScope.user.avatar}">
-                                            <img alt="avatar" src="assets/avatars/${sessionScope.user.avatar}" width="32" height="32">
-                                        </c:when>
-                                        <c:otherwise>
-                                            <img alt="default avatar" src="assets/images/default-avatar.png" width="32" height="32">
-                                        </c:otherwise>
-                                    </c:choose>
-                                </span>
+                            <a href="dang-xuat" class="ttr-material-button ttr-submenu-toggle">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
                             </a>
                         </li>
                     </ul>
@@ -283,7 +273,7 @@
                                         <span class="ttr-label">Quản lý lịch học </span>
                                     </a>
                                 </li>
-                                 <li>
+                                <li>
                                     <a href="javascript:void(0);" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fas fa-users"></i></span>
                                         <span class="ttr-label">Quản lý tài khoản </span>
@@ -297,8 +287,8 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#" class="ttr-material-button">
-                                                <span class="ttr-icon"><i class="fa fa-envelope-open-text"></i></span>
+                                            <a href="duyet-tai-khoan" class="ttr-material-button">
+                                                <span class="ttr-icon"><i class="fas fa-user-plus"></i></span>
                                                 <span class="ttr-label">Yêu cầu mở tài khoản </span>
                                             </a>
                                         </li>
@@ -327,7 +317,7 @@
                                     </ul>
                                 </li>
                                 <li>
-                                    <a href="admin-ca-nhan" class="ttr-material-button">
+                                    <a href="userProfile" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-address-card"></i></span>
                                         <span class="ttr-label">Hồ sơ</span>
                                     </a>
@@ -341,19 +331,27 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="admin-quan-ly-tai-khoan" class="ttr-material-button">
-                                        <span class="ttr-icon"><i class="fa fa-user-circle"></i></span>
-                                        <span class="ttr-label">Tài khoản</span>
+                                    <a href="javascript:void(0);" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fas fa-users"></i></span>
+                                        <span class="ttr-label">Quản lý tài khoản </span>
+                                        <span class="ttr-arrow-icon"><i class="fa fa-angle-down"></i></span>
                                     </a>
-                                </li>
+                                    <ul>
+                                        <li>
+                                            <a href="quan-ly-tai-khoan" class="ttr-material-button">
+                                                <span class="ttr-icon"><i class="fas fa-users"></i></span>
+                                                <span class="ttr-label">Quản lý tài khoản </span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="duyet-tai-khoan" class="ttr-material-button">
+                                                <span class="ttr-icon"><i class="fas fa-user-plus"></i></span>
+                                                <span class="ttr-label">Yêu cầu mở tài khoản </span>
+                                            </a>
+                                        </li>
+                                    </ul>
                                 <li>
-                                    <a href="admin-quan-ly-nhan-su" class="ttr-material-button">
-                                        <span class="ttr-icon"><i class="fa fa-user-circle"></i></span>
-                                        <span class="ttr-label">Tài khoản nhân sự</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="admin-ca-nhan" class="ttr-material-button">
+                                    <a href="userProfile" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-address-card"></i></span>
                                         <span class="ttr-label">Hồ sơ</span>
                                     </a>
@@ -367,21 +365,27 @@
                             </c:when>
                             <c:when test="${loggedInUserRole == 'staff'}">
                                 <li>
-                                    <a href="admin-quan-ly-tai-khoan" class="ttr-material-button">
+                                    <a href="quan-ly-tu-van" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-user-circle"></i></span>
-                                        <span class="ttr-label">Tài khoản</span>
+                                        <span class="ttr-label">Quản lý tư vấn</span>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="admin-ca-nhan" class="ttr-material-button">
+                                    <a href="xu-ly-yeu-cau" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-address-card"></i></span>
-                                        <span class="ttr-label">Hồ sơ</span>
+                                        <span class="ttr-label">Xử lý yêu cầu</span>
                                     </a>
                                 </li>
                                 <li>
                                     <a href="trang-xac-nhan-thanh-toan" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-credit-card-alt"></i></span>
                                         <span class="ttr-label">Xác nhận thanh toán</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="userProfile" class="ttr-material-button">
+                                        <span class="ttr-icon"><i class="fa fa-address-card"></i></span>
+                                        <span class="ttr-label">Hồ sơ</span>
                                     </a>
                                 </li>
                             </c:when>

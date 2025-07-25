@@ -15,7 +15,7 @@ public class StudentMarkFeedbackModal {
     private Integer id;
     private Integer studentId;
     private Integer courseId;
-    private Integer takeBy; // teacherId
+    private Integer takeBy;
     private BigDecimal mark;
     private String feedback;
     private LocalDateTime date;

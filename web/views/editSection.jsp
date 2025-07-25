@@ -101,8 +101,6 @@
     </div>
 </div>
                     
-<jsp:include page="layout/footer.jsp" />
-
 <script>
     const weekdayMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 

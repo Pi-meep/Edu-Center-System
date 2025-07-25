@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import modal.AccountModal;
 import modal.ConsultationModal;
@@ -42,15 +44,24 @@ public class CreateAccountServlet extends HttpServlet {
 
             int consultationId = Integer.parseInt(idRaw);
             ConsultationDTO consultation = new ConsultationDAO().getConsultationById(consultationId);
-            if (consultation.getDob() != null) {
-                String dobString = consultation.getDob().toLocalDate().toString(); // yyyy-MM-dd
-                req.setAttribute("dobString", dobString);
-            }
             if (consultation == null) {
                 req.setAttribute("error", "Không tìm thấy thông tin tư vấn.");
                 req.getRequestDispatcher("/views/error.jsp").forward(req, resp);
                 return;
             }
+
+            // Format date for display
+            if (consultation.getDob() != null) {
+                String dobString = consultation.getDob().toLocalDate().toString(); // yyyy-MM-dd
+                req.setAttribute("dobString", dobString);
+            }
+
+            // Determine default role based on experience
+            String defaultRole = "parent";
+            if (consultation.getExperience() != null && !consultation.getExperience().trim().isEmpty()) {
+                defaultRole = "teacher";
+            }
+            req.setAttribute("defaultRole", defaultRole);
 
             List<ConsultationCertificateModal> consultationCertificates
                     = new ConsultationDAO().getConsultationCertificates(consultationId);
@@ -78,6 +89,7 @@ public class CreateAccountServlet extends HttpServlet {
                 throw new IllegalArgumentException("Không tìm thấy thông tin tư vấn.");
             }
 
+            // Get data from form instead of consultation
             String roleParam = req.getParameter("role");
             if (roleParam == null) {
                 throw new IllegalArgumentException("Vui lòng chọn vai trò.");
@@ -92,16 +104,38 @@ public class CreateAccountServlet extends HttpServlet {
                 throw new IllegalArgumentException("Username đã tồn tại. Vui lòng chọn username khác.");
             }
 
+            // Get all form data
+            String name = req.getParameter("name");
+            String phone = req.getParameter("phone");
+            String address = req.getParameter("address");
+            String dobParam = req.getParameter("dob");
+
+            // Parse date of birth
+            LocalDateTime dob = null;
+            if (dobParam != null && !dobParam.trim().isEmpty()) {
+                try {
+                    LocalDate localDate = LocalDate.parse(dobParam);
+                    dob = localDate.atStartOfDay();
+                } catch (Exception e) {
+                    // If parsing fails, use consultation's dob as fallback
+                    dob = consultation.getDob();
+                }
+            } else {
+                dob = consultation.getDob();
+            }
+
             AccountModal.Role role = AccountModal.Role.valueOf(roleParam);
             AccountModal acc = new AccountModal();
-            acc.setName(consultation.getName());
+
+            // Use form data with consultation as fallback
+            acc.setName(name != null && !name.trim().isEmpty() ? name : consultation.getName());
             acc.setUsername(username);
-            acc.setPhone(consultation.getPhone());
-            acc.setDob(consultation.getDob());
-            acc.setAddress(consultation.getAddress());
+            acc.setPhone(phone != null && !phone.trim().isEmpty() ? phone : consultation.getPhone());
+            acc.setDob(dob);
+            acc.setAddress(address != null && !address.trim().isEmpty() ? address : consultation.getAddress());
             acc.setAvatarURL(null);
             acc.setPassword("$2a$12$uPKwZ8rKHVxycLrRU.WAjeCg7k/ZLxitSQ1a1QluirGUdOxArDopq");
-            acc.setStatus(AccountModal.Status.inactive);
+            acc.setStatus(AccountModal.Status.pending);
             acc.setRole(role);
             acc.setCreatedAt(LocalDateTime.now());
             acc.setUpdatedAt(LocalDateTime.now());
@@ -126,7 +160,14 @@ public class CreateAccountServlet extends HttpServlet {
             } else if (role == AccountModal.Role.teacher) {
                 TeacherModal teacher = new TeacherModal();
                 teacher.setAccountId(accountId);
-                teacher.setExperience(consultation.getExperience());
+
+                // Get experience from form, fallback to consultation
+                String experience = req.getParameter("experience");
+                if (experience == null || experience.trim().isEmpty()) {
+                    experience = consultation.getExperience();
+                }
+                teacher.setExperience(experience);
+
                 new TeacherDAO().insertTeacher(teacher);
 
                 TeacherModal teacherNew = new TeacherDAO().getTeacherByAccountId(accountId);
@@ -138,7 +179,9 @@ public class CreateAccountServlet extends HttpServlet {
                         if (certIdStr != null && !certIdStr.trim().isEmpty()) {
                             try {
                                 int certId = Integer.parseInt(certIdStr);
-                                transferCertificateToTeacher(certId, teacherId);
+                                // Get certificate name from form
+                                String certName = req.getParameter("existingCertificateName_" + certId);
+                                transferCertificateToTeacher(certId, teacherId, certName);
                             } catch (NumberFormatException e) {
                                 System.err.println("Invalid certificate ID: " + certIdStr);
                             }
@@ -165,12 +208,37 @@ public class CreateAccountServlet extends HttpServlet {
 
         } catch (Exception e) {
             req.setAttribute("error", "Lỗi khi tạo tài khoản: " + e.getMessage());
-            req.setAttribute("consultation", new ConsultationDAO().getConsultationById(Integer.parseInt(req.getParameter("consultationId"))));
+
+            // Reload consultation data and set default role for error case
+            try {
+                int consultationId = Integer.parseInt(req.getParameter("consultationId"));
+                ConsultationDTO consultation = new ConsultationDAO().getConsultationById(consultationId);
+                req.setAttribute("consultation", consultation);
+
+                if (consultation.getDob() != null) {
+                    String dobString = consultation.getDob().toLocalDate().toString();
+                    req.setAttribute("dobString", dobString);
+                }
+
+                String defaultRole = "parent";
+                if (consultation.getExperience() != null && !consultation.getExperience().trim().isEmpty()) {
+                    defaultRole = "teacher";
+                }
+                req.setAttribute("defaultRole", defaultRole);
+
+                List<ConsultationCertificateModal> consultationCertificates
+                        = new ConsultationDAO().getConsultationCertificates(consultationId);
+                req.setAttribute("consultationCertificates", consultationCertificates);
+
+            } catch (Exception ex) {
+                System.err.println("Error reloading consultation data: " + ex.getMessage());
+            }
+
             req.getRequestDispatcher("/views/createAccount.jsp").forward(req, resp);
         }
     }
 
-    private void transferCertificateToTeacher(int consultationCertId, int teacherId) throws Exception {
+    private void transferCertificateToTeacher(int consultationCertId, int teacherId, String certificateName) throws Exception {
         ConsultationDAO consultationDAO = new ConsultationDAO();
         TeacherDAO teacherDAO = new TeacherDAO();
 
@@ -180,9 +248,15 @@ public class CreateAccountServlet extends HttpServlet {
             TeacherCertificateModal teacherCert = new TeacherCertificateModal();
             teacherCert.setTeacherId(teacherId);
             teacherCert.setImageURL(consultationCert.getImageURL());
-            teacherCert.setCertificateName("Chứng chỉ từ tư vấn");
-            teacherCert.setCreatedAt(LocalDateTime.now());
 
+            // Use certificate name from form if provided, otherwise use default
+            if (certificateName != null && !certificateName.trim().isEmpty()) {
+                teacherCert.setCertificateName(certificateName.trim());
+            } else {
+                teacherCert.setCertificateName("Chứng chỉ từ tư vấn");
+            }
+
+            teacherCert.setCreatedAt(LocalDateTime.now());
             teacherDAO.insertCertificate(teacherCert);
         }
     }

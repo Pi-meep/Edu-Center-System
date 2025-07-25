@@ -208,6 +208,14 @@
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <servlet-class>controller.ForgotPasswordServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>RequestReview</servlet-name>
+        <servlet-class>controller.RequestReview</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>AccountApproveServlet</servlet-name>
+        <servlet-class>controller.AccountApproveServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>HomePageServlet</servlet-name>
         <url-pattern>/trang-chu</url-pattern>
@@ -407,5 +415,13 @@
     <servlet-mapping>
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <url-pattern>/quen-mat-khau</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RequestReview</servlet-name>
+        <url-pattern>/xu-ly-yeu-cau</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AccountApproveServlet</servlet-name>
+        <url-pattern>/duyet-tai-khoan</url-pattern>
     </servlet-mapping>
 </web-app>

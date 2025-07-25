@@ -4,7 +4,15 @@ import java.time.LocalDateTime;
 
 public class StudentSectionModal {
 
-    public enum AttendanceStatus {
+    
+    private Integer id;
+    private Integer studentId;
+    private Integer sectionId;
+    private Boolean isPaid;
+    private AttendanceStatus attendanceStatus;
+    private LocalDateTime createdAt;
+
+public enum AttendanceStatus {
         notyet("Chưa diễn ra buổi học"),
         present("Có mặt"),
         absent("Vắng"),
@@ -22,12 +30,6 @@ public class StudentSectionModal {
 
     }
 
-    private Integer id;
-    private Integer studentId;
-    private Integer sectionId;
-    private Boolean isPaid;
-    private AttendanceStatus attendanceStatus;
-    private LocalDateTime createdAt;
 
     public StudentSectionModal() {
     }

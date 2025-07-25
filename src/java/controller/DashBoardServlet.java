@@ -56,7 +56,6 @@ public class DashBoardServlet extends HttpServlet {
             
             // Lấy doanh thu theo tháng
             List<Map<String, Object>> monthlyRevenue = getMonthlyRevenue();
-            System.out.println(monthlyRevenue);
             request.setAttribute("monthlyRevenue", monthlyRevenue);
             
             
@@ -70,7 +69,6 @@ public class DashBoardServlet extends HttpServlet {
     List<Map<String, Object>> monthlyData = new ArrayList<>();
     PaymentDAO paymentDao = new PaymentDAO();
     
-    // Lấy dữ liệu 12 tháng gần nhất
     LocalDateTime now = LocalDateTime.now();
     BigDecimal previousRevenue = null;
     
@@ -106,7 +104,7 @@ public class DashBoardServlet extends HttpServlet {
         }
         
         monthlyData.add(monthData);
-        previousRevenue = revenue; // Lưu lại doanh thu của tháng hiện tại để tính cho tháng tiếp theo
+        previousRevenue = revenue; 
     }
     
     return monthlyData;

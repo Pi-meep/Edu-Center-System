@@ -59,7 +59,7 @@ public class ManagerSectionServlet extends HttpServlet {
         request.setAttribute("roomList", roomList);
         try {
             switch (action) {
-                case "edit" -> {
+                case "edit": {
                     int id = Integer.parseInt(request.getParameter("id"));
                     List<SectionDTO> sectionList = dao.getAllSectionsByCourse();
                     SectionDTO selected = null;
@@ -80,15 +80,17 @@ public class ManagerSectionServlet extends HttpServlet {
                     request.setAttribute("roomList", roomList);
                     request.setAttribute("selectedClassroom", selected.getClassroom());
                     request.getRequestDispatcher("views/editSection.jsp").forward(request, response);
+                    break;
                 }
 
-                case "delete" -> {
+                case "delete": {
                     int id = Integer.parseInt(request.getParameter("id"));
                     dao.deleteSection(id);
                     response.sendRedirect("quan-ly-lop-hoc");
+                    break;
                 }
 
-                case "detail" -> {
+                case "detail": {
                     int id = Integer.parseInt(request.getParameter("id"));
 
                     SectionDTO section = dao.getSectionDetail(id);
@@ -102,9 +104,10 @@ public class ManagerSectionServlet extends HttpServlet {
                         request.setAttribute("roomMatched", matched);
                     }
                     request.getRequestDispatcher("views/detailSection.jsp").forward(request, response);
+                    break;
                 }
 
-                default -> {
+                default: {
                     String keyword = request.getParameter("keyword");
                     String dayOfWeek = request.getParameter("dayOfWeek");
                     String status = request.getParameter("status");
@@ -114,7 +117,7 @@ public class ManagerSectionServlet extends HttpServlet {
                             || (status != null && !status.isBlank())
                             ? dao.searchSections(keyword, dayOfWeek, status)
                             : dao.getAllSectionsByCourse();
-                    
+
 //                    request.setAttribute("roomList", roomList);
                     request.setAttribute("sectionList", sectionList);
                     request.getRequestDispatcher("views/managerSection.jsp").forward(request, response);

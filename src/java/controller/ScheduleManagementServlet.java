@@ -20,6 +20,8 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import modal.RoomModal;
 
@@ -45,22 +47,9 @@ public class ScheduleManagementServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String action = request.getParameter("action");
 
-        if (action == null) {
-            action = "view";
-        }
-        Date dayLabel = null;
-        switch (action) {
-            case "view":
-                viewSchedule(request, response, dayLabel, null, null);
-                break;
-//            case "export":
-//                exportSchedule(request, response);
-//                break;
-            default:
-                viewSchedule(request, response, dayLabel, null, null);
-        }
+        viewSchedule(request, response, null, null, null, null);
+
     }
 
     /**
@@ -81,8 +70,13 @@ public class ScheduleManagementServlet extends HttpServlet {
         String dayLabel = request.getParameter("dayLabel");
         String teacherIdStr = request.getParameter("teacherSelected");
         String roomIdStr = request.getParameter("roomSelected");
-
         String changeType = request.getParameter("changeType");
+        String dateChoose = request.getParameter("dateChoose");
+        String courseIdStr = request.getParameter("courseSelected");
+
+        if (dateChoose != null) {
+            dayLabel = dateChoose;
+        }
 
         if (teacherIdStr != null) {
             if (teacherIdStr.equalsIgnoreCase("all")) {
@@ -95,32 +89,125 @@ public class ScheduleManagementServlet extends HttpServlet {
             }
         }
 
-        if (changeType != null) {
-
+        if (courseIdStr != null) {
+            if (courseIdStr.equalsIgnoreCase("all")) {
+                courseIdStr = null;
+            }
         }
 
         if (direction != null && !direction.isBlank()) {
-            viewScheduleByView(request, response, direction, view, dayLabel, teacherIdStr, roomIdStr);
+            viewScheduleByView(request, response, direction, view, dayLabel, teacherIdStr, roomIdStr, courseIdStr);
         } else if (changeType != null) {
+            System.out.println("Vao day roi");
+            changeSchedule(request, response, changeType, java.sql.Date.valueOf(dayLabel), teacherIdStr, roomIdStr, courseIdStr);
 
         } else {
             // Xử lý chuyển view mà không chuyển ngày
             Date parsedDate = (dayLabel != null && !dayLabel.isBlank())
                     ? java.sql.Date.valueOf(dayLabel)
                     : null;
-            viewSchedule(request, response, parsedDate, teacherIdStr, roomIdStr);
+            viewSchedule(request, response, parsedDate, teacherIdStr, roomIdStr, courseIdStr);
         }
     }
 
-    void changeSchedule(HttpServletRequest request, HttpServletResponse response, String changeType) {
-        String teacherIdStr = request.getParameter("teacherId");
-        String sectionId = request.getParameter("scheduleId");
-        if (changeType.equalsIgnoreCase("schedule")) {
+    void changeSchedule(HttpServletRequest request, HttpServletResponse response, String changeType, Date dayLabel, String teacherId, String roomId, String courseIdStr) {
+//        String teacherIdStr = request.getParameter("teacherId");
+        String sectionIdStr = request.getParameter("scheduleId");
+        String newTimeStr = request.getParameter("newDate");
+        String message = null;
 
+        if (changeType.equalsIgnoreCase("changeSchedule")) {
+
+            String scheduleChangeMode = request.getParameter("scheduleChangeMode");
+            if (scheduleChangeMode != null) {
+                System.out.println("Chay den day la changeMode ko null");
+                System.out.println(sectionIdStr);
+                System.out.println(newTimeStr);
+                if (scheduleChangeMode.equalsIgnoreCase("byTeacher") && sectionIdStr != null && newTimeStr != null) {
+                    System.out.println("Chay vao day la doi theo giao vien");
+                    int sectionId = Integer.parseInt(sectionIdStr);
+                    LocalDate newTime = LocalDate.parse(newTimeStr);
+                    String result = sectionDao.updateSectionDate(sectionId, newTime);
+                    if (result.equalsIgnoreCase("SUCCESS")) {
+                        message = "Cập nhật thành công!";
+                    } else if (result.equalsIgnoreCase("CONFLICT_TEACHER")) {
+                        message = "Giáo viên đã có lớp vào khung giờ này.";
+                    } else if (result.equalsIgnoreCase("CONFLICT_CLASSROOM")) {
+                        message = "Phòng học đã được sử dụng vào khung giờ này.";
+                    } else if (result.equalsIgnoreCase("NOT_FOUND")) {
+                        message = "Không tìm thấy lớp học để cập nhật.";
+                    } else {
+                        message = "Lỗi hệ thống khi cập nhật.";
+                    }
+                } else if (scheduleChangeMode.equalsIgnoreCase("byDate")) {
+                    String sourceDateStr = request.getParameter("sourceDate");
+                    String targetDateStr = request.getParameter("targetDate");
+                    LocalDate sourceDate = LocalDate.parse(sourceDateStr);
+                    LocalDate targetDate = LocalDate.parse(targetDateStr);
+                    message = sectionDao.rescheduleAllSectionsInDay(sourceDate, targetDate);
+                }
+            }
+            System.out.println("in ra " + message);
+            request.setAttribute("mesage", message);
+            try {
+                System.out.println("Chay den day roi");
+                viewSchedule(request, response, dayLabel, teacherId, roomId, courseIdStr);
+            } catch (Exception ex) {
+                Logger.getLogger(ScheduleManagementServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+        } else if (changeType.equalsIgnoreCase("changeTeacher") && sectionIdStr != null) {
+//                    int teacherId = Integer.parseInt(teacherIdStr);
+            int sectionId = Integer.parseInt(sectionIdStr);
+            String newTeacherIdStr = request.getParameter("newTeacherId");
+            int newTeacherId;
+            if (newTeacherIdStr != null) {
+                newTeacherId = Integer.parseInt(newTeacherIdStr);
+                String result = sectionDao.updateSectionTeacher(sectionId, newTeacherId);
+                if (result.equals("SUCCESS")) {
+                    message = "Cập nhật giáo viên thành công.";
+                } else if (result.equals("TEACHER_CONFLICT")) {
+                    message = " Giáo viên bị trùng lịch, không thể cập nhật.";
+                } else if (result.equals("ERROR_NOT_FOUND")) {
+                    message = " Không tìm thấy lớp học.";
+                } else if (result.equals("ERROR_DATABASE")) {
+                    message = " Lỗi hệ thống hoặc database.";
+                } else {
+                    message = "Lỗi không xác định: " + result;
+                }
+            }
+            request.setAttribute("mesage", message);
+            try {
+                viewSchedule(request, response, dayLabel, teacherId, roomId, courseIdStr);
+            } catch (Exception ex) {
+                Logger.getLogger(ScheduleManagementServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            int sectionId = Integer.parseInt(sectionIdStr);
+            String newRoomId = request.getParameter("newRoomId");
+            String result = sectionDao.updateSectionClassroom(sectionId, newRoomId);
+            if (result.equals("SUCCESS")) {
+                message = " Cập nhật phòng học thành công.";
+            } else if (result.equals("ROOM_CONFLICT")) {
+                message = "️ Phòng học bị trùng lịch, không thể cập nhật.";
+            } else if (result.equals("ERROR_NOT_FOUND")) {
+                message = " Không tìm thấy lớp học.";
+            } else if (result.equals("ERROR_DATABASE")) {
+                message = " Lỗi hệ thống hoặc cơ sở dữ liệu.";
+            } else {
+                message = " Lỗi không xác định: " + result;
+            }
+            request.setAttribute("message", message);
+            try {
+                viewSchedule(request, response, dayLabel, teacherId, roomId, courseIdStr);
+            } catch (Exception ex) {
+                Logger.getLogger(ScheduleManagementServlet.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+
     }
 
-    void viewScheduleByView(HttpServletRequest request, HttpServletResponse response, String direction, String view, String dayLabel, String teacherId, String roomId) {
+    void viewScheduleByView(HttpServletRequest request, HttpServletResponse response, String direction, String view, String dayLabel, String teacherId, String roomId, String courseId) {
         try {
             // Định dạng theo kiểu bạn đang dùng (ví dụ: yyyy-MM-dd)
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -156,7 +243,7 @@ public class ScheduleManagementServlet extends HttpServlet {
             request.setAttribute("currentView", view);
 
             System.out.println("Chuyển lịch sang: " + newDayLabel);
-            viewSchedule(request, response, java.sql.Date.valueOf(newDayLabel), teacherId, roomId);
+            viewSchedule(request, response, java.sql.Date.valueOf(newDayLabel), teacherId, roomId, courseId);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,7 +251,7 @@ public class ScheduleManagementServlet extends HttpServlet {
         }
     }
 
-    private void viewSchedule(HttpServletRequest request, HttpServletResponse response, Date dayLabel, String teacherId, String roomId)
+    private void viewSchedule(HttpServletRequest request, HttpServletResponse response, Date dayLabel, String teacherId, String roomId, String courseId)
             throws ServletException, IOException {
 
         // Forward to JSP
@@ -185,6 +272,13 @@ public class ScheduleManagementServlet extends HttpServlet {
                     .filter(s -> s.getClassroom().equalsIgnoreCase(roomId))
                     .collect(Collectors.toList());
             request.setAttribute("roomSelected", roomId);
+        }
+        if (courseId != null) {
+            int id = Integer.parseInt(courseId);
+            sections = sections.stream()
+                    .filter(s -> s.getCourseId() == id)
+                    .collect(Collectors.toList());
+            request.setAttribute("courseSelected", courseId);
         }
 
         // Định dạng ngày tháng

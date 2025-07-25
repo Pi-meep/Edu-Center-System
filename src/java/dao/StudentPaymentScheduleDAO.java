@@ -4,6 +4,9 @@
  */
 package dao;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -180,5 +183,39 @@ public boolean isPaymentPending(int studentId, Integer courseId, Integer section
             e.printStackTrace();
         }
         return count;
+    }
+
+    public void deleteUnpaidByStudentId(int studentId) {
+        String sql = """
+            DELETE FROM student_payment_schedule
+            WHERE student_section_id IN (
+                SELECT id FROM student_section WHERE studentId = ?
+            )
+            AND isPaid = false
+        """;
+        try (java.sql.Connection conn = utils.DBUtil.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, studentId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createPaymentSchedule(int studentSectionId, BigDecimal amount, LocalDateTime dueDate) {
+        String sql = """
+            INSERT INTO student_payment_schedule
+            (student_section_id, amount, due_date, markPaying, isPaid, created_at, updated_at)
+            VALUES (?, ?, ?, false, false, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        """;
+        try (java.sql.Connection conn = utils.DBUtil.getConnection();
+             java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, studentSectionId);
+            ps.setBigDecimal(2, amount);
+            ps.setTimestamp(3, Timestamp.valueOf(dueDate));
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

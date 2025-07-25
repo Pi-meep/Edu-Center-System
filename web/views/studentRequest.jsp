@@ -522,13 +522,13 @@
                 <div class="studentrequest-form-group">
                     <label class="studentrequest-label">Loại yêu cầu</label>
                     <div class="studentrequest-type-grid" id="requestTypeGrid">
-                        <button class="studentrequest-type-btn" data-type="student-absent-request">
+                        <button class="studentrequest-type-btn" data-type="STUDENT_ABSENT_REQUEST">
                             <div class="studentrequest-type-content">
                                 <span class="studentrequest-type-icon">🏠</span>
                                 <span class="studentrequest-type-label">Xin nghỉ học</span>
                             </div>
                         </button>
-                        <button class="studentrequest-type-btn" data-type="student-change-course">
+                        <button class="studentrequest-type-btn" data-type="STUDENT_CHANGE_COURSE">
                             <div class="studentrequest-type-content">
                                 <span class="studentrequest-type-icon">🔄</span>
                                 <span class="studentrequest-type-label">Chuyển lớp</span>
@@ -540,12 +540,22 @@
                 <div id="requestForm" style="display: none;">
                     <form id="createRequestForm" method="POST" action="">
                         <input type="hidden" name="action" value="create">
-                        
-                        <div class="studentrequest-form-group" id="courseSelectGroup" style="display: none;">
-                            <label class="studentrequest-label">Chọn khóa học muốn chuyển tới</label>
-                            <select class="studentrequest-select" name="courseId" id="courseSelect">
+
+                        <div class="studentrequest-form-group" id="fromCourseSelectGroup" style="display: none;">
+                            <label class="studentrequest-label">Chọn khóa học muốn chuyển</label>
+                            <select class="studentrequest-select" name="fromCourseId" id="fromCourseSelect">
                                 <option value="">-- Chọn khóa học --</option>
-                                <c:forEach var="course" items="${courses}">
+                                <c:forEach var="course" items="${fromCourses}">
+                                    <option value="${course.id}">${course.name} - ${course.grade}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                        
+                        <div class="studentrequest-form-group" id="toCourseSelectGroup" style="display: none;">
+                            <label class="studentrequest-label">Chọn khóa học muốn chuyển tới</label>
+                            <select class="studentrequest-select" name="toCourseId" id="toCourseSelect">
+                                <option value="">-- Chọn khóa học --</option>
+                                <c:forEach var="course" items="${toCourses}">
                                     <option value="${course.id}">${course.name} - ${course.grade}</option>
                                 </c:forEach>
                             </select>
@@ -576,8 +586,8 @@
                     </div>
                     <select class="studentrequest-filter-select" id="filterType">
                         <option value="">Tất cả loại</option>
-                        <option value="student-absent-request">Xin nghỉ học</option>
-                        <option value="student-change-course">Chuyển lớp</option>
+                        <option value="STUDENT_ABSENT_REQUEST">Xin nghỉ học</option>
+                        <option value="STUDENT_CHANGE_COURSE">Chuyển lớp</option>
                     </select>
                 </div>
             </div>
@@ -592,10 +602,10 @@
                                         <div class="studentrequest-item-header">
                                             <h3 class="studentrequest-item-title">
                                                 <c:choose>
-                                                    <c:when test="${request.type == 'student-absent-request'}">
+                                                    <c:when test="${request.type == 'STUDENT_ABSENT_REQUEST'}">
                                                         Xin nghỉ học
                                                     </c:when>
-                                                    <c:when test="${request.type == 'student-change-course'}">
+                                                    <c:when test="${request.type == 'STUDENT_CHANGE_COURSE'}">
                                                         Chuyển lớp
                                                     </c:when>
                                                     <c:otherwise>
@@ -634,9 +644,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="studentrequest-item-actions">
-                                        <button class="studentrequest-action-btn detail" onclick="viewRequestDetail(${request.id})">Xem chi tiết</button>
-                                    </div>
                                 </div>
                             </div>
                         </c:forEach>
@@ -663,16 +670,19 @@
             document.getElementById('requestForm').style.display = 'block';
             
             const requestType = this.dataset.type;
-            const courseSelectGroup = document.getElementById('courseSelectGroup');
+            const fromCourseSelectGroup = document.getElementById('fromCourseSelectGroup');
+            const toCourseSelectGroup = document.getElementById('toCourseSelectGroup');
             const selectedTypeInput = document.getElementById('selectedType');
             
             // Set type vào hidden input
             selectedTypeInput.value = requestType;
             
-            if (requestType === 'student-change-course') {
-                courseSelectGroup.style.display = 'block';
+            if (requestType === 'STUDENT_CHANGE_COURSE') {
+                fromCourseSelectGroup.style.display = 'block';
+                toCourseSelectGroup.style.display = 'block';
             } else {
-                courseSelectGroup.style.display = 'none';
+                fromCourseSelectGroup.style.display = 'none';
+                toCourseSelectGroup.style.display = 'none';
             }
         });
     });
@@ -681,15 +691,22 @@
     document.getElementById('createRequestForm').addEventListener('submit', function(e) {
         const description = document.getElementById('requestDescription').value;
         const selectedType = document.querySelector('.studentrequest-type-btn.selected');
-        const courseSelect = document.getElementById('courseSelect');
+        const toCourseSelect = document.getElementById('toCourseSelect');
+        const fromCourseSelect = document.getElementById('fromCourseSelect');
         
         if (!description || !selectedType) {
             e.preventDefault();
             alert('Vui lòng nhập mô tả và chọn loại yêu cầu!');
             return;
         }
+
+        if (selectedType.dataset.type === 'STUDENT_CHANGE_COURSE' && !fromCourseSelect.value) {
+            e.preventDefault();
+            alert('Vui lòng chọn khóa học muốn chuyển!');
+            return;
+        }
         
-        if (selectedType.dataset.type === 'student-change-course' && !courseSelect.value) {
+        if (selectedType.dataset.type === 'STUDENT_CHANGE_COURSE' && !toCourseSelect.value) {
             e.preventDefault();
             alert('Vui lòng chọn khóa học muốn chuyển tới!');
             return;

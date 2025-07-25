@@ -12,10 +12,15 @@ import dto.CourseDTO;
 import dto.TeacherDTO;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import java.io.File;
 import java.math.BigDecimal;
+import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -27,23 +32,28 @@ import modal.RoomModal;
 /**
  * Servlet dùng để quản lý các chức năng liên quan đến khóa học, bao gồm: - Hiển
  * thị danh sách khóa học (tìm kiếm, lọc) - Thêm mới khóa học - Cập nhật khóa
- * học - Xóa khóa học
+ * học - Xóa khóa học - Xem chi tiết khoá học
  *
  * URL mapping: /quan-ly-khoa-hoc
  *
- * Các action hỗ trợ qua tham số ?action=: - list - add - edit - delete
+ * Các action hỗ trợ qua tham số ?action=: - list - add - edit - delete - detail
  *
  * Phần "add" và "update" được xử lý ở method POST.
  *
  * @author HanND
  */
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
+        maxFileSize = 1024 * 1024 * 10, // 10 MB
+        maxRequestSize = 1024 * 1024 * 15 // 15 MB
+)
 public class ManagerCourseServlet extends HttpServlet {
 
     /**
      * Xử lý các request GET như hiển thị danh sách, form thêm, form cập nhật.
      *
      * @param request HTTP request chứa tham số truy vấn
-     * (?action=list|edit|add|delete)
+     * (?action=list|edit|add|delete|detail)
      * @param response HTTP response để điều hướng hoặc render trang
      * @throws ServletException nếu có lỗi Servlet
      * @throws IOException nếu có lỗi I/O
@@ -60,7 +70,7 @@ public class ManagerCourseServlet extends HttpServlet {
         CourseDAO courseDAO = new CourseDAO();
         TeacherDAO teacherDAO = new TeacherDAO();
         switch (action) {
-            case "list" -> {
+            case "list": {
                 String name = request.getParameter("name");
                 String subject = request.getParameter("subject");
                 String level = request.getParameter("level");
@@ -95,8 +105,9 @@ public class ManagerCourseServlet extends HttpServlet {
                 request.setAttribute("courseList", courseList);
                 request.setAttribute("teacherList", teacherList);
                 request.getRequestDispatcher("views/managerCourse.jsp").forward(request, response);
+                break;
             }
-            case "edit" -> {
+            case "edit": {
                 int id = Integer.parseInt(request.getParameter("id"));
                 CourseModal course = courseDAO.getCourseById(id);
                 if (course == null) {
@@ -115,8 +126,9 @@ public class ManagerCourseServlet extends HttpServlet {
                 }
 
                 request.getRequestDispatcher("views/editCourse.jsp").forward(request, response);
+                break;
             }
-            case "add" -> {
+            case "add": {
                 List<TeacherDTO> teacherList = teacherDAO.getAllTeachers();
                 RoomDAO roomDAO = new RoomDAO();
                 List<RoomModal> roomList = roomDAO.getAllRooms();
@@ -124,23 +136,53 @@ public class ManagerCourseServlet extends HttpServlet {
                 request.setAttribute("teacherList", teacherList);
                 request.setAttribute("roomList", roomList);
                 request.getRequestDispatcher("views/addCourse.jsp").forward(request, response);
+                break;
             }
-            case "delete" -> {
+            case "delete": {
                 int id = Integer.parseInt(request.getParameter("id"));
                 courseDAO.deleteCourseById(id);
                 response.sendRedirect("quan-ly-khoa-hoc?action=list");
+                break;
             }
-            case "checkDuplicate" -> {
+            case "detail": {
+                int id = Integer.parseInt(request.getParameter("id"));
+                CourseDTO course = courseDAO.getCourseByIdFull(id);
+                if (course == null) {
+                    response.sendRedirect("quan-ly-khoa-hoc?action=list&error=notfound");
+                    return;
+                }
+                List<TeacherDTO> teacherList = teacherDAO.getAllTeachers();
+                request.setAttribute("course", course);
+                request.setAttribute("teacherList", teacherList);
+                request.setAttribute("teacherName", course.getTeacherName());
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+                if (course.getStartDate() != null) {
+                    LocalDate start = ((Timestamp) course.getStartDate()).toLocalDateTime().toLocalDate();
+                    request.setAttribute("formattedStartDate", start.format(formatter));
+                }
+
+                if (course.getEndDate() != null) {
+                    LocalDate end = ((Timestamp) course.getEndDate()).toLocalDateTime().toLocalDate();
+                    request.setAttribute("formattedEndDate", end.format(formatter));
+                }
+
+                request.getRequestDispatcher("views/detailCourse.jsp").forward(request, response);
+                break;
+            }
+
+            case "checkDuplicate": {
                 String name = request.getParameter("name");
                 boolean exists = new CourseDAO().existsByName(name);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"exists\":" + exists + "}");
                 return;
             }
-            default ->
+            default: {
                 response.sendRedirect("quan-ly-khoa-hoc?action=list");
+            }
         }
-
     }
 
     /**
@@ -161,58 +203,82 @@ public class ManagerCourseServlet extends HttpServlet {
 
         try {
             if ("add".equals(action)) {
-                CourseModal course = new CourseModal();
+                try {
+                    CourseModal course = new CourseModal();
+                    //Thêm thông tin khoá học 
+                    course.setName(request.getParameter("name"));
+                    course.setTeacherId(Integer.valueOf(request.getParameter("teacherId")));
+                    course.setSubject(CourseModal.Subject.valueOf(request.getParameter("subject")));
+                    course.setGrade(request.getParameter("grade"));
+                    course.setDescription(request.getParameter("description"));
+                    course.setCourseType(CourseModal.CourseType.valueOf(request.getParameter("courseType")));
+                    course.setStatus(Status.valueOf(request.getParameter("status")));
+                    course.setStartDate(LocalDate.parse(request.getParameter("startDate")).atStartOfDay());
+                    course.setEndDate(LocalDate.parse(request.getParameter("endDate")).atStartOfDay());
+                    course.setWeekAmount(Integer.parseInt(request.getParameter("weekAmount")));
+                    course.setStudentEnrollment(Integer.parseInt(request.getParameter("studentEnrollment")));
+                    course.setMaxStudents(Integer.parseInt(request.getParameter("maxStudents")));
+                    course.setLevel(CourseModal.Level.valueOf(request.getParameter("level")));
+                    course.setIsHot("true".equalsIgnoreCase(request.getParameter("isHot")));
 
-                course.setName(request.getParameter("name"));
-                course.setTeacherId(Integer.valueOf(request.getParameter("teacherId")));
-                course.setSubject(CourseModal.Subject.valueOf(request.getParameter("subject")));
-                course.setGrade(request.getParameter("grade"));
-                course.setDescription(request.getParameter("description"));
-                course.setCourseType(CourseModal.CourseType.valueOf(request.getParameter("courseType")));
-                course.setStatus(Status.valueOf(request.getParameter("status")));
-                course.setStartDate(LocalDate.parse(request.getParameter("startDate")).atStartOfDay());
-                course.setEndDate(LocalDate.parse(request.getParameter("endDate")).atStartOfDay());
-                course.setWeekAmount(Integer.parseInt(request.getParameter("weekAmount")));
-                course.setStudentEnrollment(Integer.parseInt(request.getParameter("studentEnrollment")));
-                course.setMaxStudents(Integer.parseInt(request.getParameter("maxStudents")));
-                course.setLevel(CourseModal.Level.valueOf(request.getParameter("level")));
-                course.setIsHot("true".equalsIgnoreCase(request.getParameter("isHot")));
+                    String discountStr = request.getParameter("discountPercentage");
+                    course.setDiscountPercentage((discountStr != null && !discountStr.isEmpty()) ? new BigDecimal(discountStr) : null);
 
-                String discountStr = request.getParameter("discountPercentage");
-                course.setDiscountPercentage((discountStr != null && !discountStr.isEmpty()) ? new BigDecimal(discountStr) : null);
+                    if (course.getCourseType() == CourseModal.CourseType.combo) {
+                        String feeComboStr = request.getParameter("feeCombo");
+                        course.setFeeCombo((feeComboStr != null && !feeComboStr.isEmpty()) ? new BigDecimal(feeComboStr) : null);
+                        course.setFeeDaily(null);
+                    } else {
+                        String feeDailyStr = request.getParameter("feeDaily");
+                        course.setFeeDaily((feeDailyStr != null && !feeDailyStr.isEmpty()) ? new BigDecimal(feeDailyStr) : null);
+                        course.setFeeCombo(null);
+                    }
+                    //thêm ảnh 
+                    Part filePart = request.getPart("course_img");
+                    String fileName = null;
 
-                if (course.getCourseType() == CourseModal.CourseType.combo) {
-                    String feeComboStr = request.getParameter("feeCombo");
-                    course.setFeeCombo((feeComboStr != null && !feeComboStr.isEmpty()) ? new BigDecimal(feeComboStr) : null);
-                    course.setFeeDaily(null);
-                } else {
-                    String feeDailyStr = request.getParameter("feeDaily");
-                    course.setFeeDaily((feeDailyStr != null && !feeDailyStr.isEmpty()) ? new BigDecimal(feeDailyStr) : null);
-                    course.setFeeCombo(null);
+                    if (filePart != null && filePart.getSize() > 0) {
+                        fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+                        course.setCourse_img(fileName);
+                    } else {
+                        course.setCourse_img("default.png");
+                    }
+                    //Thêm khoá học tạo ra courseID để tạo section theo courseId
+                    int courseId = dao.addCourseReturnId(course);
+
+                    if (filePart != null && filePart.getSize() > 0) {
+                        String uploadPath = getServletContext().getRealPath("/") + "assets/banners_course";
+                        File uploadDir = new File(uploadPath);
+                        if (!uploadDir.exists()) {
+                            uploadDir.mkdirs();
+                        }
+                        filePart.write(uploadPath + File.separator + fileName);
+                    }
+
+                    String dayOfWeek = request.getParameter("dayOfWeek");
+                    String startTimeStr = request.getParameter("startTime");
+                    String endTimeStr = request.getParameter("endTime");
+                    String classroom = request.getParameter("classroom");
+
+                    if (dayOfWeek != null && !dayOfWeek.isEmpty()
+                            && startTimeStr != null && !startTimeStr.isEmpty()
+                            && endTimeStr != null && !endTimeStr.isEmpty()
+                            && classroom != null && !classroom.isEmpty()) {
+
+                        LocalTime startTime = LocalTime.parse(startTimeStr);
+                        LocalTime endTime = LocalTime.parse(endTimeStr);
+                        LocalDate startDate = course.getStartDate().toLocalDate();
+                        LocalDate endDate = course.getEndDate().toLocalDate();
+                        //Thêm section 
+                        sectionDAO.addSections(courseId, dayOfWeek, startTime, endTime, classroom, startDate, endDate, course.getTeacherId());
+                    }
+
+                    response.sendRedirect("quan-ly-khoa-hoc?action=list");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    request.setAttribute("error", "Lỗi xảy ra: " + ex.getMessage());
+                    request.getRequestDispatcher("views/addCourse.jsp").forward(request, response);
                 }
-
-                int courseId = dao.addCourseReturnId(course);
-
-                // Thêm section nếu có thông tin lịch học
-                String dayOfWeek = request.getParameter("dayOfWeek");
-                String startTimeStr = request.getParameter("startTime");
-                String endTimeStr = request.getParameter("endTime");
-                String classroom = request.getParameter("classroom");
-
-                if (dayOfWeek != null && !dayOfWeek.isEmpty()
-                        && startTimeStr != null && !startTimeStr.isEmpty()
-                        && endTimeStr != null && !endTimeStr.isEmpty()
-                        && classroom != null && !classroom.isEmpty()) {
-
-                    LocalTime startTime = LocalTime.parse(startTimeStr);
-                    LocalTime endTime = LocalTime.parse(endTimeStr);
-                    LocalDate startDate = course.getStartDate().toLocalDate();
-                    LocalDate endDate = course.getEndDate().toLocalDate();
-
-                    sectionDAO.addSections(courseId, dayOfWeek, startTime, endTime, classroom, startDate, endDate, course.getTeacherId());
-                }
-
-                response.sendRedirect("quan-ly-khoa-hoc?action=list");
                 return;
             }
 
@@ -232,10 +298,28 @@ public class ManagerCourseServlet extends HttpServlet {
                 course.setWeekAmount(Integer.parseInt(request.getParameter("weekAmount")));
                 course.setLevel(CourseModal.Level.valueOf(request.getParameter("level")));
                 course.setStatus(Status.valueOf(request.getParameter("status")));
+                //cập nhật ảnh của course
+                Part part = request.getPart("course_img");
+                String oldImage = request.getParameter("oldImage");
+                String fileName = oldImage != null ? oldImage : "default.png"; // mặc định dùng ảnh cũ
 
+                if (part != null && part.getSize() > 0 && part.getSubmittedFileName() != null && !part.getSubmittedFileName().isEmpty()) {
+                    String originalFileName = Paths.get(part.getSubmittedFileName()).getFileName().toString();
+                    fileName = course.getId() + "_" + originalFileName;
+
+                    String realPath = request.getServletContext().getRealPath("/assets/banners_course");
+                    //Thêm /assets/banners_course nếu chưa có 
+                    File uploadDir = new File(realPath);
+                    if (!uploadDir.exists()) {
+                        uploadDir.mkdirs();
+                    }
+
+                    part.write(realPath + File.separator + fileName);
+                }
+                
+                course.setCourse_img(fileName);
                 dao.updateCourse(course);
                 response.sendRedirect("quan-ly-khoa-hoc?action=list");
-                return;
             }
         } catch (Exception e) {
             response.sendRedirect("quan-ly-khoa-hoc?action=list&error=failed");

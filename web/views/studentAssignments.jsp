@@ -10,6 +10,21 @@
 <jsp:include page="layout/header.jsp" />
 
 <style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 60vh;
+    }
+
+    .content-wrapper {
+        flex: 1;
+    }
     body {
         font-family: 'Segoe UI', sans-serif;
         background-color: #f3f4f6;
@@ -114,136 +129,138 @@
         margin-top: 20px;
     }
 </style>
-
-<div class="assignment-wrapper" style="display: flex; gap: 20px;">
-    <!-- Cột trái: Danh sách bài tập -->
-    <div class="assignment-list" style="flex: 1;">
-        <c:if test="${not empty success}">
-            <div id="successMessage" style="color: green; font-weight: bold; text-align: center; margin-bottom: 16px;">
-                ${success}
-            </div>
-        </c:if>
-        <c:if test="${not empty error}">
-            <div id="errorMessage" style="color: red; font-weight: bold; text-align: center; margin-bottom: 16px;">
-                ${error}
-            </div>
-        </c:if>
-
-        <h2>📘 Bài tập cho khóa học: <c:out value="${course.name}" /></h2>
-
-        <c:if test="${not empty course.description}">
-            <div class="assignment-description">
-                <c:out value="${course.description}" />
-            </div>
-        </c:if>
-
-        <c:choose>
-            <c:when test="${empty assignments}">
-                <p class="no-assignment">Hiện chưa có bài tập nào cho khóa học này.</p>
-            </c:when>
-            <c:otherwise>
-                <c:forEach var="a" items="${assignments}">
-                    <div class="assignment-item">
-                        <div class="assignment-title">📄 <c:out value="${a.title}" /></div>
-                        <div class="assignment-description-detail">
-                            <c:choose>
-                                <c:when test="${not empty a.description}">
-                                    <c:out value="${a.description}" />
-                                </c:when>
-                                <c:otherwise><em>Không có mô tả</em></c:otherwise>
-                            </c:choose>
-                        </div>
-                        <c:if test="${not empty a.filePath}">
-                            <a href="${pageContext.request.contextPath}/studentAssignmentServlet?action=download&assignmentId=${a.id}" class="assignment-link" target="_blank">
-                                📎 Tải xuống tệp đính kèm
-                            </a>
-                        </c:if>
-                        <div class="assignment-meta">
-                            <c:if test="${a.dueAt != null}">
-                                ⏳ Hạn nộp: <fmt:formatDate value="${a.dueAt}" pattern="dd/MM/yyyy HH:mm" /><br/>
-                            </c:if>
-                            🕒 Ngày đăng: <fmt:formatDate value="${a.uploadedAt}" pattern="dd/MM/yyyy HH:mm" />
-                        </div>
-
-                        <!-- Form nộp bài -->
-                        <form class="submission-form"
-                              action="${pageContext.request.contextPath}/studentAssignmentServlet"
-                              method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="action" value="submit" />
-                            <input type="hidden" name="courseId" value="${courseId}" />
-                            <input type="hidden" name="sectionAssignmentId" value="${a.id}" />
-
-                            <label for="submissionFile_${a.id}">💾 Nộp bài làm:</label>
-                            <input type="file" id="submissionFile_${a.id}" name="submissionFile" required />
-                            <button type="submit" style="margin-top:8px;">Gửi bài</button>
-                        </form>
+<div class="page-wrapper">
+    <div class="content-wrapper">
+        <div class="assignment-wrapper" style="display: flex; gap: 20px;">
+            <!-- Cột trái: Danh sách bài tập -->
+            <div class="assignment-list" style="flex: 1;">
+                <c:if test="${not empty success}">
+                    <div id="successMessage" style="color: green; font-weight: bold; text-align: center; margin-bottom: 16px;">
+                        ${success}
                     </div>
-                </c:forEach>
-            </c:otherwise>
-        </c:choose>
+                </c:if>
+                <c:if test="${not empty error}">
+                    <div id="errorMessage" style="color: red; font-weight: bold; text-align: center; margin-bottom: 16px;">
+                        ${error}
+                    </div>
+                </c:if>
 
-        <div class="back-container">
-            <a href="${pageContext.request.contextPath}/studentAssignmentServlet" class="btn-secondary">← Quay lại</a>
+                <h2>📘 Bài tập cho khóa học: <c:out value="${course.name}" /></h2>
+
+                <c:if test="${not empty course.description}">
+                    <div class="assignment-description">
+                        <c:out value="${course.description}" />
+                    </div>
+                </c:if>
+
+                <c:choose>
+                    <c:when test="${empty assignments}">
+                        <p class="no-assignment">Hiện chưa có bài tập nào cho khóa học này.</p>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="a" items="${assignments}">
+                            <div class="assignment-item">
+                                <div class="assignment-title">📄 <c:out value="${a.title}" /></div>
+                                <div class="assignment-description-detail">
+                                    <c:choose>
+                                        <c:when test="${not empty a.description}">
+                                            <c:out value="${a.description}" />
+                                        </c:when>
+                                        <c:otherwise><em>Không có mô tả</em></c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <c:if test="${not empty a.filePath}">
+                                    <a href="${pageContext.request.contextPath}/studentAssignmentServlet?action=download&assignmentId=${a.id}" class="assignment-link" target="_blank">
+                                        📎 Tải xuống tệp đính kèm
+                                    </a>
+                                </c:if>
+                                <div class="assignment-meta">
+                                    <c:if test="${a.dueAt != null}">
+                                        ⏳ Hạn nộp: <fmt:formatDate value="${a.dueAt}" pattern="dd/MM/yyyy HH:mm" /><br/>
+                                    </c:if>
+                                    🕒 Ngày đăng: <fmt:formatDate value="${a.uploadedAt}" pattern="dd/MM/yyyy HH:mm" />
+                                </div>
+
+                                <!-- Form nộp bài -->
+                                <form class="submission-form"
+                                      action="${pageContext.request.contextPath}/studentAssignmentServlet"
+                                      method="post" enctype="multipart/form-data">
+                                    <input type="hidden" name="action" value="submit" />
+                                    <input type="hidden" name="courseId" value="${courseId}" />
+                                    <input type="hidden" name="sectionAssignmentId" value="${a.id}" />
+
+                                    <label for="submissionFile_${a.id}">💾 Nộp bài làm:</label>
+                                    <input type="file" id="submissionFile_${a.id}" name="submissionFile" required />
+                                    <button type="submit" style="margin-top:8px;">Gửi bài</button>
+                                </form>
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+
+                <div class="back-container">
+                    <a href="${pageContext.request.contextPath}/studentAssignmentServlet" class="btn-secondary">← Quay lại</a>
+                </div>
+            </div>
+
+            <!-- Cột phải: Lịch sử đã nộp -->
+            <div class="assignment-list" style="flex: 1;">
+                <h2>📝 Lịch sử đã nộp bài</h2>
+
+                <c:choose>
+                    <c:when test="${empty history}">
+                        <p class="no-assignment">Bạn chưa nộp bài nào cho khóa học này.</p>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="h" items="${history}">
+                            <div class="assignment-item">
+                                <div class="assignment-title">
+                                    📘 Bài: <c:out value="${h.assignmentTitle}" /><br/>
+                                    📌 Ngày nộp: <fmt:formatDate value="${h.submittedAt}" pattern="dd/MM/yyyy HH:mm" />
+                                </div>
+                                <div class="assignment-meta">
+                                    <a href="${pageContext.request.contextPath}/submissions/${h.filePath}" class="assignment-link" target="_blank">
+                                        📄 Xem bài đã nộp
+                                    </a>
+                                    <br/>
+                                    🎯 Điểm: 
+                                    <strong>
+                                        <c:choose>
+                                            <c:when test="${not empty h.grade}">
+                                                ${h.grade}
+                                            </c:when>
+                                            <c:otherwise>Chưa chấm</c:otherwise>
+                                        </c:choose>
+                                    </strong>
+                                    <br/>
+
+                                    💬 Nhận xét: 
+                                    <em>
+                                        <c:choose>
+                                            <c:when test="${not empty h.comment}">
+                                                ${h.comment}
+                                            </c:when>
+                                            <c:otherwise>Chưa có nhận xét</c:otherwise>
+                                        </c:choose>
+                                    </em>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
         </div>
+
+        <script>
+            setTimeout(function () {
+                const successMsg = document.getElementById('successMessage');
+                const errorMsg = document.getElementById('errorMessage');
+                if (successMsg)
+                    successMsg.style.display = 'none';
+                if (errorMsg)
+                    errorMsg.style.display = 'none';
+            }, 5000);
+        </script>
     </div>
-
-    <!-- Cột phải: Lịch sử đã nộp -->
-    <div class="assignment-list" style="flex: 1;">
-        <h2>📝 Lịch sử đã nộp bài</h2>
-
-        <c:choose>
-            <c:when test="${empty history}">
-                <p class="no-assignment">Bạn chưa nộp bài nào cho khóa học này.</p>
-            </c:when>
-            <c:otherwise>
-                <c:forEach var="h" items="${history}">
-                    <div class="assignment-item">
-                        <div class="assignment-title">
-                            📘 Bài: <c:out value="${h.assignmentTitle}" /><br/>
-                            📌 Ngày nộp: <fmt:formatDate value="${h.submittedAt}" pattern="dd/MM/yyyy HH:mm" />
-                        </div>
-                        <div class="assignment-meta">
-                            <a href="${pageContext.request.contextPath}/submissions/${h.filePath}" class="assignment-link" target="_blank">
-                                📄 Xem bài đã nộp
-                            </a>
-                            <br/>
-                            🎯 Điểm: 
-                            <strong>
-                                <c:choose>
-                                    <c:when test="${not empty h.grade}">
-                                        ${h.grade}
-                                    </c:when>
-                                    <c:otherwise>Chưa chấm</c:otherwise>
-                                </c:choose>
-                            </strong>
-                            <br/>
-
-                            💬 Nhận xét: 
-                            <em>
-                                <c:choose>
-                                    <c:when test="${not empty h.comment}">
-                                        ${h.comment}
-                                    </c:when>
-                                    <c:otherwise>Chưa có nhận xét</c:otherwise>
-                                </c:choose>
-                            </em>
-                        </div>
-                    </div>
-                </c:forEach>
-            </c:otherwise>
-        </c:choose>
-    </div>
+    <jsp:include page="layout/footer.jsp" />
 </div>
-
-<script>
-    setTimeout(function () {
-        const successMsg = document.getElementById('successMessage');
-        const errorMsg = document.getElementById('errorMessage');
-        if (successMsg)
-            successMsg.style.display = 'none';
-        if (errorMsg)
-            errorMsg.style.display = 'none';
-    }, 5000);
-</script>
-
-<jsp:include page="layout/footer.jsp" />

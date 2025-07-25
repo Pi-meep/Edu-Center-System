@@ -23,7 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import modal.BannerModal;
 import modal.CenterInfoModal;
 import modal.CourseModal;
-import modal.TeacherModal;
 import utils.DBUtil;
 
 /**

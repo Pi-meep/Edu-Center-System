@@ -17,6 +17,7 @@ public class ConsultationDTO {
     private LocalDateTime dob;
     private String phone;
     private Status status;
+    private Role role;
     private String address;
     private String subject;
     private String experience;
@@ -35,6 +36,9 @@ public class ConsultationDTO {
     // Enum trạng thái
     public enum Status {
         pending, accepted, rejected
+    }
+    public enum Role {
+        teacher, parent
     }
 
     public ConsultationDTO() {
@@ -57,6 +61,37 @@ public class ConsultationDTO {
         this.schoolClassName = schoolClassName;
         this.email = email;
     }
+
+    public ConsultationDTO(Integer id, String name, LocalDateTime dob, String phone, Status status, Role role, String address, String subject, String experience, Integer schoolId, Integer schoolClassId, LocalDateTime createdAt, LocalDateTime updatedAt, String dobString, Integer certificateId, String certificateImageUrl, String email, String schoolName, String schoolClassName) {
+        this.id = id;
+        this.name = name;
+        this.dob = dob;
+        this.phone = phone;
+        this.status = status;
+        this.role = role;
+        this.address = address;
+        this.subject = subject;
+        this.experience = experience;
+        this.schoolId = schoolId;
+        this.schoolClassId = schoolClassId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.dobString = dobString;
+        this.certificateId = certificateId;
+        this.certificateImageUrl = certificateImageUrl;
+        this.email = email;
+        this.schoolName = schoolName;
+        this.schoolClassName = schoolClassName;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+    
 
     public String getEmail() {
         return email;

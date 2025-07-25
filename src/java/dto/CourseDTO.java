@@ -31,9 +31,21 @@ public class CourseDTO {
     private BigDecimal discountPercentage;
     private String status;
     private String teacherName;
+    private String courseImg;
+
 
     public CourseDTO() {
     }
+
+    public String getCourseImg() {
+        return courseImg;
+    }
+
+    public void setCourseImg(String courseImg) {
+        this.courseImg = courseImg;
+    }
+
+
 
     public int getId() {
         return id;

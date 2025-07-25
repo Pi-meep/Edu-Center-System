@@ -102,4 +102,3 @@
     <a href="quan-ly-lop-hoc" class="btn btn-secondary mt-3">Quay lại danh sách</a>
 </div>
 
-<jsp:include page="layout/footer.jsp" />

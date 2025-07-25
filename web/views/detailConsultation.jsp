@@ -96,5 +96,3 @@
 
     <a href="quan-ly-tu-van" class="btn btn-secondary">Quay lại danh sách</a>
 </div>
-
-<jsp:include page="layout/footer.jsp" />

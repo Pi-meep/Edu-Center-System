@@ -272,4 +272,28 @@ public class StudentCourseDAO extends DBUtil {
         }
         return null;
     }
+
+    public void deleteByStudentId(int studentId) {
+        String sql = "DELETE FROM student_course WHERE student_id = ?";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createStudentCourse(int studentId, int courseId) {
+        String sql = """
+            INSERT INTO student_course (studentId, courseId, status, isPaid, enrollment_date)
+            VALUES (?, ?, 'accepted', false, CURRENT_TIMESTAMP)
+        """;
+        try (Connection con = DBUtil.getConnection(); PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, courseId);
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

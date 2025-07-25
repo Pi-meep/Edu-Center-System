@@ -125,17 +125,18 @@ public class RequestDAO {
     }
     
     public boolean createRequest(RequestModal request) throws Exception {
-        String sql = "INSERT INTO request (requestBy, type, description, sectionId, courseId, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO request (requestBy, type, description, sectionId, fromCourseId,toCourseId, status) VALUES (?, ?, ?, ?, ?, ?,?)";
         
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             ps.setInt(1, request.getRequestBy());
-            ps.setString(2, request.getType());
+            ps.setString(2, request.getType().name());
             ps.setString(3, request.getDescription());
             ps.setObject(4, request.getSectionId());
-            ps.setObject(5, request.getCourseId());
-            ps.setString(6, request.getStatus().name());
+            ps.setObject(5, request.getFromCourseId());
+            ps.setObject(6, request.getToCourseId());
+            ps.setString(7, request.getStatus().name());
             
             int affectedRows = ps.executeUpdate();
             
@@ -238,7 +239,7 @@ public class RequestDAO {
         Integer processedBy = rs.getObject("processedBy", Integer.class);
         request.setProcessedBy(processedBy);
         
-        request.setType(rs.getString("type"));
+        request.setType(RequestModal.ReqType.valueOf(rs.getString("type")));
         request.setDescription(rs.getString("description"));
         request.setStatus(Status.valueOf(rs.getString("status")));
         
@@ -247,6 +248,12 @@ public class RequestDAO {
         
         Integer courseId = rs.getObject("courseId", Integer.class);
         request.setCourseId(courseId);
+        
+        Integer fromCourseId = rs.getObject("fromCourseId", Integer.class);
+        request.setFromCourseId(fromCourseId);
+        
+        Integer toCourseId = rs.getObject("toCourseId", Integer.class);
+        request.setToCourseId(toCourseId);
         
         request.setCreatedAt(rs.getObject("createdAt", LocalDateTime.class));
         request.setUpdatedAt(rs.getObject("updatedAt", LocalDateTime.class));
@@ -278,5 +285,30 @@ public class RequestDAO {
 
         return requests;
     }
+    
+    public void updateStatus(int requestId, RequestModal.Status status) throws Exception {
+    String sql = "UPDATE request SET status = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?";
+    try (
+        Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)
+    ) {
+        ps.setString(1, status.name()); // enum name: PENDING, ACCEPTED, REJECTED
+        ps.setInt(2, requestId);
+        ps.executeUpdate();
+    } catch (Exception e) {
+        throw new Exception("Lỗi khi cập nhật trạng thái request: " + e.getMessage(), e);
+    }
+}
+
+    public boolean processRequest(int id) throws Exception {
+    RequestModal req = getRequestById(id);
+    if (req == null || req.getStatus() != Status.pending) return false;
+
+    // Thực hiện business logic đổi khoá học ở đây
+    // ...
+
+    // Giả sử xử lý OK
+    updateStatus(id, Status.accepted); // hoặc REJECTED nếu có lỗi
+    return true;
+}
 
 } 
