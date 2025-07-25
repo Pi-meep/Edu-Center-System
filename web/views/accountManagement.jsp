@@ -1,12 +1,18 @@
 <%-- 
     Document   : accountManagement
     Created on : Jul 21, 2025, 10:42:16 PM
-    Author     : vankh
+    Author     : vankhoa
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <jsp:include page="layout/adminHeader.jsp" />
+
+
+<%
+    String role = (String) request.getAttribute("loggedInUserRole");
+    request.setAttribute("role", role);
+%> 
 
 <style>
     .status-active {
@@ -57,6 +63,12 @@
         padding: 3px 8px;
         border-radius: 4px;
     }
+    .role-manager {
+        background-color: #8e0b43;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
 
     .role-parent {
         background-color: #941cac;
@@ -96,22 +108,10 @@
 </style>
 
 <div class="container-fluid">
-<!--    <div class="db-breadcrumb">
-        <h4 class="breadcrumb-title">Quản lý Tài khoản</h4>
-        <ul class="db-breadcrumb-list">
-            <li><a href="bang-dieu-khien"><i class="fa fa-home"></i>Bảng điều khiển</a></li>
-            <li>Quản lý Tài khoản</li>
-        </ul>
-    </div>-->
 
     <!-- Search and Filter Section -->
     <div class="search-filter">
         <form class="row g-3" method="get" action="quan-ly-tai-khoan">
-            <!--            <input type="hidden" name="action" value="filter" >-->
-            <div class="col-md-4">
-                <label class="form-label">Tìm kiếm</label>
-                <input type="text" class="form-control" name="searchKeyword" placeholder="Họ tên, tài khoản..." value="${param.searchKeyword}">
-            </div>
             <div class="col-md-3">
                 <label class="form-label">Trạng thái</label>
                 <select class="form-select" name="statusFilter">
@@ -120,15 +120,31 @@
                     <option value="inactive" ${statusFilter == 'inactive' ? 'selected' : ''}>Không hoạt động</option>
                 </select>
             </div>
-            <div class="col-md-3">
-                <label class="form-label">Chức vụ</label>
-                <select class="form-select" name="roleFilter">
-                    <option value="all" ${roleFilter == 'all' ? 'selected' : ''}>Tất cả</option>
-                    <option value="staff" ${roleFilter == 'staff' ? 'selected' : ''}>Nhân viên tư vấn </option>
-                    <option value="teacher" ${roleFilter == 'teacher' ? 'selected' : ''}>Giáo viên</option>
-                    <option value="student" ${roleFilter == 'student' ? 'selected' : ''}>Học viên</option>
-                </select>
-            </div>
+            <c:if test="${role=='manager'}">
+                <div class="col-md-3">
+                    <label class="form-label">Chức vụ</label>
+                    <select class="form-select" name="roleFilter">
+                        <option value="all" ${roleFilter == 'all' ? 'selected' : ''}>Tất cả</option>
+                        <option value="staff" ${roleFilter == 'staff' ? 'selected' : ''}>Nhân viên tư vấn </option>
+                        <option value="teacher" ${roleFilter == 'teacher' ? 'selected' : ''}>Giáo viên</option>
+                        <option value="student" ${roleFilter == 'student' ? 'selected' : ''}>Học viên</option>
+                        <option value="parent" ${roleFilter == 'parent' ? 'selected' : ''}>Phụ huynh</option>
+                    </select>
+                </div>
+            </c:if>
+            <c:if test="${role=='admin'}">
+                <div class="col-md-3">
+                    <label class="form-label">Chức vụ</label>
+                    <select class="form-select" name="roleFilter">
+                        <option value="all" ${roleFilter == 'all' ? 'selected' : ''}>Tất cả</option>
+                        <option value="manager" ${roleFilter == 'manager' ? 'selected' : ''}>Quản lý</option>
+                        <option value="staff" ${roleFilter == 'staff' ? 'selected' : ''}>Nhân viên tư vấn </option>
+                        <option value="teacher" ${roleFilter == 'teacher' ? 'selected' : ''}>Giáo viên</option>
+                        <option value="student" ${roleFilter == 'student' ? 'selected' : ''}>Học viên</option>
+                        <option value="parent" ${roleFilter == 'parent' ? 'selected' : ''}>Phụ huynh</option>
+                    </select>
+                </div>
+            </c:if>
             <div class="col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">Lọc</button>
             </div>
@@ -138,9 +154,11 @@
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <div>
-            <button type="button" class="btn btn-success add-account-btn" data-bs-toggle="modal" data-bs-target="#addAccountModal">
-                <i class="fas fa-plus"></i> Thêm tài khoản mới
-            </button>
+            <form action="tao-tai-khoan-nhan-su">
+                <button type="submit" class="btn btn-success add-account-btn" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                    <i class="fas fa-plus"></i> Thêm tài khoản mới
+                </button>
+            </form>
         </div>
 
         <div style="margin-right: 100px; min-width: 300px; text-align: right;">
@@ -148,13 +166,13 @@
             <c:choose>
                 <c:when  test="${succes!=null}">
                     <div class="alert-success-box">
-                        ${succes}
+                        ✅ ${succes}
                     </div>
                 </c:when>
                 <c:when  test="${error!=null}">
 
                     <div class="alert-error-box">
-                        ${error}
+                        ❌ ${error}
                     </div>
                 </c:when>
             </c:choose>
@@ -199,6 +217,9 @@
                                 <c:when test="${account.role == 'teacher'}">
                                     <span class="role-teacher">Giáo viên</span>
                                 </c:when>
+                                <c:when test="${account.role == 'manager'}">
+                                    <span class="role-manager">Quản lý</span>
+                                </c:when>
                                 <c:when test="${account.role == 'staff'}">
                                     <span class="role-staff">Nhân viên tư vấn</span>
                                 </c:when>
@@ -226,7 +247,6 @@
         </table> 
         </table> 
         <div id="pagination-controls" class="mt-3 text-center"></div>
-
     </div>
 </div>
 
@@ -267,31 +287,8 @@
             paginationControls.appendChild(btn);
         }
     }
-
-    // Hiển thị trang đầu tiên khi tải xong
     showPage(1);
 
-//    function editAccount(accountId) {
-//        // Lấy thông tin tài khoản từ server (giả lập)
-//        // Trong thực tế, bạn sẽ gọi AJAX để lấy thông tin chi tiết
-//        fetch('quan-ly-tai-khoan?action=get_account&accountId=' + accountId)
-//                .then(response => response.json())
-//                .then(data => {
-//                    document.getElementById('editAccountId').value = data.id;
-//                    document.getElementById('editFullName').value = data.fullName;
-//                    document.getElementById('editUsername').value = data.username;
-//                    document.getElementById('editPhone').value = data.phone;
-//                    document.getElementById('editAddress').value = data.address;
-//                    document.getElementById('editRole').value = data.role;
-//                    document.getElementById('editStatus').value = data.status;
-//
-//                    $('#editAccountModal').modal('show');
-//                })
-//                .catch(error => {
-//                    console.error('Error:', error);
-//                    alert('Không thể tải thông tin tài khoản');
-//                });
-//    }
 </script>
 
 <jsp:include page="layout/footer.jsp" />

@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -891,11 +892,13 @@ public class SectionDAO extends DBUtil {
     }
 
     public String updateSectionTeacher(int sectionId, int newTeacherId) {
-        String getSectionSQL = "SELECT DATE(dateTime) AS date, slotId FROM section WHERE id = ?";
+        String getSectionSQL = "SELECT DATE(dateTime) AS date, startTime, endTime FROM section WHERE id = ?";
         String checkConflictSQL = """
         SELECT COUNT(*) FROM section
-        WHERE teacherId = ? AND slotId = ? AND DATE(dateTime) = ?
-          AND id != ?
+        WHERE teacherId = ? AND DATE(dateTime) = ? AND id != ?
+          AND (
+              (startTime < ? AND endTime > ?)  -- giao thời gian
+          )
     """;
         String updateSQL = "UPDATE section SET teacherId = ? WHERE id = ?";
 
@@ -909,14 +912,18 @@ public class SectionDAO extends DBUtil {
                 return "ERROR_NOT_FOUND"; // Không có lớp học
             }
 
-            java.sql.Date date = rs.getDate("date");
-            int slotId = rs.getInt("slotId");
+            Date date = rs.getDate("date");
+            Time startTime = rs.getTime("startTime");
+            Time endTime = rs.getTime("endTime");
+
 
             // 2. Kiểm tra trùng lịch giáo viên
             checkStmt.setInt(1, newTeacherId);
-            checkStmt.setInt(2, slotId);
-            checkStmt.setDate(3, date);
-            checkStmt.setInt(4, sectionId);
+            checkStmt.setDate(2, date);
+            checkStmt.setInt(3, sectionId);
+            checkStmt.setTime(4, endTime);   
+            checkStmt.setTime(5, startTime);
+
 
             ResultSet checkRs = checkStmt.executeQuery();
             checkRs.next();
@@ -931,11 +938,8 @@ public class SectionDAO extends DBUtil {
             updateStmt.setInt(2, sectionId);
             int rows = updateStmt.executeUpdate();
 
-            if (rows > 0) {
-                return "SUCCESS";
-            } else {
-                return "ERROR_UPDATE_FAILED";
-            }
+                       return rows > 0 ? "SUCCESS" : "ERROR_UPDATE_FAILED";
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -946,8 +950,8 @@ public class SectionDAO extends DBUtil {
     public String updateSectionClassroom(int sectionId, String newRoom) {
         String checkSql = """
         SELECT COUNT(*) FROM section
-        WHERE classroom = ? AND id != ? 
-              AND date = (SELECT date FROM section WHERE id = ?)
+        WHERE classroom = ? AND id != ?
+              AND DATE(dateTime) = (SELECT DATE(dateTime) FROM section WHERE id = ?)
               AND startTime = (SELECT startTime FROM section WHERE id = ?)
     """;
 

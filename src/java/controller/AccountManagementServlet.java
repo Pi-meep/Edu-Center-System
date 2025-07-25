@@ -77,9 +77,9 @@ public class AccountManagementServlet extends HttpServlet {
                     try {
                         acDao.updateStatusById(accountId, "inactive");
                         AccountModal ac = acDao.getAccountById(accountId);
-                        request.setAttribute("succes", "✅ Đổi trạng thái người dùng " + ac.getName() + " thành công!");
-                    } catch (Exception ex) {
-                        request.setAttribute("error", "❌ Đổi trạng thái thất bại!");
+                        request.setAttribute("succes", "Đổi trạng thái người dùng " + ac.getName() + " thành công!");
+
+                        request.setAttribute("error", "Đổi trạng thái thất bại!");
 
                         request.getRequestDispatcher("/views/accountManagement.jsp").forward(request, response);
                     }
@@ -87,18 +87,18 @@ public class AccountManagementServlet extends HttpServlet {
                     try {
                         acDao.updateStatusById(accountId, "active");
                         AccountModal ac = acDao.getAccountById(accountId);
-                        request.setAttribute("succes", "✅ Đổi trạng thái người dùng " + ac.getName() + " thành công!");
-                    } catch (Exception ex) {
-                        request.setAttribute("error", "❌ Đổi trạng thái thất bại!");
+                        request.setAttribute("succes", "Đổi trạng thái người dùng " + ac.getName() + " thành công!");
+
+                        request.setAttribute("error", "Đổi trạng thái thất bại!");
                         request.getRequestDispatcher("/views/accountManagement.jsp").forward(request, response);
                     }
                 }
             } else if (action.equalsIgnoreCase("delete")) {
                 int accountId = Integer.parseInt(accountIdStr);
                 if (acDao.deleteById(accountId)) {
-                    request.setAttribute("succes", "✅ Xóa tài khoản thành công!");
+                    request.setAttribute("succes", "Xóa tài khoản thành công!");
                 } else {
-                    request.setAttribute("error", "❌ Xóa tài khoản thất bại!");
+                    request.setAttribute("error", "Xóa tài khoản thất bại!");
                 }
             } else if (action.equalsIgnoreCase("reset")) {
                 int accountId = Integer.parseInt(accountIdStr);
@@ -108,9 +108,9 @@ public class AccountManagementServlet extends HttpServlet {
                     try {
                         boolean success = acDao.updatePasswordById(accountId, newHashed);
                         if (success) {
-                            request.setAttribute("succes", "✅ Đặt lại mật khẩu người dùng " + ac.getName() + " thành công!");
+                            request.setAttribute("succes", "Đặt lại mật khẩu người dùng " + ac.getName() + " thành công!");
                         } else {
-                            request.setAttribute("error", "❌ Đặt lại mật khẩu người dùng " + ac.getName() + " thất bại!");
+                            request.setAttribute("error", "Đặt lại mật khẩu người dùng " + ac.getName() + " thất bại!");
                         }
                     } catch (Exception ex) {
                         Logger.getLogger(AccountManagementServlet.class.getName()).log(Level.SEVERE, null, ex);

@@ -1,7 +1,7 @@
 <%-- 
     Document   : scheduleManagement
     Created on : Jul 10, 2025, 10:00:00 AM
-    Author     : Admin
+    Author     : vankhoa
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -653,7 +653,8 @@
                                 <div id="changeScheduleByTeacher" style="display: block;">
                                     <div class="mb-3">
                                         <label class="form-label">Chọn giáo viên:</label>
-                                        <select class="form-select" id="scheduleTeacherSelect" name="teacherId" onchange="filterScheduleOptions('schedule', this.value)">
+                                        <select class="form-select" id="scheduleTeacherSelect" name="teacherId"
+                                                onchange="filterScheduleOptions('schedule', this.value)">
                                             <c:forEach items="${teachers}" var="t">
                                                 <option value="${t.id}">${t.name}</option>
                                             </c:forEach>
@@ -695,8 +696,9 @@
                             <!-- === ĐỔI GIÁO VIÊN === -->
                             <div id="changeTeacherForm" style="display: none;">
                                 <div class="mb-3">
-                                    <label class="form-label">Chọn giáo viên hiện tại:</label>
-                                    <select class="form-select" id="teacherSelect" name="teacherId" onchange="filterScheduleOptions('teacher', this.value)">
+                                    <label class="form-label">Chọn giáo viên:</label>
+                                    <select class="form-select" id="scheduleTeacherSelect" name="teacherId"
+                                            onchange="filterScheduleOptions('schedule', this.value)">
                                         <c:forEach items="${teachers}" var="t">
                                             <option value="${t.id}">${t.name}</option>
                                         </c:forEach>
@@ -705,7 +707,7 @@
 
                                 <div class="mb-3">
                                     <label class="form-label">Chọn lịch cần đổi:</label>
-                                    <select class="form-select" name="scheduleId" id="teacherScheduleSelect">
+                                    <select class="form-select" name="scheduleId" id="scheduleOriginalSelect">
                                         <c:forEach items="${sections}" var="s">
                                             <option value="${s.id}" data-teacher="${s.teacherId}">
                                                 ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted}
@@ -729,7 +731,8 @@
                             <div id="changeRoomForm" style="display: none;">
                                 <div class="mb-3">
                                     <label class="form-label">Chọn giáo viên:</label>
-                                    <select class="form-select" id="roomTeacherSelect" name="teacherId" onchange="filterScheduleOptions('room', this.value)">
+                                    <select class="form-select" id="scheduleTeacherSelect" name="teacherId"
+                                            onchange="filterScheduleOptions('schedule', this.value)">
                                         <c:forEach items="${teachers}" var="t">
                                             <option value="${t.id}">${t.name}</option>
                                         </c:forEach>
@@ -738,10 +741,10 @@
 
                                 <div class="mb-3">
                                     <label class="form-label">Chọn lịch cần đổi:</label>
-                                    <select class="form-select" name="scheduleId" id="roomScheduleSelect">
+                                    <select class="form-select" name="scheduleId" id="scheduleOriginalSelect">
                                         <c:forEach items="${sections}" var="s">
                                             <option value="${s.id}" data-teacher="${s.teacherId}">
-                                                ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || Ngày ${s.dateFormatted}
+                                                ${s.classroom} - ${s.startTimeFormatted} - ${s.endTimeFormatted} || ${s.dateFormatted}
                                             </option>
                                         </c:forEach>
                                     </select>
@@ -834,8 +837,29 @@
             document.getElementById("hiddenDateInput").addEventListener("change", function () {
                 this.form.submit();
             });
-
         });
+
+        function filterScheduleOptions(selectIdPrefix, selectedTeacherId) {
+            const scheduleSelect = document.getElementById(selectIdPrefix + 'OriginalSelect');
+            const options = scheduleSelect.options;
+
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                const teacherId = option.getAttribute("data-teacher");
+
+                if (!selectedTeacherId || teacherId === selectedTeacherId) {
+                    option.style.display = "block";
+                } else {
+                    option.style.display = "none";
+                }
+            }
+
+            // Nếu option đang chọn bị ẩn đi thì bỏ chọn
+            if (scheduleSelect.selectedOptions.length > 0 &&
+                    scheduleSelect.selectedOptions[0].style.display === "none") {
+                scheduleSelect.selectedIndex = -1;
+            }
+        }
     </script>
 
     <!-- Bootstrap JS -->

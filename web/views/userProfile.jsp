@@ -1,7 +1,7 @@
 <%-- 
     Document   : userProfile
     Created on : Jun 25, 2025, 11:32:11 AM
-    Author     : vankh
+    Author     : vankhoa
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
@@ -44,37 +44,38 @@
                 <div class="widget-inner">
                     <div class="edit-profile">
                         <c:if test="${loggedInUserRole != 'admin'}">
-                            <div class="row">
+<!--                            <div class="row">
                                 <div class="col-12">
-                                    <div class="profile-pic text-center mb-4">
-                                        <!-- Hiển thị ảnh đại diện -->
-                                        <div class="avatar-container position-relative">
+                                    <div class="text-center mb-4">
+                                        <div class="position-relative d-inline-block">
+                                             Avatar hiện tại 
                                             <c:set var="avatarPath" value="${empty account.avatarURL ? '/assets/ava.png' : account.avatarURL}" />
                                             <img id="avatarPreview" src="${pageContext.request.contextPath}${avatarPath}" 
-                                                 alt="Ảnh đại diện" class="rounded-circle shadow" 
+                                                 class="rounded-circle shadow" alt="Avatar"
                                                  style="width: 150px; height: 150px; object-fit: cover;">
 
-                                            <!-- Thêm loading indicator -->
-                                            <div id="avatarLoading" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); display: flex; justify-content: center; align-items: center;">
+                                             Loading khi đang upload 
+                                            <div id="avatarLoading" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+                                                 background: rgba(255,255,255,0.7); display: flex; justify-content: center; align-items: center;">
                                                 <div class="spinner-border text-primary" role="status">
                                                     <span class="visually-hidden">Loading...</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Form đổi ảnh -->
-                                        <form id="avatarForm" method="post" action="${pageContext.request.contextPath}/upload-avatar" enctype="multipart/form-data">
-                                            <input type="hidden" name="action" value="updateAvatar">
-                                            <input type="file" name="avatar" id="avatarInput" 
-                                                   class="d-none" accept="image/jpeg, image/png">
-                                            <button type="button" id="changeAvatarBtn" class="btn btn-primary btn-sm mt-2">
-                                                <i class="fas fa-camera me-2"></i>Đổi ảnh
+                                         Nút chọn ảnh 
+                                        <form id="avatarForm" method="post" action="${pageContext.request.contextPath}/upload-avatar"
+                                              enctype="multipart/form-data" class="mt-3">
+                                            <input type="file" name="avatar" id="avatarInput" class="d-none" accept="image/jpeg,image/png">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('avatarInput').click();">
+                                                <i class="fas fa-camera me-2"></i> Đổi ảnh
                                             </button>
-                                            <div class="text-muted small mt-1">Chỉ hỗ trợ ảnh JPG, PNG (tối đa 2MB)</div>
                                         </form>
+                                        <div class="small text-muted mt-1">Chỉ hỗ trợ JPG, PNG (tối đa 2MB)</div>
                                     </div>
                                 </div>
-                            </div>
+                            </div>-->
+
                         </c:if>
                         <form class="userProfile" id="profileForm" method="post" action="userProfile">
                             <input type="hidden" name="action" value="updateProfile">
@@ -379,101 +380,16 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const avatarInput = document.getElementById('avatarInput');
-        const changeAvatarBtn = document.getElementById('changeAvatarBtn');
-        const avatarForm = document.getElementById('avatarForm');
-        const avatarPreview = document.getElementById('avatarPreview');
-        const avatarLoading = document.getElementById('avatarLoading');
-
-        // 1. Xử lý click nút đổi ảnh
-        if (changeAvatarBtn && avatarInput) {
-            changeAvatarBtn.addEventListener('click', function () {
-                avatarInput.click();
-            });
-        }
-
-        // 2. Xử lý khi chọn file
-        if (avatarInput) {
-            avatarInput.addEventListener('change', function () {
-                if (!this.files || !this.files[0])
-                    return;
-
-                const file = this.files[0];
-
-                // Kiểm tra định dạng file
-                if (!file.type.match('image/jpeg|image/png')) {
-                    alert('Chỉ chấp nhận file JPG/PNG');
-                    return;
-                }
-
-                // Kiểm tra kích thước file
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('File không được vượt quá 2MB');
-                    return;
-                }
-
-                // Hiển thị preview
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    avatarPreview.src = e.target.result;
-
-                    // Hiển thị loading
-                    if (avatarLoading)
-                        avatarLoading.style.display = 'flex';
-
-                    // Tự động submit form
-                    avatarForm.submit();
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // 3. Xử lý submit form
-        if (avatarForm) {
-            avatarForm.addEventListener('submit', function (e) {
-                e.preventDefault(); // Ngăn submit thông thường
-
-                // Hiển thị loading
-                if (avatarLoading)
-                    avatarLoading.style.display = 'flex';
-
-                // Gửi bằng AJAX
-                const formData = new FormData(this);
-
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData
-                })
-                        .then(response => {
-                            if (!response.ok)
-                                throw new Error('Network response was not ok');
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                // Cập nhật ảnh mới nếu server trả về URL mới
-                                if (data.avatarUrl) {
-                                    avatarPreview.src = data.avatarUrl;
-                                }
-                                // Có thể thêm thông báo thành công
-                                alert('Cập nhật ảnh đại diện thành công!');
-                            } else {
-                                alert(data.message || 'Cập nhật ảnh thất bại');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Lỗi khi upload ảnh: ' + error.message);
-                        })
-                        .finally(() => {
-                            // Ẩn loading
-                            if (avatarLoading)
-                                avatarLoading.style.display = 'none';
-                        });
-            });
-        }
-    });
+//    const avatarInput = document.getElementById('avatarInput');
+//    const avatarForm = document.getElementById('avatarForm');
+//    const avatarLoading = document.getElementById('avatarLoading');
+//
+//    avatarInput.addEventListener('change', function () {
+//        if (this.files && this.files[0]) {
+//            avatarLoading.style.display = 'flex';
+//            avatarForm.submit();
+//        }
+//    });
     document.addEventListener('DOMContentLoaded', function () {
         // DOM Elements
         const profileForm = document.getElementById('profileForm');

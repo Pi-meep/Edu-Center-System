@@ -13,9 +13,13 @@ import dto.TeacherProfile;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import java.io.File;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +35,9 @@ import modal.TeacherModal;
  *
  * @author vankh
  */
+@MultipartConfig(fileSizeThreshold = 1024 * 1024, // 1MB
+        maxFileSize = 1024 * 1024 * 2, // 2MB
+        maxRequestSize = 1024 * 1024 * 5) // 5MB
 public class UserProfileServlet extends HttpServlet {
 
     /**
@@ -142,7 +149,6 @@ public class UserProfileServlet extends HttpServlet {
             AccountDAO accountDao = new AccountDAO();
             StudentDAO studentDao = new StudentDAO();
             TeacherDAO teacherDao = new TeacherDAO();
-//            ParentDAO parentDao = new ParentDAO();
 
             try {
                 AccountModal account = accountDao.getAccountByUsername(usname);
@@ -168,8 +174,42 @@ public class UserProfileServlet extends HttpServlet {
                     account.setDob(dob.atTime(12, 0));
                 }
 
-                // Cập nhật thông tin chung
-                accountDao.updateAccount(account);
+                // ===== XỬ LÝ ẢNH ĐẠI DIỆN =====
+//                Part filePart = request.getPart("avatar");
+//                if (filePart != null && filePart.getSize() > 0) {
+//                    // Lấy đường dẫn thực tế tới thư mục /assets/avatars
+//                    String uploadPath = getServletContext().getRealPath("/assets/avatars");
+//                    File uploadDir = new File(uploadPath);
+//                    if (!uploadDir.exists()) {
+//                        uploadDir.mkdirs();
+//                    }
+//
+//                    // Lấy phần mở rộng
+//                    String originalFileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+//                    String extension = originalFileName.substring(originalFileName.lastIndexOf(".")).toLowerCase();
+//
+//                    // Kiểm tra định dạng
+//                    if (!extension.equals(".jpg") && !extension.equals(".jpeg") && !extension.equals(".png")) {
+//                        request.setAttribute("error", "Chỉ hỗ trợ ảnh JPG và PNG.");
+//                        request.getRequestDispatcher("/profile.jsp").forward(request, response);
+//                        return;
+//                    }
+//
+//                    // Tạo tên file mới
+//                    String savedFileName = "avatar_user_" + account.getId() + extension;
+//                    filePart.write(uploadPath + File.separator + savedFileName);
+//
+//                    // Lưu URL để hiển thị (path tương đối)
+//                    String avatarURL = "/assets/avatars/" + savedFileName;
+//                    account.setAvatarURL(avatarURL);
+//
+//                    // Gán lại vào session nếu bạn dùng nó để hiển thị
+//                    request.getSession().setAttribute("account", account);
+//
+//                    // TODO: Nếu cần cập nhật vào database thì gọi DAO updateAvatar(account)
+//                    // Chuyển hướng về profile
+//                    response.sendRedirect(request.getContextPath() + "/userProfile.jsp");
+//                }
 
                 if ("student".equals(role)) {
                     String grade = request.getParameter("grade");

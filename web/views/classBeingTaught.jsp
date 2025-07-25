@@ -355,6 +355,8 @@
                                         <span class="info-label">Cấp độ:</span>
                                         <span class="info-value">
                                             <c:choose>
+                                                <c:when test="${c.level == 'Foundation'}">Nhập môn</c:when>
+                                                <c:when test="${c.level == 'Excellent'}">Xuất sắc</c:when>
                                                 <c:when test="${c.level == 'Advanced'}">Nâng cao</c:when>
                                                 <c:when test="${c.level == 'Basic'}">Cơ bản</c:when>
                                                 <c:when test="${c.level == 'Topics_Exam'}">Luyện thi</c:when>
