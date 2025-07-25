@@ -41,6 +41,7 @@ public class CourseModal {
         pending("Đang xét duyệt"),
         upcoming("Sắp tới"),
         rejected("Bị loại bỏ"),
+        completed("Đã hoàn thành"),
         inactivated("Chưa kích hoạt");
         private final String displayName;
 
