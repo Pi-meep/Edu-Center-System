@@ -191,8 +191,8 @@
                 <label class="form-label">Phòng học</label>
                 <select name="classroom" class="form-select form-select-sm" required>
                     <c:forEach var="room" items="${roomList}">
-                        <option value="${room.roomName}">
-                            ${room.roomName} - ${room.location}
+                        <option value="${room.id}">
+                            ${room.roomName}
                         </option>
                     </c:forEach>
                 </select>

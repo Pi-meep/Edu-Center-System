@@ -14,31 +14,30 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
- * Servlet quản lý các yêu cầu tư vấn của người dùng. 
- * Hỗ trợ các thao tác: xem chi tiết, phê duyệt, tạo tài khoản từ yêu cầu, và hiển thị danh sách có lọc theo tên và trạng thái.
- * 
+ * Servlet quản lý các yêu cầu tư vấn của người dùng. Hỗ trợ các thao tác: xem
+ * chi tiết, phê duyệt, tạo tài khoản từ yêu cầu, và hiển thị danh sách có lọc
+ * theo tên và trạng thái.
+ *
  * URL mapping dự kiến: /quan-ly-tu-van
- * 
- * Các tham số hỗ trợ:
- * - action = detail | approve | create | list
- * - id: ID của yêu cầu tư vấn khi dùng cho detail/approve/create
- * - name: Tên người tư vấn (dùng cho tìm kiếm)
- * - filter: Trạng thái tư vấn (accepted, pending, rejected, ...)
- * 
- * Các view liên quan:
- * - views/detailConsultation.jsp
- * - views/managerConsultation.jsp
- * 
+ *
+ * Các tham số hỗ trợ: - action = detail | approve | create | list - id: ID của
+ * yêu cầu tư vấn khi dùng cho detail/approve/create - name: Tên người tư vấn
+ * (dùng cho tìm kiếm) - filter: Trạng thái tư vấn (accepted, pending, rejected,
+ * ...)
+ *
+ * Các view liên quan: - views/detailConsultation.jsp -
+ * views/managerConsultation.jsp
+ *
  * @author HanND
  */
 public class ManagerConsultationServlet extends HttpServlet {
-     /**
-     * Xử lý các yêu cầu HTTP GET.
-     * Phân nhánh theo tham số "action" để thực hiện các chức năng:
-     * - detail: hiển thị chi tiết yêu cầu tư vấn.
-     * - approve: cập nhật trạng thái tư vấn thành "accepted".
-     * - create: chuyển hướng sang trang tạo tài khoản với ID tư vấn.
-     * - list (mặc định): hiển thị danh sách tư vấn kèm tìm kiếm/lọc theo tên và trạng thái.
+
+    /**
+     * Xử lý các yêu cầu HTTP GET. Phân nhánh theo tham số "action" để thực hiện
+     * các chức năng: - detail: hiển thị chi tiết yêu cầu tư vấn. - approve: cập
+     * nhật trạng thái tư vấn thành "accepted". - create: chuyển hướng sang
+     * trang tạo tài khoản với ID tư vấn. - list (mặc định): hiển thị danh sách
+     * tư vấn kèm tìm kiếm/lọc theo tên và trạng thái.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -74,9 +73,12 @@ public class ManagerConsultationServlet extends HttpServlet {
                 String name = request.getParameter("name");
                 String status = request.getParameter("status");
 
-                List<ConsultationDTO> consultations = dao.listAndSearchConsultations(name, status);
+                List<ConsultationDTO> teacherList = dao.listAndSearchConsultations(name, status, "teacher");
 
-                request.setAttribute("consultations", consultations);
+                List<ConsultationDTO> studentParentList = dao.listAndSearchConsultations(name, status, "parent");
+
+                request.setAttribute("teacherList", teacherList);
+                request.setAttribute("studentParentList", studentParentList);
                 request.setAttribute("name", name != null ? name : "");
                 request.setAttribute("status", status != null ? status : "");
 
@@ -86,7 +88,8 @@ public class ManagerConsultationServlet extends HttpServlet {
                 }
 
                 request.getRequestDispatcher("views/managerConsultation.jsp").forward(request, response);
-                return;
+                break;
+
         }
     }
 

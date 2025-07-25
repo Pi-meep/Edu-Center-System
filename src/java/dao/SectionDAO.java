@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import modal.SectionModal;
+import modal.SectionModal.Status;
 import utils.DBUtil;
 
 /**
@@ -225,8 +226,7 @@ public class SectionDAO extends DBUtil {
             startTime = ?, 
             endTime = ?, 
             classroom = ?, 
-            dateTime = ?, 
-            status = ?
+            dateTime = ? 
         WHERE id = ?
     """;
 
@@ -238,8 +238,7 @@ public class SectionDAO extends DBUtil {
             stmt.setTime(4, Time.valueOf(section.getEndTime().toLocalTime()));
             stmt.setString(5, section.getClassroom());
             stmt.setTimestamp(6, Timestamp.valueOf(section.getDateTime()));
-            stmt.setString(7, section.getStatus().toString());
-            stmt.setInt(8, section.getId());
+            stmt.setInt(7, section.getId());
 
             int rows = stmt.executeUpdate();
             if (rows > 0) {
@@ -558,8 +557,8 @@ public class SectionDAO extends DBUtil {
             ps.setString(1, classroom);
             ps.setInt(2, id);
             ps.setDate(3, java.sql.Date.valueOf(date));
-            ps.setTime(4, Time.valueOf(endTime));  
-            ps.setTime(5, Time.valueOf(startTime)); 
+            ps.setTime(4, Time.valueOf(endTime));
+            ps.setTime(5, Time.valueOf(startTime));
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -983,5 +982,15 @@ public class SectionDAO extends DBUtil {
         }
     }
 
+    public void updateStatus(int sectionId, String status) {
+        String sql = "UPDATE section SET status = ? WHERE id = ?";
+        try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status); // lowercase string: "active", "inactive", "completed"
+            ps.setInt(2, sectionId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -367,7 +367,7 @@
                                 <li>
                                     <a href="quan-ly-tu-van" class="ttr-material-button">
                                         <span class="ttr-icon"><i class="fa fa-user-circle"></i></span>
-                                        <span class="ttr-label">Quản lý tư vấn</span>
+                                        <span class="ttr-label">Quản lý tư vấn và tuyển dụng</span>
                                     </a>
                                 </li>
                                 <li>

@@ -51,123 +51,174 @@
         vertical-align: middle;
     }
 
-    /* Định nghĩa độ rộng các cột */
-    table thead th:nth-child(1),
-    table tbody td:nth-child(1) {
+    /* Định nghĩa độ rộng cột hợp lý cho cả hai bảng */
+    table th:nth-child(1), table td:nth-child(1) {
         width: 5%;
-    }
-
-    table thead th:nth-child(2),
-    table tbody td:nth-child(2) {
-        width: 25%;
+    }     /* STT */
+    table th:nth-child(2), table td:nth-child(2) {
+        width: 20%;
         text-align: left;
-        padding-left: 10px;
-    }
-
-    table thead th:nth-child(3),
-    table tbody td:nth-child(3),
-    table thead th:nth-child(4),
-    table tbody td:nth-child(4),
-    table thead th:nth-child(5),
-    table tbody td:nth-child(5) {
+        padding-left: 12px;
+    } /* Họ tên */
+    table th:nth-child(3), table td:nth-child(3) {
+        width: 12%;
+    }    /* Ngày sinh */
+    table th:nth-child(4), table td:nth-child(4) {
+        width: 13%;
+    }    /* SĐT */
+    table th:nth-child(5), table td:nth-child(5) {
+        width: 22%;
+        text-align: left;
+        padding-left: 12px;
+    } /* Email */
+    table th:nth-child(6), table td:nth-child(6) {
+        width: 13%;
+    }    /* Trạng thái */
+    table th:nth-child(7), table td:nth-child(7) {
         width: 15%;
-    }
+    }    /* Hành động */
 
-    table thead th:nth-child(6),
-    table tbody td:nth-child(6) {
-        width: 25%;
-    }
 </style>
 
 <jsp:include page="layout/adminHeader.jsp" />
 
-<div class="container mt-4">
-    <h2 class="mb-4 text-center">Danh sách Tư vấn</h2>
-    <form method="get" action="quan-ly-tu-van" class="row g-3 mb-4">
-        <input type="hidden" name="action" value="list" />
-        <div class="col-md-4">
-            <input type="text" class="form-control" name="name" placeholder="VD:Nguyen Duc Han"
-                   value="${param.name}" />
-        </div>
-        <div class="col-md-4">
-            <select name="status" class="form-select">
-                <option value="">-- Tất cả trạng thái --</option>
-                <option value="pending" ${param.status == 'pending' ? 'selected' : ''}>Chờ xử lý</option>
-                <option value="accepted" ${param.status == 'accepted' ? 'selected' : ''}>Đã duyệt</option>
+<div class="container-fluid">
+    <h4 class="my-3 fw-bold text-center">DANH SÁCH TƯ VẤN VÀ TUYỂN DỤNG</h4>
 
+    <form action="consultation" method="get" class="d-flex justify-content-center gap-3 my-4">
+        <div class="input-group w-auto">
+            <input type="text" class="form-control" name="name" placeholder="Tìm kiếm theo tên..." value="${param.name}">
+        </div>
+        <div class="input-group w-auto">
+            <select class="form-select" name="status">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="pending" ${param.status == 'pending' ? 'selected' : ''}>Chưa xử lý</option>
+                <option value="processing" ${param.status == 'processing' ? 'selected' : ''}>Đang xử lý</option>
+                <option value="done" ${param.status == 'done' ? 'selected' : ''}>Đã xử lý</option>
             </select>
         </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search"></i> Tìm kiếm
-            </button>
-        </div>
+        <button type="submit" class="btn btn-primary">Lọc</button>
     </form>
-    <table class="table table-striped table-bordered table-hover align-middle">
-        <thead class="table-primary">
-            <tr>
-                <th>STT</th> 
-                <th>Họ tên</th>
-                <th>Ngày sinh</th>
-                <th>Điện thoại</th>
-                 <th>Email</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            <c:forEach var="consult" items="${consultations}" varStatus="status">
-                <tr>
-                    <td>${status.index + 1}</td> 
-                    <td class="text-start">${consult.name}</td>
-                    <td>${consult.dobString}</td>
-                    <td>${consult.phone}</td>
-                    <td>${consult.email}</td>
-                    <td class="text-capitalize">
-                        <c:choose>
-                            <c:when test="${consult.status == 'pending'}">
-                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
-                            </c:when>
-                            <c:when test="${consult.status == 'accepted'}">
-                                <span class="badge bg-success">Đã chấp nhận</span>
-                            </c:when>
-                            <c:when test="${consult.status == 'rejected'}">
-                                <span class="badge bg-success">Từ chối</span>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="badge bg-secondary">Không xác định</span>
-                            </c:otherwise>
-                        </c:choose>
-                    </td>
 
-                    <td>
-                        <div class="btn-group" role="group" aria-label="Actions">
-                            <a href="quan-ly-tu-van?action=detail&id=${consult.id}" class="btn btn-info btn-sm" title="Xem chi tiết">
+    <!-- Danh sách Giáo viên -->
+    <c:if test="${not empty teacherList}">
+        <h5 class="mt-4 fw-bold">Giáo viên</h5>
+        <table class="table table-hover table-bordered align-middle text-center">
+            <thead class="table-primary">
+                <tr>
+                    <th>STT</th>
+                    <th>Họ tên</th>
+                    <th>Ngày sinh</th>
+                    <th>SĐT</th>
+                    <th>Email</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach var="consult" items="${teacherList}" varStatus="loop">
+                    <tr>
+                        <td>${loop.index + 1}</td>
+                        <td>${consult.name}</td>
+                        <td>${consult.dobString}</td>
+                        <td>${consult.phone}</td>
+                        <td>${consult.email}</td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${consult.status.toString() == 'pending'}">
+                                    <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                </c:when>
+                                <c:when test="${consult.status.toString() == 'processing'}">
+                                    <span class="badge bg-info text-dark">Đang xử lý</span>
+                                </c:when>
+                                <c:when test="${consult.status.toString() == 'accepted'}">
+                                    <span class="badge bg-success">Đã xử lý</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge bg-secondary">Không rõ</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td>
+                            <!-- Xem chi tiết -->
+                            <a href="quan-ly-tu-van?action=detail&id=${consult.id}" class="text-info me-2" title="Chi tiết">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <c:if test="${consult.status == 'pending'}">
-                                <a href="quan-ly-tu-van?action=approve&id=${consult.id}" class="btn btn-success btn-sm" title="Duyệt">
-                                    <i class="fas fa-check"></i>
-                                </a>
-                            </c:if>
-                            <a href="quan-ly-tu-van?action=create&id=${consult.id}" class="btn btn-primary btn-sm" title="Tạo tài khoản">
+
+                            <!-- Duyệt yêu cầu -->
+                            <a href="quan-ly-tu-van?action=approve&id=${consult.id}" class="text-success me-2" title="Duyệt tư vấn">
+                                <i class="fas fa-check-circle"></i>
+                            </a>
+
+                            <!-- Tạo tài khoản -->
+                            <a href="quan-ly-tu-van?action=create&id=${consult.id}" class="text-primary" title="Tạo tài khoản">
                                 <i class="fas fa-user-plus"></i>
                             </a>
-                        </div>
-                    </td>
-                </tr>
-            </c:forEach>
-            <c:if test="${empty consultations}">
-                <tr>
-                    <td colspan="6" class="text-center text-danger">Không có kết quả phù hợp</td>
-                </tr>
-            </c:if>
-
-        </tbody>
-    </table>
-    <c:if test="${not empty message}">
-        <div class="alert alert-success text-center">${message}</div>
+                        </td>
+                    </tr>
+                </c:forEach>
+            </tbody>
+        </table>
     </c:if>
 
-</div>
+    <!-- Danh sách Phụ huynh / Học sinh -->
+    <c:if test="${not empty studentParentList}">
+        <h5 class="mt-4 fw-bold">Phụ huynh / Học sinh</h5>
+        <table class="table table-hover table-bordered align-middle text-center">
+            <thead class="table-success">
+                <tr>
+                    <th>STT</th>
+                    <th>Họ tên</th>
+                    <th>Ngày sinh</th>
+                    <th>SĐT</th>
+                    <th>Email</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach var="consult" items="${studentParentList}" varStatus="loop">
+                    <tr>
+                        <td>${loop.index + 1}</td>
+                        <td>${consult.name}</td>
+                        <td>${consult.dobString}</td>
+                        <td>${consult.phone}</td>
+                        <td>${consult.email}</td>
+                        <td>
+                            <c:choose>
+                                <c:when test="${consult.status.toString() == 'pending'}">
+                                    <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                </c:when>
+                                <c:when test="${consult.status.toString() == 'pending'}">
+                                    <span class="badge bg-info text-dark">Đang xử lý</span>
+                                </c:when>
+                                <c:when test="${consult.status.toString() == 'accepted'}">
+                                    <span class="badge bg-success">Đã xử lý</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="badge bg-secondary">Không rõ</span>
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td>
+                            <!-- Xem chi tiết -->
+                            <a href="quan-ly-tu-van?action=detail&id=${consult.id}" class="text-info me-2" title="Chi tiết">
+                                <i class="fas fa-eye"></i>
+                            </a>
 
+                            <!-- Duyệt yêu cầu -->
+                            <a href="quan-ly-tu-van?action=approve&id=${consult.id}" class="text-success me-2" title="Duyệt tư vấn">
+                                <i class="fas fa-check-circle"></i>
+                            </a>
+
+                            <!-- Tạo tài khoản -->
+                            <a href="quan-ly-tu-van?action=create&id=${consult.id}" class="text-primary" title="Tạo tài khoản">
+                                <i class="fas fa-user-plus"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </c:forEach>
+            </tbody>
+        </table>
+    </c:if>
+</div>
