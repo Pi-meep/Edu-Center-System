@@ -85,16 +85,15 @@
 <div class="container-fluid">
     <h4 class="my-3 fw-bold text-center">DANH SÁCH TƯ VẤN VÀ TUYỂN DỤNG</h4>
 
-    <form action="consultation" method="get" class="d-flex justify-content-center gap-3 my-4">
+    <form action="quan-ly-tu-van" method="get" class="d-flex justify-content-center gap-3 my-4">
         <div class="input-group w-auto">
             <input type="text" class="form-control" name="name" placeholder="Tìm kiếm theo tên..." value="${param.name}">
         </div>
         <div class="input-group w-auto">
             <select class="form-select" name="status">
                 <option value="">-- Tất cả trạng thái --</option>
-                <option value="pending" ${param.status == 'pending' ? 'selected' : ''}>Chưa xử lý</option>
-                <option value="processing" ${param.status == 'processing' ? 'selected' : ''}>Đang xử lý</option>
-                <option value="done" ${param.status == 'done' ? 'selected' : ''}>Đã xử lý</option>
+                <option value="pending" ${param.status == 'pending' ? 'selected' : ''}>Chờ xử lý</option>
+                <option value="accepted" ${param.status == 'accepted' ? 'selected' : ''}>Đã xử lý</option>
             </select>
         </div>
         <button type="submit" class="btn btn-primary">Lọc</button>
@@ -128,9 +127,6 @@
                                 <c:when test="${consult.status.toString() == 'pending'}">
                                     <span class="badge bg-warning text-dark">Chờ xử lý</span>
                                 </c:when>
-                                <c:when test="${consult.status.toString() == 'processing'}">
-                                    <span class="badge bg-info text-dark">Đang xử lý</span>
-                                </c:when>
                                 <c:when test="${consult.status.toString() == 'accepted'}">
                                     <span class="badge bg-success">Đã xử lý</span>
                                 </c:when>
@@ -163,7 +159,7 @@
 
     <!-- Danh sách Phụ huynh / Học sinh -->
     <c:if test="${not empty studentParentList}">
-        <h5 class="mt-4 fw-bold">Phụ huynh / Học sinh</h5>
+        <h5 class="mt-4 fw-bold">Phụ huynh</h5>
         <table class="table table-hover table-bordered align-middle text-center">
             <thead class="table-success">
                 <tr>
@@ -188,9 +184,6 @@
                             <c:choose>
                                 <c:when test="${consult.status.toString() == 'pending'}">
                                     <span class="badge bg-warning text-dark">Chờ xử lý</span>
-                                </c:when>
-                                <c:when test="${consult.status.toString() == 'pending'}">
-                                    <span class="badge bg-info text-dark">Đang xử lý</span>
                                 </c:when>
                                 <c:when test="${consult.status.toString() == 'accepted'}">
                                     <span class="badge bg-success">Đã xử lý</span>

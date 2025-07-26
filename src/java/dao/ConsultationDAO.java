@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import modal.ConsultationCertificateModal;
 import modal.ConsultationModal;
 import utils.DBUtil;
@@ -67,11 +68,9 @@ public class ConsultationDAO {
     }
 
     public List<ConsultationDTO> listAndSearchConsultations(String name, String status, String role) {
-        List<ConsultationDTO> list = new ArrayList<>();
-        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status, c.email, cc.imageURL as certificateImageUrl\n"
-                + "FROM consultation c\n"
-                + "LEFT JOIN consultation_certificate cc ON c.id = cc.consultationId\n"
-                + "WHERE 1=1 ";
+        List<ConsultationDTO> all = new ArrayList<>();
+        String sql = "SELECT c.id, c.name, c.dob, c.phone, c.status, c.email, c.subject "
+                + "FROM consultation c WHERE 1=1 ";
 
         if (name != null && !name.trim().isEmpty()) {
             sql += " AND LOWER(TRIM(c.name)) LIKE ?";
@@ -82,7 +81,6 @@ public class ConsultationDAO {
 
         try (Connection conn = DBUtil.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             int paramIndex = 1;
-
             if (name != null && !name.trim().isEmpty()) {
                 ps.setString(paramIndex++, "%" + name.trim().toLowerCase() + "%");
             }
@@ -108,23 +106,22 @@ public class ConsultationDAO {
                 c.setPhone(rs.getString("phone"));
                 c.setStatus(ConsultationDTO.Status.valueOf(rs.getString("status")));
                 c.setEmail(rs.getString("email"));
+                c.setSubjectFromString(rs.getString("subject"));
 
-                String imageUrl = rs.getString("certificateImageUrl");
-                c.setCertificateImageUrl(imageUrl);
-
-                if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                if (c.getSubject() != null) {
                     c.setRole(ConsultationDTO.Role.teacher);
                 } else {
                     c.setRole(ConsultationDTO.Role.parent);
                 }
 
-                list.add(c);
+                all.add(c);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return list;
+
+        return all;
     }
 
     public ConsultationDTO getConsultationById(int id) {
@@ -156,8 +153,6 @@ public class ConsultationDAO {
                 c.setPhone(rs.getString("phone"));
                 c.setStatus(ConsultationDTO.Status.valueOf(rs.getString("status")));
                 c.setAddress(rs.getString("address"));
-
-                // Xử lý subject từ database - có thể null
                 String subjectStr = rs.getString("subject");
                 c.setSubjectFromString(subjectStr);
 

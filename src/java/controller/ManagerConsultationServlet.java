@@ -73,9 +73,15 @@ public class ManagerConsultationServlet extends HttpServlet {
                 String name = request.getParameter("name");
                 String status = request.getParameter("status");
 
-                List<ConsultationDTO> teacherList = dao.listAndSearchConsultations(name, status, "teacher");
+                List<ConsultationDTO> allList = dao.listAndSearchConsultations(name, status, null);
 
-                List<ConsultationDTO> studentParentList = dao.listAndSearchConsultations(name, status, "parent");
+                List<ConsultationDTO> teacherList = allList.stream()
+                        .filter(item -> item.getRole() == ConsultationDTO.Role.teacher)
+                        .toList();
+
+                List<ConsultationDTO> studentParentList = allList.stream()
+                        .filter(item -> item.getRole() == ConsultationDTO.Role.parent )
+                        .toList();
 
                 request.setAttribute("teacherList", teacherList);
                 request.setAttribute("studentParentList", studentParentList);
@@ -89,7 +95,6 @@ public class ManagerConsultationServlet extends HttpServlet {
 
                 request.getRequestDispatcher("views/managerConsultation.jsp").forward(request, response);
                 break;
-
         }
     }
 

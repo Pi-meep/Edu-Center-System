@@ -325,7 +325,27 @@
                             </button>
                         </form>
                     </c:if>
-                    
+                    <c:if test="${selectedRequest.type.name() != 'STUDENT_CHANGE_COURSE' and selectedRequest.status.name() == 'pending'}">
+                        <form method="post" action="xu-ly-yeu-cau">
+                            <input type="hidden" name="action" value="confirm"/>
+                            <input type="hidden" name="decision" value="accepted"/>
+                            <input type="hidden" name="requestId" value="${selectedRequest.id}"/>
+                            <input type="hidden" name="page" value="${currentPage}"/>
+                            <button type="submit" class="button button-success">
+                                ✓ Đồng ý
+                            </button>
+                        </form>
+                        
+                        <form method="post" action="xu-ly-yeu-cau">
+                            <input type="hidden" name="action" value="confirm"/>
+                            <input type="hidden" name="decision" value="rejected"/>
+                            <input type="hidden" name="requestId" value="${selectedRequest.id}"/>
+                            <input type="hidden" name="page" value="${currentPage}"/>
+                            <button type="submit" class="button button-danger">
+                                ✗ Từ chối
+                            </button>
+                        </form>
+                    </c:if>
                     <a href="xu-ly-yeu-cau?page=${currentPage}" class="button button-secondary">
                         Đóng
                     </a>

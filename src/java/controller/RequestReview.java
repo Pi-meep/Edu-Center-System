@@ -65,7 +65,7 @@ public class RequestReview extends HttpServlet {
         String idStr = request.getParameter("requestId");
         int requestId = Integer.parseInt(idStr);
 
-        int currentPage = getCurrentPage(request); 
+        int currentPage = getCurrentPage(request);
 
         RequestDAO dao = new RequestDAO();
         CourseDAO cdao = new CourseDAO();
@@ -138,21 +138,21 @@ public class RequestReview extends HttpServlet {
                                 paymentDAO.createPaymentSchedule(studentSectionId, BigDecimal.valueOf(100000), section.getStartTime());
                             }
                         }
-                    } else {
-                        dao.updateStatus(requestId, RequestModal.Status.rejected);
-                        request.setAttribute("message", "Đã từ chối yêu cầu");
                     }
-
-                    List<RequestDTO> allRequests = dao.getAllRequests();
-                    int totalPages = (int) Math.ceil((double) allRequests.size() / PAGE_SIZE);
-                    List<RequestDTO> paginatedRequests = paginate(allRequests, currentPage, PAGE_SIZE);
-
-                    request.setAttribute("requests", paginatedRequests);
-                    request.setAttribute("currentPage", currentPage);
-                    request.setAttribute("totalPages", totalPages);
-
-                    request.getRequestDispatcher("views/request_list.jsp").forward(request, response);
+                } else {
+                    dao.updateStatus(requestId, RequestModal.Status.rejected);
+                    request.setAttribute("message", "Đã từ chối yêu cầu");
                 }
+
+                List<RequestDTO> allRequests = dao.getAllRequests();
+                int totalPages = (int) Math.ceil((double) allRequests.size() / PAGE_SIZE);
+                List<RequestDTO> paginatedRequests = paginate(allRequests, currentPage, PAGE_SIZE);
+
+                request.setAttribute("requests", paginatedRequests);
+                request.setAttribute("currentPage", currentPage);
+                request.setAttribute("totalPages", totalPages);
+
+                request.getRequestDispatcher("views/request_list.jsp").forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
