@@ -566,7 +566,7 @@ public class TeacherDAO extends DBUtil {
     }
 
     public void insertCertificate(TeacherCertificateModal c) {
-        String sql = "INSERT INTO teacher_certificate (teacherId, imageUrl, certificate_name, issued_date, created_at) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO teacher_certificate (teacherId,certificate_name, imageUrl, issued_date, created_at) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = DBUtil.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, c.getTeacherId());
             ps.setString(2, c.getCertificateName());

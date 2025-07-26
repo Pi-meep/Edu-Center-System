@@ -119,10 +119,15 @@
     }
     /* ===== Story Section ===== */
     .story {
-        padding: 50px 20px;
-        background: #ffffff;
+        background-color: #fff8dc; /* vàng nhạt (cornsilk)*/
+        padding: 30px;
+        border-radius: 12px;
+        max-width: 900px;
+        margin: 40px auto; /* căn giữa theo chiều ngang */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         text-align: center;
     }
+    
     .story h2 {
         font-size: 24px;
         margin-bottom: 30px;
@@ -147,6 +152,24 @@
         font-size: 16px;
         text-align: left;
         line-height: 1.7;
+    }
+
+    ul li a {
+        text-decoration: none;
+        font-weight: bold;
+        color: #333;
+        transition: color 0.2s ease;
+    }
+
+    ul li a:hover {
+        color: #007bff; /* màu xanh khi hover */
+    }
+
+    ul li img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
     }
     /* ===== Course List ===== */
     .teacher-course-section {
@@ -369,8 +392,15 @@
                         <p><strong>Chứng chỉ đạt được:</strong></p>
                         <ul>
                             <c:forEach var="cert" items="${certOfTeacher}">
-                                <li>${cert.certificateName} (${certYearMap[cert.id]})</li>
-                                </c:forEach>
+                                <li>
+                                    <a href="javascript:void(0);" onclick="toggleCertImage('${cert.id}')">
+                                        ${cert.certificateName} (${certYearMap[cert.id]})
+                                    </a>
+                                    <div id="cert-img-${cert.id}" style="display: none; margin-top: 5px;">
+                                        <img src="${pageContext.request.contextPath}/assets/${cert.imageURL}" alt="Certificate Image" style="max-width: 300px; border: 1px solid #ccc;" />
+                                    </div>
+                                </li>
+                            </c:forEach>
                         </ul>
                     </div>
                 </c:if>
@@ -439,4 +469,13 @@
     window.onload = () => {
         teacherSlide(0); // Khởi tạo slide đầu tiên
     };
+
+    function toggleCertImage(certId) {
+        const imgDiv = document.getElementById('cert-img-' + certId);
+        if (imgDiv.style.display === 'none') {
+            imgDiv.style.display = 'block';
+        } else {
+            imgDiv.style.display = 'none';
+        }
+    }
 </script>
