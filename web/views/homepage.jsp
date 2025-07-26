@@ -331,7 +331,7 @@
       <c:otherwise>
         <!-- Fallback banners nếu không có data từ database -->
         <div class="carousel-slide active">
-          <img src="<%= request.getContextPath()%>/assets/image_4.jpg" alt="Slide 1" class="carousel-img">
+          <img src="<%= request.getContextPath()%>/assets/banners/banner_3.jpg" alt="Slide 1" class="carousel-img">
           <div class="carousel-caption">
             <h1>Nâng Tầm Tri Thức<br>Vững Bước Tương Lai</h1>
             <p>Trung tâm dạy thêm hàng đầu với đội ngũ giáo viên giàu kinh nghiệm, phương pháp giảng dạy hiện đại và môi trường học tập thân thiện</p>
@@ -342,14 +342,14 @@
           </div>
         </div>
         <div class="carousel-slide">
-          <img src="<%= request.getContextPath()%>/assets/image_1.jpg" alt="Slide 2" class="carousel-img">
+          <img src="<%= request.getContextPath()%>/assets/banners/banner_1.jpg" alt="Slide 2" class="carousel-img">
           <div class="carousel-caption">
             <h1>Giáo Viên Tận Tâm</h1>
             <p>Đội ngũ giáo viên chuyên nghiệp, luôn đồng hành cùng học sinh trên con đường chinh phục tri thức.</p>
           </div>
         </div>
         <div class="carousel-slide">
-          <img src="<%= request.getContextPath()%>/assets/pic1.jpg" alt="Slide 3" class="carousel-img">
+          <img src="<%= request.getContextPath()%>/assets/banners/banner_2.jpg" alt="Slide 3" class="carousel-img">
           <div class="carousel-caption">
             <h1>Môi Trường Năng Động</h1>
             <p>Không gian học tập hiện đại, thân thiện, khơi dậy niềm đam mê học hỏi cho học sinh.</p>

@@ -207,7 +207,7 @@
                 <c:forEach var="req" items="${requests}">
                     <tr>
                         <td>${req.id}</td>
-                        <td>${req.requestBy}</td>
+                        <td>${req.requestByName}</td>
                         <td>${req.type.displayName}</td>
                         <td style="max-width: 200px; word-wrap: break-word;">${req.description}</td>
                         <td>

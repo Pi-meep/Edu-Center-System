@@ -7,6 +7,7 @@ import dao.StudentCourseDAO;
 import dao.StudentDAO;
 import dao.StudentPaymentScheduleDAO;
 import dao.StudentSectionDAO;
+import dto.RequestDTO;
 import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
@@ -28,7 +29,7 @@ public class RequestReview extends HttpServlet {
 
         try {
             RequestDAO dao = new RequestDAO();
-            List<RequestModal> allRequests = dao.getAllRequests();
+            List<RequestDTO> allRequests = dao.getAllRequests();
 
             int currentPage = getCurrentPage(request);
             int totalRecords = allRequests.size();
@@ -37,7 +38,7 @@ public class RequestReview extends HttpServlet {
             int startIdx = (currentPage - 1) * PAGE_SIZE;
             int endIdx = Math.min(startIdx + PAGE_SIZE, totalRecords);
 
-            List<RequestModal> paginatedRequests = allRequests.subList(startIdx, endIdx);
+            List<RequestDTO> paginatedRequests = allRequests.subList(startIdx, endIdx);
 
             request.setAttribute("requests", paginatedRequests);
             request.setAttribute("currentPage", currentPage);
@@ -64,7 +65,7 @@ public class RequestReview extends HttpServlet {
         String idStr = request.getParameter("requestId");
         int requestId = Integer.parseInt(idStr);
 
-        int currentPage = getCurrentPage(request); // lấy lại page hiện tại
+        int currentPage = getCurrentPage(request); 
 
         RequestDAO dao = new RequestDAO();
         CourseDAO cdao = new CourseDAO();
@@ -75,9 +76,9 @@ public class RequestReview extends HttpServlet {
                 RequestModal req = dao.getRequestById(requestId);
 
                 // Get paginated requests for display
-                List<RequestModal> allRequests = dao.getAllRequests();
+                List<RequestDTO> allRequests = dao.getAllRequests();
                 int totalPages = (int) Math.ceil((double) allRequests.size() / PAGE_SIZE);
-                List<RequestModal> paginatedRequests = paginate(allRequests, currentPage, PAGE_SIZE);
+                List<RequestDTO> paginatedRequests = paginate(allRequests, currentPage, PAGE_SIZE);
 
                 request.setAttribute("requests", paginatedRequests);
                 request.setAttribute("selectedRequest", req);
@@ -134,7 +135,7 @@ public class RequestReview extends HttpServlet {
                             for (SectionModal section : sections) {
                                 int studentSectionId = studentSectionDAO.createStudentSection(student.getId(), section.getId());
 
-                                paymentDAO.createPaymentSchedule(studentSectionId, BigDecimal.valueOf(1000000), section.getStartTime());
+                                paymentDAO.createPaymentSchedule(studentSectionId, BigDecimal.valueOf(100000), section.getStartTime());
                             }
                         }
                     } else {
@@ -142,9 +143,9 @@ public class RequestReview extends HttpServlet {
                         request.setAttribute("message", "Đã từ chối yêu cầu");
                     }
 
-                    List<RequestModal> allRequests = dao.getAllRequests();
+                    List<RequestDTO> allRequests = dao.getAllRequests();
                     int totalPages = (int) Math.ceil((double) allRequests.size() / PAGE_SIZE);
-                    List<RequestModal> paginatedRequests = paginate(allRequests, currentPage, PAGE_SIZE);
+                    List<RequestDTO> paginatedRequests = paginate(allRequests, currentPage, PAGE_SIZE);
 
                     request.setAttribute("requests", paginatedRequests);
                     request.setAttribute("currentPage", currentPage);
@@ -171,7 +172,7 @@ public class RequestReview extends HttpServlet {
         return page;
     }
 
-    private List<RequestModal> paginate(List<RequestModal> list, int page, int pageSize) {
+    private List<RequestDTO> paginate(List<RequestDTO> list, int page, int pageSize) {
         int start = (page - 1) * pageSize;
         int end = Math.min(start + pageSize, list.size());
         return list.subList(start, end);
