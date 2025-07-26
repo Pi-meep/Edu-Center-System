@@ -652,7 +652,7 @@ public class CourseDAO extends DBUtil {
             FROM course c
             JOIN teacher t ON c.teacherId = t.id
             JOIN account a ON t.accountId = a.id
-            WHERE c.isHot = true AND c.status = 'activated'
+            WHERE c.isHot = true AND c.status = 'activated' OR c.status = 'upcoming'
             ORDER BY c.created_at DESC
             LIMIT ?
         """;

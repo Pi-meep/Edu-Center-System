@@ -572,7 +572,7 @@
         <h2>Bắt Đầu Hành Trình Học Tập Ngay Hôm Nay</h2>
         <p>Đăng ký ngay để được tư vấn miễn phí và nhận ưu đãi đặc biệt cho khóa học đầu tiên</p>
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-            <a href="dang-ky" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Tư Vấn Miễn Phí</a>
+            <a href="tu-van" class="homepage-btn homepage-btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">Tư Vấn Miễn Phí</a>
             <a href="tel:${centerInfo != null ? centerInfo.phone : '0123456789'}" class="homepage-btn" style="background: #f8f9fa; color: #333; font-size: 1.1rem; padding: 1rem 2rem;">Gọi Ngay: ${centerInfo != null ? centerInfo.phone : '0123 456 789'}</a>
         </div>
     </div>

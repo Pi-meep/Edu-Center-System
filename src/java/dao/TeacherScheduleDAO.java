@@ -69,7 +69,7 @@ public class TeacherScheduleDAO {
             JOIN section sec ON c.id = sec.courseId
             LEFT JOIN student_course sc ON c.id = sc.courseId AND sc.status = 'accepted'
             WHERE c.teacherId = ? 
-            AND c.status = 'activated'
+            AND (c.status = 'activated' OR c.status = 'upcoming')
             GROUP BY c.id, c.name, c.subject, c.grade, c.courseType, 
                      sec.id, sec.dayOfWeek, sec.startTime, sec.endTime, 
                      sec.classroom, sec.dateTime, sec.status

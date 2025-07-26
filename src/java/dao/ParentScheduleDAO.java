@@ -118,7 +118,7 @@ public class ParentScheduleDAO {
             LEFT JOIN account ta ON t.accountId = ta.id
             WHERE sc.studentId = ? 
             AND sc.status = 'accepted'
-            AND c.status = 'activated'
+            AND (c.status = 'activated' OR c.status = 'upcoming')
             ORDER BY sec.dayOfWeek, sec.startTime
         """;
         
