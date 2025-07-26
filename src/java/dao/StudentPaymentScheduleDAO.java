@@ -5,11 +5,15 @@
 package dao;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import modal.CourseModal;
+import org.apache.tomcat.dbcp.dbcp2.SQLExceptionList;
+import utils.DBUtil;
 
 /**
  *
@@ -216,6 +220,134 @@ public boolean isPaymentPending(int studentId, Integer courseId, Integer section
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public boolean createPaymentSchedulesForStudentSections(List<Integer> studentSectionIds, 
+                                                          int courseId) throws Exception {
+        if (studentSectionIds == null || studentSectionIds.isEmpty()) {
+            return true;
+        }
+        
+        // Lấy thông tin course để xác định loại phí
+        CourseModal course = getCourseInfo(courseId);
+        if (course == null) {
+            throw new Exception("Course not found with ID: " + courseId);
+        }
+        
+        // Xác định logic tạo payment schedule dựa trên course type
+        if (course.getCourseType() == CourseModal.CourseType.combo) {
+            // Với combo course: tạo 1 payment record cho toàn bộ course với feeCombo
+            return createComboPaymentSchedule(studentSectionIds.get(0), course.getFeeCombo(), courseId);
+        } else {
+            // Với daily course: tạo payment record cho từng buổi học với feeDaily
+            return createDailyPaymentSchedules(studentSectionIds, course.getFeeDaily(), courseId);
+        }
+    }
+    
+    private boolean createComboPaymentSchedule(int firstStudentSectionId, 
+                                             BigDecimal feeCombo, 
+                                             int courseId) throws Exception {
+        String insertSql = """
+        INSERT INTO student_payment_schedule 
+        (student_section_id, amount, due_date, markPaying, isPaid, courseId, created_at, updated_at)
+        SELECT ?, ?, c.startDate, false, false, ?, NOW(), NOW()
+        FROM course c
+        WHERE c.id = ?
+        """;
+        
+        try (java.sql.Connection conn = DBUtil.getConnection(); 
+             java.sql.PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+            
+            stmt.setInt(1, firstStudentSectionId);
+            stmt.setBigDecimal(2, feeCombo);
+            stmt.setInt(3, courseId);
+            stmt.setInt(4, courseId);
+            
+            int result = stmt.executeUpdate();
+            return result > 0;
+            
+        } catch (SQLExceptionList e) {
+            e.printStackTrace();
+            throw new Exception("Error creating combo payment schedule: " + e.getMessage());
+        }
+    }
+    
+    private boolean createDailyPaymentSchedules(List<Integer> studentSectionIds, 
+                                              BigDecimal feeDaily, 
+                                              int courseId) throws Exception {
+        String insertSql = """
+        INSERT INTO student_payment_schedule 
+        (student_section_id, amount, due_date, markPaying, isPaid, courseId, created_at, updated_at)
+        SELECT ?, ?, s.dateTime, false, false, ?, NOW(), NOW()
+        FROM student_section ss
+        JOIN section s ON ss.sectionId = s.id
+        WHERE ss.id = ?
+        """;
+        
+        try (java.sql.Connection conn = DBUtil.getConnection(); 
+             java.sql.PreparedStatement stmt = conn.prepareStatement(insertSql)) {
+            
+            conn.setAutoCommit(false);
+            
+            try {
+                for (Integer studentSectionId : studentSectionIds) {
+                    stmt.setInt(1, studentSectionId);
+                    stmt.setBigDecimal(2, feeDaily);
+                    stmt.setInt(3, courseId);
+                    stmt.setInt(4, studentSectionId);
+                    stmt.addBatch();
+                }
+                
+                int[] results = stmt.executeBatch();
+                conn.commit();
+                
+                // Kiểm tra tất cả đều thành công
+                for (int result : results) {
+                    if (result <= 0) {
+                        return false;
+                    }
+                }
+                
+                return true;
+                
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Error creating daily payment schedules: " + e.getMessage());
+        }
+    }
+    
+    private CourseModal getCourseInfo(int courseId) throws Exception {
+        String sql = """
+        SELECT id, courseType, feeCombo, feeDaily, startDate
+        FROM course 
+        WHERE id = ?
+        """;
+        
+        try (java.sql.Connection conn = DBUtil.getConnection(); 
+             java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, courseId);
+            java.sql.ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                CourseModal course = new CourseModal();
+                course.setId(rs.getInt("id"));
+                course.setCourseType(CourseModal.CourseType.valueOf(rs.getString("courseType")));
+                course.setFeeCombo(rs.getBigDecimal("feeCombo"));
+                course.setFeeDaily(rs.getBigDecimal("feeDaily"));
+                course.setStartDate(rs.getTimestamp("startDate").toLocalDateTime());
+                return course;
+            }
+            
+            return null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new Exception("Error getting course info: " + e.getMessage());
         }
     }
 }

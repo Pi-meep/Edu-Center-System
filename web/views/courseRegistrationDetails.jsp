@@ -354,4 +354,3 @@
 </script>
 
 
-<jsp:include page="layout/footer.jsp" />

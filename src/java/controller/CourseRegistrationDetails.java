@@ -6,6 +6,7 @@ package controller;
 
 import dao.CourseDAO;
 import dao.StudentCourseDAO;
+import dao.StudentPaymentScheduleDAO;
 import dao.StudentSectionDAO;
 import dto.CourseDTO;
 import dto.StudentCourseRequestDTO;
@@ -30,6 +31,7 @@ public class CourseRegistrationDetails extends HttpServlet {
     private final CourseDAO courseDao = new CourseDAO();
     private final StudentCourseDAO studentCourseDao = new StudentCourseDAO();
     private final StudentSectionDAO studentSectionDAO = new StudentSectionDAO();
+     private final StudentPaymentScheduleDAO studentPaymentSchedule = new StudentPaymentScheduleDAO();
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -114,13 +116,30 @@ public class CourseRegistrationDetails extends HttpServlet {
                     // Tăng sĩ số lớp
                     courseDao.incrementEnrollment(courseId);
 
-                    // Thêm học sinh vào các buổi học đang hoạt động
-                    studentSectionDAO.addStudentToActiveSections(studentId, courseId);
+                    // Thêm học sinh vào các buổi học đang hoạt động và lấy IDs
+                    List<Integer> studentSectionIds = studentSectionDAO.addStudentToActiveSections(studentId, courseId);
 
-                    message = "Yêu cầu đã được chấp nhận.";
+                    
+
+                    // Tạo payment schedule cho các student sections
+                    if (!studentSectionIds.isEmpty()) {
+                        try {
+                            boolean paymentScheduleCreated = studentPaymentSchedule.createPaymentSchedulesForStudentSections(studentSectionIds, courseId);
+                            
+                            if (!paymentScheduleCreated) {
+                                message = "Yêu cầu đã được chấp nhận nhưng có lỗi khi tạo lịch thanh toán.";
+                            } else {
+                                message = "Yêu cầu đã được chấp nhận và lịch thanh toán đã được tạo thành công.";
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            message = "Yêu cầu đã được chấp nhận nhưng có lỗi khi tạo lịch thanh toán: " + e.getMessage();
+                        }
+                    } else {
+                        message = "Yêu cầu đã được chấp nhận nhưng không có buổi học nào đang hoạt động.";
+                    }
                 } else {
                     message = "Cập nhật trạng thái thất bại.";
-                    // fallback courseId nếu chưa lấy được
                     StudentCourseModal sc = studentCourseDao.getStudentCourseById(requestId);
                     if (sc != null) {
                         courseId = sc.getCourseId();
@@ -141,10 +160,8 @@ public class CourseRegistrationDetails extends HttpServlet {
             }
 
             if (courseId != -1) {
-                // Redirect về GET kèm thông báo
                 response.sendRedirect("chi-tiet-yeu-cau?courseId=" + courseId + "&message=" + URLEncoder.encode(message, "UTF-8"));
             } else {
-                // fallback nếu không có courseId
                 response.sendRedirect("danh-sach-khoa-hoc?message=" + URLEncoder.encode("Không xác định được khóa học.", "UTF-8"));
             }
 

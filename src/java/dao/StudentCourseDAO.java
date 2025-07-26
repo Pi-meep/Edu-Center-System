@@ -242,7 +242,7 @@ public class StudentCourseDAO extends DBUtil {
                 }
             }
         }
-        return "none"; // Không tồn tại bản ghi
+        return null; // Không tồn tại bản ghi
     }
 
     public boolean updateStatus(int requestId, String status) throws Exception {

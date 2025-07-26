@@ -18,12 +18,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalField;
-import java.time.temporal.WeekFields;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +26,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import modal.AccountModal;
 import modal.CourseModal;
-import modal.SectionModal;
 import modal.SectionModal.DayOfWeekEnum;
 import modal.StudentModal;
 import modal.TeacherAchivementModal;
-import modal.TeacherCertificateModal;
 import modal.TeacherModal;
 import utils.CurrencyFormatter;
 
@@ -181,6 +174,7 @@ public class CourseDetailsServlet extends HttpServlet {
         session.setAttribute("achiveYearMap", getAchiveYearMap(achiveOfTeacher));
         session.setAttribute("daysOfWeek", daysOfWeek);
 
+        System.out.println(studentCourseStatus);
         // ===== Thuộc request =====
         request.setAttribute("studentCourseStatus", studentCourseStatus);
 

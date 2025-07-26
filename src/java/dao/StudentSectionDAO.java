@@ -570,32 +570,66 @@ public class StudentSectionDAO {
         }
     }
          
-         public boolean addStudentToActiveSections(int studentId, int courseId) throws Exception {
+         public List<Integer> addStudentToActiveSections(int studentId, int courseId) throws Exception {
+        List<Integer> createdStudentSectionIds = new ArrayList<>();
+        
         String insertSql = """
-    INSERT INTO student_section (studentId, sectionId)
-    SELECT ?, s.id
-    FROM section s
-    WHERE s.courseId = ?
-      AND s.dateTime > NOW()
-      AND NOT EXISTS (
-          SELECT 1 FROM student_section ss
-          WHERE ss.studentId = ?
-            AND ss.sectionId = s.id
-      );
-    """;
-
-        try (Connection conn = DBUtil.getConnection(); PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
-
-            insertStmt.setInt(1, studentId);
-            insertStmt.setInt(2, courseId);
-            insertStmt.setInt(3, studentId);
-
-            int rowsInserted = insertStmt.executeUpdate();
-            return rowsInserted > 0;
-
+        INSERT INTO student_section (studentId, sectionId)
+        SELECT ?, s.id
+        FROM section s
+        WHERE s.courseId = ?
+          AND s.dateTime > NOW()
+          AND NOT EXISTS (
+              SELECT 1 FROM student_section ss
+              WHERE ss.studentId = ?
+                AND ss.sectionId = s.id
+          );
+        """;
+        
+        // Query để lấy các student_section IDs cho các section active
+        String getCreatedIdsSql = """
+        SELECT ss.id 
+        FROM student_section ss
+        JOIN section s ON ss.sectionId = s.id
+        WHERE ss.studentId = ? 
+          AND s.courseId = ?
+          AND s.dateTime > NOW()
+        ORDER BY s.dateTime ASC
+        """;
+        
+        try (Connection conn = DBUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            
+            try {
+                // Insert student sections
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    insertStmt.setInt(1, studentId);
+                    insertStmt.setInt(2, courseId);
+                    insertStmt.setInt(3, studentId);
+                    insertStmt.executeUpdate();
+                }
+                
+                // Lấy các IDs của student_section cho active sections
+                try (PreparedStatement selectStmt = conn.prepareStatement(getCreatedIdsSql)) {
+                    selectStmt.setInt(1, studentId);
+                    selectStmt.setInt(2, courseId);
+                    ResultSet rs = selectStmt.executeQuery();
+                    
+                    while (rs.next()) {
+                        createdStudentSectionIds.add(rs.getInt("id"));
+                    }
+                }
+                
+                conn.commit();
+                return createdStudentSectionIds;
+                
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            throw new Exception("Error adding student to active sections: " + e.getMessage());
         }
     }
 

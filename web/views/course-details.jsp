@@ -891,8 +891,8 @@
                                                     onclick="selectStudent(${child.id}, '${sessionScope.childrenMap[child.id]}')"
                                                     class="child-btn
                                                     ${status eq 'accepted' ? 'child-joined' : ''}
-                                                    ${status eq 'pending' ? 'child-pending' : ''}"
-                                                    ${status eq 'accepted' || status eq 'pending' ? 'disabled' : ''}>
+                                                    ${status eq 'pending' ? 'child-pending' : ''}
+                                                    ${status eq 'accepted' || status eq 'pending' ? 'disabled' : ''}">
                                                     ${sessionScope.childrenMap[child.id]}
                                                 </button>
 
