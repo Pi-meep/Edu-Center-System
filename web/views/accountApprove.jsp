@@ -90,19 +90,7 @@
     <!-- Search and Filter Section -->
     <div class="search-filter">
         <form class="row g-3" method="get" action="duyet-tai-khoan">
-            <!--            <input type="hidden" name="action" value="filter" >-->
-            <!--            <div class="col-md-4">
-                            <label class="form-label">Tìm kiếm</label>
-                            <input type="text" class="form-control" name="searchKeyword" placeholder="Họ tên, tài khoản..." value="${param.searchKeyword}">
-                        </div>-->
-            <!--            <div class="col-md-3">
-                            <label class="form-label">Trạng thái</label>
-                            <select class="form-select" name="statusFilter">
-                                <option value="all" ${statusFilter == 'all' ? 'selected' : ''}>Tất cả</option>
-                                <option value="active" ${statusFilter == 'active' ? 'selected' : ''}>Hoạt động</option>
-                                <option value="inactive" ${statusFilter == 'inactive' ? 'selected' : ''}>Không hoạt động</option>
-                            </select>
-                        </div>-->
+            
             <div class="col-md-3">
                 <label class="form-label">Chức vụ</label>
                 <select class="form-select" name="roleFilter">
@@ -125,7 +113,6 @@
                 <tr>
                     <th>STT</th>
                     <th>Họ và tên</th>
-                    <th>Tên tài khoản</th>
                     <th>Số điện thoại</th>
                     <th>Địa chỉ</th>
                     <th>Trạng thái</th>
@@ -138,7 +125,6 @@
                     <tr>
                         <td>${loop.index + 1}</td>
                         <td>${account.name}</td>
-                        <td>${account.username}</td>
                         <td>${account.phone}</td>
                         <td>${account.address}</td>
                         <td>
@@ -227,4 +213,4 @@
 
 </script>
 
-<jsp:include page="layout/footer.jsp" />
+
